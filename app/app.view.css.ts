@@ -2,6 +2,17 @@ namespace $.$$ {
 
 	$mol_style_define( $bog_journal_app, {
 
+		// $mol_scroll ships `contain: content`, and paint containment makes the
+		// scroller a containing block for `position: fixed`. Every popup opened
+		// from inside the page then lays itself out against the scroller instead
+		// of the viewport and gets clipped by it: the editor's slash menu came out
+		// two items tall, the markdown export bubble stuck to the top edge with
+		// its "copy" button past the right one. Style containment alone keeps the
+		// isolation that matters here and leaves fixed positioning alone.
+		Body: {
+			contain: 'style',
+		},
+
 		// The toolbar carries the whole navigation, so on a narrow screen it has
 		// to wrap instead of pushing the page into a horizontal scroll.
 		Tools: {

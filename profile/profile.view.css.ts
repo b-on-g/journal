@@ -237,10 +237,18 @@ namespace $.$$ {
 		},
 		minWidth: 0,
 
+		/**
+		 * `shrink: 1` is the load-bearing part: $mol_view defaults to
+		 * `flex: 0 0 auto`, so without it this column sizes to the longest line of
+		 * the teaser and pushes the "Published" badge clean off a phone screen.
+		 * The children need `minWidth: 0` for the same reason one level down —
+		 * their automatic minimum is min-content.
+		 */
 		Info: {
 			flex: {
 				direction: 'column',
 				grow: 1,
+				shrink: 1,
 			},
 			gap: '0.125rem',
 			minWidth: 0,
@@ -251,6 +259,7 @@ namespace $.$$ {
 				size: '1rem',
 				weight: 600,
 			},
+			minWidth: 0,
 		},
 
 		Summary: {
@@ -258,6 +267,7 @@ namespace $.$$ {
 				size: '0.875rem',
 			},
 			opacity: 0.7,
+			minWidth: 0,
 		},
 
 		Details: {
@@ -265,6 +275,8 @@ namespace $.$$ {
 				size: '0.75rem',
 			},
 			opacity: 0.5,
+			minWidth: 0,
+			overflowWrap: 'anywhere',
 		},
 
 		State: {

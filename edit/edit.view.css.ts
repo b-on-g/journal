@@ -173,11 +173,47 @@ namespace $.$$ {
 
 	} )
 
+	/**
+	 * An article with an inline picture exports as one markdown line tens of
+	 * kilobytes long — a data uri has nothing to wrap on. The popup sized itself
+	 * to that line and hung far past the right edge of the window, taking its
+	 * "copy" button with it. Breaking mid-token is what actually fixes that.
+	 *
+	 * The narrower cap is for the leftovers: the bubble is laid out from the left
+	 * edge of the button that opened it, and 48rem of it does not fit to the
+	 * right of that point until the window is well past 1200px. Nothing here can
+	 * repair the placement itself — the offset is an inline style written by
+	 * $mol_pop — so the width is what gives.
+	 */
+	$mol_style_define( $bog_journal_edit_export, {
+
+		Bubble: {
+			maxWidth: $mol_style_func.calc( 'min( 30rem, 100vw - 1rem )' ),
+		},
+
+		Output: {
+			overflowWrap: 'anywhere',
+			minWidth: 0,
+		},
+
+	} )
+
 	$mol_style_define( $bog_journal_edit_text, {
+
 		font: {
 			family: 'inherit',
 		},
 		minHeight: '4.5rem',
+
+		// The teaser that fits one line on a desktop takes three on a phone, and
+		// the field does not grow with it, so the last line came out sliced
+		// through the middle.
+		'@media': {
+			'(max-width: 640px)': {
+				minHeight: '7rem',
+			},
+		},
+
 	} )
 
 	$mol_style_define( $bog_journal_edit_chip, {
