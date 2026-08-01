@@ -55796,6 +55796,112 @@ declare namespace $ {
 
 declare namespace $ {
 
+	type $mol_paragraph__title_bog_wysiwyg_prompt_1 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_paragraph['title'] >
+	>
+	type $mol_paragraph__title_bog_wysiwyg_prompt_2 = $mol_type_enforce<
+		ReturnType< $bog_wysiwyg_prompt['label'] >
+		,
+		ReturnType< $mol_paragraph['title'] >
+	>
+	type $mol_string__hint_bog_wysiwyg_prompt_3 = $mol_type_enforce<
+		ReturnType< $bog_wysiwyg_prompt['hint'] >
+		,
+		ReturnType< $mol_string['hint'] >
+	>
+	type $mol_string__value_bog_wysiwyg_prompt_4 = $mol_type_enforce<
+		ReturnType< $bog_wysiwyg_prompt['value'] >
+		,
+		ReturnType< $mol_string['value'] >
+	>
+	type $mol_string__submit_bog_wysiwyg_prompt_5 = $mol_type_enforce<
+		ReturnType< $bog_wysiwyg_prompt['submit'] >
+		,
+		ReturnType< $mol_string['submit'] >
+	>
+	type $mol_button_minor__title_bog_wysiwyg_prompt_6 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_button_minor['title'] >
+	>
+	type $mol_button_minor__click_bog_wysiwyg_prompt_7 = $mol_type_enforce<
+		ReturnType< $bog_wysiwyg_prompt['submit'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_view__sub_bog_wysiwyg_prompt_8 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_button_open__accept_bog_wysiwyg_prompt_9 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_button_open['accept'] >
+	>
+	type $mol_button_open__multiple_bog_wysiwyg_prompt_10 = $mol_type_enforce<
+		boolean
+		,
+		ReturnType< $mol_button_open['multiple'] >
+	>
+	type $mol_button_open__files_bog_wysiwyg_prompt_11 = $mol_type_enforce<
+		ReturnType< $bog_wysiwyg_prompt['files'] >
+		,
+		ReturnType< $mol_button_open['files'] >
+	>
+	type $mol_button_open__sub_bog_wysiwyg_prompt_12 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_button_open['sub'] >
+	>
+	export class $bog_wysiwyg_prompt extends $mol_view {
+		content( ): readonly(any)[]
+		files( next?: readonly(File)[] ): readonly(File)[]
+		Open_icon( ): $mol_icon_upload
+		Open_label( ): $mol_paragraph
+		pos_y_str( ): string
+		pos_x_str( ): string
+		showed( ): boolean
+		pos_y( ): number
+		pos_x( ): number
+		label( ): string
+		hint( ): string
+		file_shown( ): boolean
+		value( next?: string ): string
+		submit( next?: any ): any
+		sub( ): ReturnType< $bog_wysiwyg_prompt['content'] >
+		Label( ): $mol_paragraph
+		Field( ): $mol_string
+		Submit( ): $mol_button_minor
+		Row( ): $mol_view
+		Open( ): $mol_button_open
+		attr( ): ({ 
+			'bog_wysiwyg_prompt_showed': ReturnType< $bog_wysiwyg_prompt['showed'] >,
+		})  & ReturnType< $mol_view['attr'] >
+		style( ): ({ 
+			'top': ReturnType< $bog_wysiwyg_prompt['pos_y_str'] >,
+			'left': ReturnType< $bog_wysiwyg_prompt['pos_x_str'] >,
+		})  & ReturnType< $mol_view['style'] >
+	}
+	
+}
+
+//# sourceMappingURL=prompt.view.tree.d.ts.map
+declare namespace $.$$ {
+    class $bog_wysiwyg_prompt extends $.$bog_wysiwyg_prompt {
+        pos_y_str(): string;
+        pos_x_str(): string;
+        content(): $mol_view[];
+    }
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
+
 	type $mol_view__attr_bog_wysiwyg_1 = $mol_type_enforce<
 		({ 
 			'draggable': string,
@@ -55915,102 +56021,209 @@ declare namespace $ {
 		,
 		ReturnType< $bog_wysiwyg_history['showed'] >
 	>
-	type $bog_wysiwyg_block__html_bog_wysiwyg_24 = $mol_type_enforce<
+	type $bog_wysiwyg_prompt__showed_bog_wysiwyg_24 = $mol_type_enforce<
+		ReturnType< $bog_wysiwyg['image_prompt_showed'] >
+		,
+		ReturnType< $bog_wysiwyg_prompt['showed'] >
+	>
+	type $bog_wysiwyg_prompt__pos_y_bog_wysiwyg_25 = $mol_type_enforce<
+		ReturnType< $bog_wysiwyg['prompt_pos_y'] >
+		,
+		ReturnType< $bog_wysiwyg_prompt['pos_y'] >
+	>
+	type $bog_wysiwyg_prompt__pos_x_bog_wysiwyg_26 = $mol_type_enforce<
+		ReturnType< $bog_wysiwyg['prompt_pos_x'] >
+		,
+		ReturnType< $bog_wysiwyg_prompt['pos_x'] >
+	>
+	type $bog_wysiwyg_prompt__file_shown_bog_wysiwyg_27 = $mol_type_enforce<
+		boolean
+		,
+		ReturnType< $bog_wysiwyg_prompt['file_shown'] >
+	>
+	type $bog_wysiwyg_prompt__label_bog_wysiwyg_28 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $bog_wysiwyg_prompt['label'] >
+	>
+	type $bog_wysiwyg_prompt__hint_bog_wysiwyg_29 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $bog_wysiwyg_prompt['hint'] >
+	>
+	type $bog_wysiwyg_prompt__value_bog_wysiwyg_30 = $mol_type_enforce<
+		ReturnType< $bog_wysiwyg['image_url'] >
+		,
+		ReturnType< $bog_wysiwyg_prompt['value'] >
+	>
+	type $bog_wysiwyg_prompt__files_bog_wysiwyg_31 = $mol_type_enforce<
+		ReturnType< $bog_wysiwyg['image_files'] >
+		,
+		ReturnType< $bog_wysiwyg_prompt['files'] >
+	>
+	type $bog_wysiwyg_prompt__submit_bog_wysiwyg_32 = $mol_type_enforce<
+		ReturnType< $bog_wysiwyg['image_submit'] >
+		,
+		ReturnType< $bog_wysiwyg_prompt['submit'] >
+	>
+	type $bog_wysiwyg_prompt__showed_bog_wysiwyg_33 = $mol_type_enforce<
+		ReturnType< $bog_wysiwyg['link_prompt_showed'] >
+		,
+		ReturnType< $bog_wysiwyg_prompt['showed'] >
+	>
+	type $bog_wysiwyg_prompt__pos_y_bog_wysiwyg_34 = $mol_type_enforce<
+		ReturnType< $bog_wysiwyg['prompt_pos_y'] >
+		,
+		ReturnType< $bog_wysiwyg_prompt['pos_y'] >
+	>
+	type $bog_wysiwyg_prompt__pos_x_bog_wysiwyg_35 = $mol_type_enforce<
+		ReturnType< $bog_wysiwyg['prompt_pos_x'] >
+		,
+		ReturnType< $bog_wysiwyg_prompt['pos_x'] >
+	>
+	type $bog_wysiwyg_prompt__label_bog_wysiwyg_36 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $bog_wysiwyg_prompt['label'] >
+	>
+	type $bog_wysiwyg_prompt__hint_bog_wysiwyg_37 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $bog_wysiwyg_prompt['hint'] >
+	>
+	type $bog_wysiwyg_prompt__value_bog_wysiwyg_38 = $mol_type_enforce<
+		ReturnType< $bog_wysiwyg['link_url'] >
+		,
+		ReturnType< $bog_wysiwyg_prompt['value'] >
+	>
+	type $bog_wysiwyg_prompt__submit_bog_wysiwyg_39 = $mol_type_enforce<
+		ReturnType< $bog_wysiwyg['link_submit'] >
+		,
+		ReturnType< $bog_wysiwyg_prompt['submit'] >
+	>
+	type $mol_button_minor__title_bog_wysiwyg_40 = $mol_type_enforce<
+		ReturnType< $bog_wysiwyg['notice'] >
+		,
+		ReturnType< $mol_button_minor['title'] >
+	>
+	type $mol_button_minor__click_bog_wysiwyg_41 = $mol_type_enforce<
+		ReturnType< $bog_wysiwyg['notice_dismiss'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_button_minor__attr_bog_wysiwyg_42 = $mol_type_enforce<
+		({ 
+			'bog_wysiwyg_notice_showed': ReturnType< $bog_wysiwyg['notice_showed'] >,
+		})  & ReturnType< $mol_button_minor['attr'] >
+		,
+		ReturnType< $mol_button_minor['attr'] >
+	>
+	type $bog_wysiwyg_block__html_bog_wysiwyg_43 = $mol_type_enforce<
 		ReturnType< $bog_wysiwyg['block_html'] >
 		,
 		ReturnType< $bog_wysiwyg_block['html'] >
 	>
-	type $bog_wysiwyg_block__type_bog_wysiwyg_25 = $mol_type_enforce<
+	type $bog_wysiwyg_block__type_bog_wysiwyg_44 = $mol_type_enforce<
 		ReturnType< $bog_wysiwyg['block_type'] >
 		,
 		ReturnType< $bog_wysiwyg_block['type'] >
 	>
-	type $bog_wysiwyg_block__level_bog_wysiwyg_26 = $mol_type_enforce<
+	type $bog_wysiwyg_block__level_bog_wysiwyg_45 = $mol_type_enforce<
 		ReturnType< $bog_wysiwyg['block_level'] >
 		,
 		ReturnType< $bog_wysiwyg_block['level'] >
 	>
-	type $bog_wysiwyg_block__readonly_bog_wysiwyg_27 = $mol_type_enforce<
+	type $bog_wysiwyg_block__readonly_bog_wysiwyg_46 = $mol_type_enforce<
 		ReturnType< $bog_wysiwyg['readonly'] >
 		,
 		ReturnType< $bog_wysiwyg_block['readonly'] >
 	>
-	type $bog_wysiwyg_block__menu_open_bog_wysiwyg_28 = $mol_type_enforce<
+	type $bog_wysiwyg_block__menu_open_bog_wysiwyg_47 = $mol_type_enforce<
 		ReturnType< $bog_wysiwyg['menu_showed'] >
 		,
 		ReturnType< $bog_wysiwyg_block['menu_open'] >
 	>
-	type $bog_wysiwyg_block__ai_open_bog_wysiwyg_29 = $mol_type_enforce<
+	type $bog_wysiwyg_block__ai_open_bog_wysiwyg_48 = $mol_type_enforce<
 		ReturnType< $bog_wysiwyg['ai_showed'] >
 		,
 		ReturnType< $bog_wysiwyg_block['ai_open'] >
 	>
-	type $bog_wysiwyg_block__on_enter_bog_wysiwyg_30 = $mol_type_enforce<
+	type $bog_wysiwyg_block__on_enter_bog_wysiwyg_49 = $mol_type_enforce<
 		ReturnType< $bog_wysiwyg['block_enter'] >
 		,
 		ReturnType< $bog_wysiwyg_block['on_enter'] >
 	>
-	type $bog_wysiwyg_block__on_remove_bog_wysiwyg_31 = $mol_type_enforce<
+	type $bog_wysiwyg_block__on_remove_bog_wysiwyg_50 = $mol_type_enforce<
 		ReturnType< $bog_wysiwyg['block_remove'] >
 		,
 		ReturnType< $bog_wysiwyg_block['on_remove'] >
 	>
-	type $bog_wysiwyg_block__on_split_bog_wysiwyg_32 = $mol_type_enforce<
+	type $bog_wysiwyg_block__on_split_bog_wysiwyg_51 = $mol_type_enforce<
 		ReturnType< $bog_wysiwyg['block_split'] >
 		,
 		ReturnType< $bog_wysiwyg_block['on_split'] >
 	>
-	type $bog_wysiwyg_block__on_merge_prev_bog_wysiwyg_33 = $mol_type_enforce<
+	type $bog_wysiwyg_block__on_merge_prev_bog_wysiwyg_52 = $mol_type_enforce<
 		ReturnType< $bog_wysiwyg['block_merge_prev'] >
 		,
 		ReturnType< $bog_wysiwyg_block['on_merge_prev'] >
 	>
-	type $bog_wysiwyg_block__on_merge_next_bog_wysiwyg_34 = $mol_type_enforce<
+	type $bog_wysiwyg_block__on_merge_next_bog_wysiwyg_53 = $mol_type_enforce<
 		ReturnType< $bog_wysiwyg['block_merge_next'] >
 		,
 		ReturnType< $bog_wysiwyg_block['on_merge_next'] >
 	>
-	type $bog_wysiwyg_block__on_nav_bog_wysiwyg_35 = $mol_type_enforce<
+	type $bog_wysiwyg_block__on_nav_bog_wysiwyg_54 = $mol_type_enforce<
 		ReturnType< $bog_wysiwyg['block_nav'] >
 		,
 		ReturnType< $bog_wysiwyg_block['on_nav'] >
 	>
-	type $bog_wysiwyg_block__on_input_bog_wysiwyg_36 = $mol_type_enforce<
+	type $bog_wysiwyg_block__on_input_bog_wysiwyg_55 = $mol_type_enforce<
 		ReturnType< $bog_wysiwyg['block_input'] >
 		,
 		ReturnType< $bog_wysiwyg_block['on_input'] >
 	>
-	type $bog_wysiwyg_block__on_slash_bog_wysiwyg_37 = $mol_type_enforce<
+	type $bog_wysiwyg_block__on_slash_bog_wysiwyg_56 = $mol_type_enforce<
 		ReturnType< $bog_wysiwyg['block_slash'] >
 		,
 		ReturnType< $bog_wysiwyg_block['on_slash'] >
 	>
-	type $bog_wysiwyg_block__on_menu_key_bog_wysiwyg_38 = $mol_type_enforce<
+	type $bog_wysiwyg_block__on_menu_key_bog_wysiwyg_57 = $mol_type_enforce<
 		ReturnType< $bog_wysiwyg['block_menu_key'] >
 		,
 		ReturnType< $bog_wysiwyg_block['on_menu_key'] >
 	>
-	type $bog_wysiwyg_block__on_image_bog_wysiwyg_39 = $mol_type_enforce<
+	type $bog_wysiwyg_block__on_image_bog_wysiwyg_58 = $mol_type_enforce<
 		ReturnType< $bog_wysiwyg['block_image'] >
 		,
 		ReturnType< $bog_wysiwyg_block['on_image'] >
 	>
-	type $bog_wysiwyg_block__on_ai_bog_wysiwyg_40 = $mol_type_enforce<
+	type $bog_wysiwyg_block__on_image_file_bog_wysiwyg_59 = $mol_type_enforce<
+		ReturnType< $bog_wysiwyg['block_image_file'] >
+		,
+		ReturnType< $bog_wysiwyg_block['on_image_file'] >
+	>
+	type $bog_wysiwyg_block__on_link_bog_wysiwyg_60 = $mol_type_enforce<
+		ReturnType< $bog_wysiwyg['block_link'] >
+		,
+		ReturnType< $bog_wysiwyg_block['on_link'] >
+	>
+	type $bog_wysiwyg_block__on_ai_bog_wysiwyg_61 = $mol_type_enforce<
 		ReturnType< $bog_wysiwyg['block_ai'] >
 		,
 		ReturnType< $bog_wysiwyg_block['on_ai'] >
 	>
-	type $bog_wysiwyg_block__on_ai_key_bog_wysiwyg_41 = $mol_type_enforce<
+	type $bog_wysiwyg_block__on_ai_key_bog_wysiwyg_62 = $mol_type_enforce<
 		ReturnType< $bog_wysiwyg['block_ai_key'] >
 		,
 		ReturnType< $bog_wysiwyg_block['on_ai_key'] >
 	>
-	type $bog_wysiwyg_block__on_paste_blocks_bog_wysiwyg_42 = $mol_type_enforce<
+	type $bog_wysiwyg_block__on_paste_blocks_bog_wysiwyg_63 = $mol_type_enforce<
 		ReturnType< $bog_wysiwyg['block_paste_blocks'] >
 		,
 		ReturnType< $bog_wysiwyg_block['on_paste_blocks'] >
 	>
-	type $mol_view__attr_bog_wysiwyg_43 = $mol_type_enforce<
+	type $mol_view__attr_bog_wysiwyg_64 = $mol_type_enforce<
 		({ 
 			'bog_wysiwyg_drag_over': ReturnType< $bog_wysiwyg['row_is_drag_over'] >,
 			'bog_wysiwyg_drag_pos': ReturnType< $bog_wysiwyg['row_drag_position'] >,
@@ -56019,7 +56232,7 @@ declare namespace $ {
 		,
 		ReturnType< $mol_view['attr'] >
 	>
-	type $mol_view__event_bog_wysiwyg_44 = $mol_type_enforce<
+	type $mol_view__event_bog_wysiwyg_65 = $mol_type_enforce<
 		({ 
 			dragover( next?: ReturnType< $bog_wysiwyg['row_dragover'] > ): ReturnType< $bog_wysiwyg['row_dragover'] >,
 			drop( next?: ReturnType< $bog_wysiwyg['row_drop'] > ): ReturnType< $bog_wysiwyg['row_drop'] >,
@@ -56028,7 +56241,7 @@ declare namespace $ {
 		,
 		ReturnType< $mol_view['event'] >
 	>
-	type $mol_view__sub_bog_wysiwyg_45 = $mol_type_enforce<
+	type $mol_view__sub_bog_wysiwyg_66 = $mol_type_enforce<
 		ReturnType< $bog_wysiwyg['block_row_sub'] >
 		,
 		ReturnType< $mol_view['sub'] >
@@ -56049,6 +56262,8 @@ declare namespace $ {
 		block_slash( id: any, next?: any ): any
 		block_menu_key( id: any, next?: any ): any
 		block_image( id: any, next?: any ): any
+		block_image_file( id: any, next?: any ): any
+		block_link( id: any, next?: any ): any
 		block_ai( id: any, next?: any ): any
 		block_ai_key( id: any, next?: any ): any
 		block_paste_blocks( id: any, next?: any ): any
@@ -56085,7 +56300,23 @@ declare namespace $ {
 		Ai( ): $bog_wysiwyg_ai
 		history_showed( next?: boolean ): boolean
 		History( ): $bog_wysiwyg_history
+		image_prompt_showed( next?: boolean ): boolean
+		prompt_pos_y( next?: number ): number
+		prompt_pos_x( next?: number ): number
+		image_url( next?: string ): string
+		image_files( next?: readonly(File)[] ): readonly(File)[]
+		image_submit( next?: any ): any
+		Image_prompt( ): $bog_wysiwyg_prompt
+		link_prompt_showed( next?: boolean ): boolean
+		link_url( next?: string ): string
+		link_submit( next?: any ): any
+		Link_prompt( ): $bog_wysiwyg_prompt
+		notice( next?: string ): string
+		notice_dismiss( next?: any ): any
+		notice_showed( ): boolean
+		Notice( ): $mol_button_minor
 		page_land_link( ): string
+		notice_too_long( ): string
 		readonly( ): boolean
 		block_ids( next?: readonly(any)[] ): readonly(any)[]
 		Block( id: any): $bog_wysiwyg_block
@@ -56106,6 +56337,16 @@ declare namespace $ {
 //# sourceMappingURL=wysiwyg.view.tree.d.ts.map
 declare namespace $ {
     function $bog_wysiwyg_html_to_md(html: string): string;
+    /** An `<img>` for a block body, with both attributes escaped. */
+    function $bog_wysiwyg_image_html(src: string, alt?: string): string;
+    /**
+     * Bytes a single Sand can carry, minus room for the Unit header.
+     *
+     * `$giper_baza_unit_sand.make` throws above 2**16, and the throw used to happen deep inside a
+     * write nobody was watching, so the text just went missing. Anything this long is refused up
+     * front and out loud instead.
+     */
+    const $bog_wysiwyg_text_limit: number;
     /**
      * Read or write a text field of a Baza model.
      * An atomic register exposes `val`, a mergeable text pawn exposes `text`.
@@ -56133,6 +56374,15 @@ declare namespace $.$$ {
         block_ids(next?: readonly string[]): readonly string[];
         /** Override block_html to sync with Baza when connected */
         block_html(id: string, next?: string): string;
+        /**
+         * Whether a block body fits one Sand, complaining out loud when it does not.
+         *
+         * The write below would otherwise throw `Size too large` somewhere deep inside Giper Baza,
+         * where nobody is listening, and the text would be gone without a word.
+         */
+        text_fits(text: string): boolean;
+        notice_showed(): boolean;
+        notice_dismiss(event?: Event): Event | undefined;
         /** Override block_type to sync with Baza when connected */
         block_type(id: string, next?: string): string;
         /** Override block_level to sync with Baza when connected */
@@ -56213,6 +56463,39 @@ declare namespace $.$$ {
             inline?: boolean;
         } | null | undefined;
         block_image(id: string, src?: string): string | null;
+        /**
+         * A picture straight from a file, without ever becoming a data uri.
+         *
+         * One Sand holds at most 64 KB, so a base64 picture past that size simply does not fit
+         * the block text — and used to be dropped without a word. The bytes go into a
+         * `$giper_baza_file` pawn of the page Land instead, split into chunks by the file itself,
+         * and the block keeps only the `?BAZA:file=…` address. That is the form the exporter and
+         * the reader already speak.
+         *
+         * Returns null when there is no Land to put the file in, and the caller falls back to a
+         * data uri — small pictures then keep working in a Land-less editor exactly as before.
+         */
+        block_image_file(id: string, file?: File): File | null;
+        /** No Land to keep the bytes in, so the picture stays inline. Small ones only. */
+        image_data_uri(file: File): string;
+        /** Put a panel right under the block it was called from, like the slash menu. */
+        prompt_anchor(id: string): void;
+        image_prompt_open(id: string): void;
+        /** Address typed into the picture panel. */
+        image_submit(event?: Event): Event | null;
+        /** File picked in the picture panel. */
+        image_files(next?: readonly File[]): readonly File[];
+        /**
+         * What the link panel is being filled in for: an inline link inside the text, or a
+         * standalone embed block. Plain field — nothing renders off it.
+         */
+        link_target: "" | "embed";
+        /** Ctrl+K inside a block. */
+        block_link(id: string, event?: Event): Event | null;
+        link_prompt_open(id: string, target: '' | 'embed'): void;
+        link_submit(event?: Event): Event | null;
+        /** A link on a line of its own, as the embed plugin makes it. */
+        block_embed(id: string, url: string): void;
         menu_picked(next?: string): string;
         block_ai(id: string, event?: Event): Event | null;
         block_ai_key(id: string, event?: KeyboardEvent): KeyboardEvent | null;
@@ -56450,6 +56733,8 @@ declare namespace $ {
 		on_slash( next?: any ): any
 		on_menu_key( next?: any ): any
 		on_image( next?: any ): any
+		on_image_file( next?: any ): any
+		on_link( next?: any ): any
 		ai_open( ): boolean
 		on_ai( next?: any ): any
 		on_ai_key( next?: any ): any
@@ -56507,6 +56792,17 @@ declare namespace $.$$ {
         is_empty(): boolean;
         sub(): any;
         is_image(): boolean;
+        /**
+         * Body with every `?BAZA:file=…` turned into something the browser can fetch.
+         *
+         * That address is a Harp query resolved by an offline service worker, and no app here
+         * installs one, so an object url over the file bytes is what actually shows a picture.
+         * Only the static branch of `auto()` uses this: an editable block writes its innerHTML
+         * back into the model, and an object url must never be what gets written.
+         */
+        html_shown(): string;
+        /** Object url over the bytes of a file pawn. Empty while the file is still coming in. */
+        file_uri(link: string): string;
         is_static(): boolean;
         /** Editable root of this block */
         node_el(): HTMLElement;
@@ -56548,7 +56844,11 @@ declare namespace $.$$ {
         italic_exec(event?: KeyboardEvent): KeyboardEvent | null;
         underline_exec(event?: KeyboardEvent): KeyboardEvent | null;
         strike_exec(event?: KeyboardEvent): KeyboardEvent | null;
+        /** Where the link goes, remembered while the panel holds the focus. */
+        link_range: Range | null;
         link_exec(event?: KeyboardEvent): KeyboardEvent | null;
+        /** Put a link where the caret was when the panel opened. */
+        link_apply(url: string): void;
         paste_event(event?: ClipboardEvent): ClipboardEvent | null;
         /**
          * Clipboard content to editor content. Split off `paste_event` so it can be
@@ -56559,6 +56859,14 @@ declare namespace $.$$ {
         paste_at_caret(drafts: readonly $bog_wysiwyg_paste_draft[], inline: boolean): void;
         drop_event(event?: DragEvent): DragEvent | null;
         dragover_event(event?: DragEvent): DragEvent | null;
+        /**
+         * The bytes go to the editor as they are.
+         *
+         * Turning them into a data uri first grows them by a third and, past 64 KB, the result no
+         * longer fits one Giper Baza Sand — which is how pasted pictures used to disappear. The
+         * reader stays as the fallback for an editor with no Land behind it, where there is
+         * nowhere to put a file pawn.
+         */
         insert_image_file(file: File): void;
         keydown_event(event?: KeyboardEvent): KeyboardEvent | null;
     }
@@ -68725,6 +69033,17 @@ declare namespace $ {
         }): Readonly<{
             [key: string]: string;
         }>;
+        /**
+         * Полное состояние роутера после перехода: текущие ключи плюс заданные,
+         * `null` убирает ключ (его выбросит make_link).
+         *
+         * Базовая реализация складывает `dict_cut( Object.keys( next ) )`, а та
+         * останавливает обход на ПЕРВОМ упомянутом ключе — всё, что в словаре
+         * идёт после него, из ссылки пропадает. В hash-роутере это компенсируется
+         * тем, что адрес всё равно собирается заново, а здесь ссылка становится
+         * единственным источником правды (см. on_click), и терять ключи нельзя.
+         */
+        static link(next: Record<string, string | null>): string;
         static make_link(next: {
             [key: string]: string | null;
         }): string;

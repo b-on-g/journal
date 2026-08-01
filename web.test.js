@@ -7963,48 +7963,48 @@ var $;
                 const block = new $bog_wysiwyg_block();
                 $mol_assert_equal(block.link_exec(), null);
             },
-            'link_exec with cancelled prompt does nothing'() {
+            'link_exec asks the editor and touches nothing yet'() {
                 if (typeof document === 'undefined')
                     return;
                 const div = make_block_with_selection('hello world end', 'world');
                 try {
-                    const original_prompt = globalThis.prompt;
-                    globalThis.prompt = () => null;
                     const block = new $bog_wysiwyg_block();
                     block.dom_node = () => div;
                     block.html = (val) => val ?? div.innerHTML;
+                    let asked = 0;
+                    block.on_link = (event) => { ++asked; return event; };
                     const event = new KeyboardEvent('keydown', { key: 'k', ctrlKey: true });
                     const result = block.link_exec(event);
                     $mol_assert_ok(result);
+                    $mol_assert_equal(asked, 1);
+                    // The panel has the floor now, so the text is untouched until it answers
                     $mol_assert_equal(div.innerHTML, 'hello world end');
-                    globalThis.prompt = original_prompt;
+                    $mol_assert_ok(!!block.link_range);
                 }
                 finally {
                     div.remove();
                 }
             },
-            'link_exec creates link from selected text'() {
+            'link_apply wraps the selection remembered by link_exec'() {
                 if (typeof document === 'undefined')
                     return;
                 const div = make_block_with_selection('click here now', 'here');
                 try {
-                    const original_prompt = globalThis.prompt;
-                    globalThis.prompt = () => 'https://example.com';
                     const block = new $bog_wysiwyg_block();
                     block.dom_node = () => div;
                     block.html = (val) => val ?? div.innerHTML;
-                    const event = new KeyboardEvent('keydown', { key: 'k', ctrlKey: true });
-                    block.link_exec(event);
+                    block.on_link = (event) => event;
+                    block.link_exec(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }));
+                    block.link_apply('https://example.com');
                     $mol_assert_ok(div.innerHTML.includes('<a '));
                     $mol_assert_ok(div.innerHTML.includes('https://example.com'));
                     $mol_assert_ok(div.innerHTML.includes('here'));
-                    globalThis.prompt = original_prompt;
                 }
                 finally {
                     div.remove();
                 }
             },
-            'link_exec inserts url as text when no selection'() {
+            'link_apply inserts the url as text when nothing is selected'() {
                 if (typeof document === 'undefined')
                     return;
                 const div = make_block_with_selection('hello world');
@@ -8017,22 +8017,67 @@ var $;
                     range.collapse(false);
                     sel.removeAllRanges();
                     sel.addRange(range);
-                    const original_prompt = globalThis.prompt;
-                    globalThis.prompt = () => 'https://example.com';
                     const block = new $bog_wysiwyg_block();
                     block.dom_node = () => div;
                     block.html = (val) => val ?? div.innerHTML;
-                    const event = new KeyboardEvent('keydown', { key: 'k', ctrlKey: true });
-                    block.link_exec(event);
+                    block.on_link = (event) => event;
+                    block.link_exec(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }));
+                    block.link_apply('https://example.com');
                     $mol_assert_ok(div.innerHTML.includes('<a '));
                     $mol_assert_ok(div.innerHTML.includes('https://example.com'));
-                    globalThis.prompt = original_prompt;
                 }
                 finally {
                     div.remove();
                 }
             },
             // === Image block ===
+            /*
+             * One Sand holds 64 KB, so a picture that became a data uri on the way in was simply
+             * dropped past that size. The bytes go to the editor untouched now, and only an editor
+             * with nowhere to put them falls back to the reader.
+             */
+            'insert_image_file hands the file over whole'() {
+                if (typeof document === 'undefined')
+                    return;
+                const block = new $bog_wysiwyg_block();
+                const seen = [];
+                block.on_image_file = (file) => { if (file)
+                    seen.push(file); return file ?? null; };
+                block.on_image = () => $mol_fail(new Error('must not fall back to a data uri'));
+                const file = new File([new Uint8Array(8)], 'shot.png', { type: 'image/png' });
+                block.insert_image_file(file);
+                $mol_assert_equal(seen.length, 1);
+                $mol_assert_equal(seen[0].name, 'shot.png');
+            },
+            'insert_image_file falls back to a data uri with no Land behind the editor'() {
+                if (typeof document === 'undefined')
+                    return;
+                const block = new $bog_wysiwyg_block();
+                // What the editor answers when it has no Land to keep a file pawn in
+                block.on_image_file = () => null;
+                let reached = false;
+                block.on_image = () => { reached = true; return null; };
+                block.insert_image_file(new File([new Uint8Array(8)], 's.png', { type: 'image/png' }));
+                // FileReader answers on a later tick, so all this pins is that the fallback was armed
+                $mol_assert_equal(reached, false);
+            },
+            'html_shown leaves ordinary markup alone'() {
+                const block = new $bog_wysiwyg_block();
+                block.html = () => '<img src="https://x.dev/a.png" alt="A">';
+                $mol_assert_equal(block.html_shown(), '<img src="https://x.dev/a.png" alt="A">');
+            },
+            'html_shown swaps a file address for something the browser can fetch'() {
+                const block = new $bog_wysiwyg_block();
+                block.html = () => '<img src="?BAZA:file=a_b;name=pic.png" alt="Pic">';
+                block.file_uri = (link) => 'blob:fake/' + link;
+                $mol_assert_equal(block.html_shown(), '<img src="blob:fake/a_b" alt="Pic">');
+            },
+            'html_shown keeps the address while the file is still coming in'() {
+                const block = new $bog_wysiwyg_block();
+                block.html = () => '<img src="?BAZA:file=a_b;name=pic.png">';
+                block.file_uri = () => '';
+                $mol_assert_equal(block.html_shown(), '<img src="?BAZA:file=a_b;name=pic.png">');
+            },
             'paste_event without event returns null'() {
                 const block = new $bog_wysiwyg_block();
                 $mol_assert_equal(block.paste_event(), null);
@@ -10246,34 +10291,68 @@ var $;
                 $mol_assert_equal(editor.block_image('b1'), null);
                 $mol_assert_equal(editor.block_type('b1'), 'paragraph');
             },
-            'menu_picked with image prompts for URL'() {
+            /*
+             * The picture command used to call a native `prompt()`. That freezes the renderer, so the
+             * tab stops answering the user and the debug protocol alike, and an address was the only
+             * thing it could ever ask for. It opens the editor's own panel now.
+             */
+            'menu_picked with image opens the picture panel'() {
                 const editor = new $bog_wysiwyg();
                 editor.active_block_id('b1');
                 editor.block_ids(['b1']);
                 editor.menu_showed(true);
                 editor.focus_block = () => { };
-                const ctx = editor.$.$mol_dom_context;
-                const original_prompt = ctx.prompt;
-                ctx.prompt = () => 'https://example.com/img.png';
                 editor.menu_picked('image');
+                $mol_assert_equal(editor.image_prompt_showed(), true);
+                $mol_assert_equal(editor.menu_showed(), false);
+                // Nothing is committed until the panel answers
+                $mol_assert_equal(editor.block_type('b1'), 'paragraph');
+            },
+            'an address typed into the picture panel makes the picture'() {
+                const editor = new $bog_wysiwyg();
+                editor.active_block_id('b1');
+                editor.block_ids(['b1']);
+                editor.focus_block = () => { };
+                editor.menu_picked('image');
+                editor.image_url('https://example.com/img.png');
+                editor.image_submit();
                 $mol_assert_equal(editor.block_type('b1'), 'image');
                 $mol_assert_ok(editor.block_html('b1').includes('https://example.com/img.png'));
-                $mol_assert_equal(editor.menu_showed(), false);
-                ctx.prompt = original_prompt;
+                $mol_assert_equal(editor.image_prompt_showed(), false);
             },
-            'menu_picked with image cancelled prompt keeps paragraph'() {
+            'an empty picture panel leaves the block alone'() {
                 const editor = new $bog_wysiwyg();
                 editor.active_block_id('b1');
                 editor.block_ids(['b1']);
-                editor.menu_showed(true);
                 editor.focus_block = () => { };
-                const ctx = editor.$.$mol_dom_context;
-                const original_prompt = ctx.prompt;
-                ctx.prompt = () => null;
                 editor.menu_picked('image');
+                editor.image_submit();
                 $mol_assert_equal(editor.block_type('b1'), 'paragraph');
-                $mol_assert_equal(editor.menu_showed(), false);
-                ctx.prompt = original_prompt;
+                $mol_assert_equal(editor.image_prompt_showed(), false);
+            },
+            'the link panel wraps the selection through the block'() {
+                const editor = new $bog_wysiwyg();
+                editor.block_ids(['b1']);
+                editor.focus_block = () => { };
+                const applied = [];
+                editor.block_view = () => ({ link_apply: (url) => { applied.push(url); } });
+                editor.block_link('b1', new $mol_dom_context.Event('keydown'));
+                $mol_assert_equal(editor.link_prompt_showed(), true);
+                editor.link_url('https://example.com');
+                editor.link_submit();
+                $mol_assert_equal(applied, ['https://example.com']);
+                $mol_assert_equal(editor.link_prompt_showed(), false);
+            },
+            'the link panel makes an embed block when the plugin asked'() {
+                const editor = new $bog_wysiwyg();
+                editor.block_ids(['b1']);
+                editor.focus_block = () => { };
+                editor.link_prompt_open('b1', 'embed');
+                editor.link_url('https://example.com/page');
+                editor.link_submit();
+                $mol_assert_equal(editor.block_type('b1'), 'embed');
+                $mol_assert_ok(editor.block_html('b1').includes('https://example.com/page'));
+                $mol_assert_equal(editor.link_prompt_showed(), false);
             },
             // === Drag & Drop ===
             'move_block moves block down (after)'() {

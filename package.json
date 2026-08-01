@@ -487,6 +487,7 @@
     "$giper_baza_text_tokens",
     "$bog_wysiwyg_ai",
     "$bog_wysiwyg_history",
+    "$bog_wysiwyg_prompt",
     "$bog_meta",
     "$bog_journal_post_page",
     "$bog_journal_post",

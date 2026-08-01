@@ -34322,6 +34322,211 @@ var $;
 })($ || ($ = {}));
 
 ;
+	($.$bog_wysiwyg_prompt) = class $bog_wysiwyg_prompt extends ($.$mol_view) {
+		content(){
+			return [];
+		}
+		files(next){
+			if(next !== undefined) return next;
+			return [];
+		}
+		Open_icon(){
+			const obj = new this.$.$mol_icon_upload();
+			return obj;
+		}
+		Open_label(){
+			const obj = new this.$.$mol_paragraph();
+			(obj.title) = () => ((this.$.$mol_locale.text("$bog_wysiwyg_prompt_Open_label_title")));
+			return obj;
+		}
+		pos_y_str(){
+			return "0px";
+		}
+		pos_x_str(){
+			return "0px";
+		}
+		showed(){
+			return false;
+		}
+		pos_y(){
+			return 0;
+		}
+		pos_x(){
+			return 0;
+		}
+		label(){
+			return (this.$.$mol_locale.text("$bog_wysiwyg_prompt_label"));
+		}
+		hint(){
+			return "";
+		}
+		file_shown(){
+			return false;
+		}
+		value(next){
+			if(next !== undefined) return next;
+			return "";
+		}
+		submit(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		sub(){
+			return (this.content());
+		}
+		Label(){
+			const obj = new this.$.$mol_paragraph();
+			(obj.title) = () => ((this.label()));
+			return obj;
+		}
+		Field(){
+			const obj = new this.$.$mol_string();
+			(obj.hint) = () => ((this.hint()));
+			(obj.value) = (next) => ((this.value(next)));
+			(obj.submit) = (next) => ((this.submit(next)));
+			return obj;
+		}
+		Submit(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.title) = () => ((this.$.$mol_locale.text("$bog_wysiwyg_prompt_Submit_title")));
+			(obj.click) = (next) => ((this.submit(next)));
+			return obj;
+		}
+		Row(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.Field()), (this.Submit())]);
+			return obj;
+		}
+		Open(){
+			const obj = new this.$.$mol_button_open();
+			(obj.accept) = () => ("image/*");
+			(obj.multiple) = () => (false);
+			(obj.files) = (next) => ((this.files(next)));
+			(obj.sub) = () => ([(this.Open_icon()), (this.Open_label())]);
+			return obj;
+		}
+		attr(){
+			return {...(super.attr()), "bog_wysiwyg_prompt_showed": (this.showed())};
+		}
+		style(){
+			return {
+				...(super.style()), 
+				"top": (this.pos_y_str()), 
+				"left": (this.pos_x_str())
+			};
+		}
+	};
+	($mol_mem(($.$bog_wysiwyg_prompt.prototype), "files"));
+	($mol_mem(($.$bog_wysiwyg_prompt.prototype), "Open_icon"));
+	($mol_mem(($.$bog_wysiwyg_prompt.prototype), "Open_label"));
+	($mol_mem(($.$bog_wysiwyg_prompt.prototype), "value"));
+	($mol_mem(($.$bog_wysiwyg_prompt.prototype), "submit"));
+	($mol_mem(($.$bog_wysiwyg_prompt.prototype), "Label"));
+	($mol_mem(($.$bog_wysiwyg_prompt.prototype), "Field"));
+	($mol_mem(($.$bog_wysiwyg_prompt.prototype), "Submit"));
+	($mol_mem(($.$bog_wysiwyg_prompt.prototype), "Row"));
+	($mol_mem(($.$bog_wysiwyg_prompt.prototype), "Open"));
+
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $bog_wysiwyg_prompt extends $.$bog_wysiwyg_prompt {
+            pos_y_str() {
+                return this.pos_y() + 'px';
+            }
+            pos_x_str() {
+                return this.pos_x() + 'px';
+            }
+            content() {
+                const rows = [this.Label(), this.Row()];
+                if (this.file_shown())
+                    rows.push(this.Open());
+                return rows;
+            }
+        }
+        $$.$bog_wysiwyg_prompt = $bog_wysiwyg_prompt;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_style_define($bog_wysiwyg_prompt, {
+        /** Anchored at the caret like the slash menu, and pinned the same way. */
+        position: 'fixed',
+        zIndex: 100,
+        bottom: '0.5rem',
+        right: '0.5rem',
+        maxHeight: 'fit-content',
+        maxWidth: 'fit-content',
+        background: {
+            color: $mol_theme.back,
+        },
+        border: {
+            width: '1px',
+            style: 'solid',
+            color: $mol_theme.line,
+        },
+        borderRadius: '0.5rem',
+        padding: '0.5rem',
+        minWidth: '18rem',
+        flex: {
+            direction: 'column',
+        },
+        gap: '0.25rem',
+        box: {
+            shadow: [
+                {
+                    inset: false,
+                    x: 0,
+                    y: '0.25rem',
+                    blur: '1rem',
+                    spread: 0,
+                    color: '#00000026',
+                },
+            ],
+        },
+        ':not([bog_wysiwyg_prompt_showed])': {
+            display: 'none',
+        },
+        Label: {
+            color: $mol_theme.shade,
+            font: {
+                size: '0.75rem',
+            },
+        },
+        Row: {
+            gap: '0.25rem',
+            alignItems: 'stretch',
+        },
+        Field: {
+            flex: {
+                grow: 1,
+            },
+            minWidth: 0,
+        },
+        Submit: {
+            flex: {
+                shrink: 0,
+            },
+        },
+        Open: {
+            justifyContent: 'flex-start',
+            gap: '0.25rem',
+        },
+    });
+})($ || ($ = {}));
+
+;
 	($.$bog_wysiwyg) = class $bog_wysiwyg extends ($.$mol_view) {
 		block_html(id, next){
 			if(next !== undefined) return next;
@@ -34380,6 +34585,14 @@ var $;
 			return null;
 		}
 		block_image(id, next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		block_image_file(id, next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		block_link(id, next){
 			if(next !== undefined) return next;
 			return null;
 		}
@@ -34548,8 +34761,89 @@ var $;
 			(obj.showed) = (next) => ((this.history_showed(next)));
 			return obj;
 		}
+		image_prompt_showed(next){
+			if(next !== undefined) return next;
+			return false;
+		}
+		prompt_pos_y(next){
+			if(next !== undefined) return next;
+			return 0;
+		}
+		prompt_pos_x(next){
+			if(next !== undefined) return next;
+			return 0;
+		}
+		image_url(next){
+			if(next !== undefined) return next;
+			return "";
+		}
+		image_files(next){
+			if(next !== undefined) return next;
+			return [];
+		}
+		image_submit(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Image_prompt(){
+			const obj = new this.$.$bog_wysiwyg_prompt();
+			(obj.showed) = () => ((this.image_prompt_showed()));
+			(obj.pos_y) = () => ((this.prompt_pos_y()));
+			(obj.pos_x) = () => ((this.prompt_pos_x()));
+			(obj.file_shown) = () => (true);
+			(obj.label) = () => ((this.$.$mol_locale.text("$bog_wysiwyg_Image_prompt_label")));
+			(obj.hint) = () => ("https://example.com/picture.png");
+			(obj.value) = (next) => ((this.image_url(next)));
+			(obj.files) = (next) => ((this.image_files(next)));
+			(obj.submit) = (next) => ((this.image_submit(next)));
+			return obj;
+		}
+		link_prompt_showed(next){
+			if(next !== undefined) return next;
+			return false;
+		}
+		link_url(next){
+			if(next !== undefined) return next;
+			return "";
+		}
+		link_submit(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Link_prompt(){
+			const obj = new this.$.$bog_wysiwyg_prompt();
+			(obj.showed) = () => ((this.link_prompt_showed()));
+			(obj.pos_y) = () => ((this.prompt_pos_y()));
+			(obj.pos_x) = () => ((this.prompt_pos_x()));
+			(obj.label) = () => ((this.$.$mol_locale.text("$bog_wysiwyg_Link_prompt_label")));
+			(obj.hint) = () => ("https://example.com");
+			(obj.value) = (next) => ((this.link_url(next)));
+			(obj.submit) = (next) => ((this.link_submit(next)));
+			return obj;
+		}
+		notice(next){
+			if(next !== undefined) return next;
+			return "";
+		}
+		notice_dismiss(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		notice_showed(){
+			return false;
+		}
+		Notice(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.title) = () => ((this.notice()));
+			(obj.click) = (next) => ((this.notice_dismiss(next)));
+			(obj.attr) = () => ({...(this.$.$mol_button_minor.prototype.attr.call(obj)), "bog_wysiwyg_notice_showed": (this.notice_showed())});
+			return obj;
+		}
 		page_land_link(){
 			return "";
+		}
+		notice_too_long(){
+			return (this.$.$mol_locale.text("$bog_wysiwyg_notice_too_long"));
 		}
 		readonly(){
 			return false;
@@ -34576,6 +34870,8 @@ var $;
 			(obj.on_slash) = (next) => ((this.block_slash(id, next)));
 			(obj.on_menu_key) = (next) => ((this.block_menu_key(id, next)));
 			(obj.on_image) = (next) => ((this.block_image(id, next)));
+			(obj.on_image_file) = (next) => ((this.block_image_file(id, next)));
+			(obj.on_link) = (next) => ((this.block_link(id, next)));
 			(obj.on_ai) = (next) => ((this.block_ai(id, next)));
 			(obj.on_ai_key) = (next) => ((this.block_ai_key(id, next)));
 			(obj.on_paste_blocks) = (next) => ((this.block_paste_blocks(id, next)));
@@ -34625,7 +34921,10 @@ var $;
 				(this.Backlinks()), 
 				(this.Menu()), 
 				(this.Ai()), 
-				(this.History())
+				(this.History()), 
+				(this.Image_prompt()), 
+				(this.Link_prompt()), 
+				(this.Notice())
 			];
 		}
 	};
@@ -34644,6 +34943,8 @@ var $;
 	($mol_mem_key(($.$bog_wysiwyg.prototype), "block_slash"));
 	($mol_mem_key(($.$bog_wysiwyg.prototype), "block_menu_key"));
 	($mol_mem_key(($.$bog_wysiwyg.prototype), "block_image"));
+	($mol_mem_key(($.$bog_wysiwyg.prototype), "block_image_file"));
+	($mol_mem_key(($.$bog_wysiwyg.prototype), "block_link"));
 	($mol_mem_key(($.$bog_wysiwyg.prototype), "block_ai"));
 	($mol_mem_key(($.$bog_wysiwyg.prototype), "block_ai_key"));
 	($mol_mem_key(($.$bog_wysiwyg.prototype), "block_paste_blocks"));
@@ -34674,6 +34975,20 @@ var $;
 	($mol_mem(($.$bog_wysiwyg.prototype), "Ai"));
 	($mol_mem(($.$bog_wysiwyg.prototype), "history_showed"));
 	($mol_mem(($.$bog_wysiwyg.prototype), "History"));
+	($mol_mem(($.$bog_wysiwyg.prototype), "image_prompt_showed"));
+	($mol_mem(($.$bog_wysiwyg.prototype), "prompt_pos_y"));
+	($mol_mem(($.$bog_wysiwyg.prototype), "prompt_pos_x"));
+	($mol_mem(($.$bog_wysiwyg.prototype), "image_url"));
+	($mol_mem(($.$bog_wysiwyg.prototype), "image_files"));
+	($mol_mem(($.$bog_wysiwyg.prototype), "image_submit"));
+	($mol_mem(($.$bog_wysiwyg.prototype), "Image_prompt"));
+	($mol_mem(($.$bog_wysiwyg.prototype), "link_prompt_showed"));
+	($mol_mem(($.$bog_wysiwyg.prototype), "link_url"));
+	($mol_mem(($.$bog_wysiwyg.prototype), "link_submit"));
+	($mol_mem(($.$bog_wysiwyg.prototype), "Link_prompt"));
+	($mol_mem(($.$bog_wysiwyg.prototype), "notice"));
+	($mol_mem(($.$bog_wysiwyg.prototype), "notice_dismiss"));
+	($mol_mem(($.$bog_wysiwyg.prototype), "Notice"));
 	($mol_mem(($.$bog_wysiwyg.prototype), "block_ids"));
 	($mol_mem_key(($.$bog_wysiwyg.prototype), "Block"));
 	($mol_mem_key(($.$bog_wysiwyg.prototype), "Block_row"));
@@ -34707,6 +35022,22 @@ var $;
         return text;
     }
     $.$bog_wysiwyg_html_to_md = $bog_wysiwyg_html_to_md;
+    /** An `<img>` for a block body, with both attributes escaped. */
+    function $bog_wysiwyg_image_html(src, alt = '') {
+        const quote = (text) => text.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+        return '<img src="' + quote(src) + '"'
+            + (alt ? ' alt="' + quote(alt) + '"' : '')
+            + '>';
+    }
+    $.$bog_wysiwyg_image_html = $bog_wysiwyg_image_html;
+    /**
+     * Bytes a single Sand can carry, minus room for the Unit header.
+     *
+     * `$giper_baza_unit_sand.make` throws above 2**16, and the throw used to happen deep inside a
+     * write nobody was watching, so the text just went missing. Anything this long is refused up
+     * front and out loud instead.
+     */
+    $.$bog_wysiwyg_text_limit = 2 ** 16 - 64;
     /**
      * Read or write a text field of a Baza model.
      * An atomic register exposes `val`, a mergeable text pawn exposes `text`.
@@ -34807,10 +35138,35 @@ var $;
                     return super.block_html(id, next);
                 const block = this.baza_block(id);
                 if (next !== undefined) {
+                    if (!this.text_fits(next))
+                        return this.block_html(id);
                     block.Content('auto')?.val(next);
                     return next;
                 }
                 return block.Content()?.val() ?? '';
+            }
+            /**
+             * Whether a block body fits one Sand, complaining out loud when it does not.
+             *
+             * The write below would otherwise throw `Size too large` somewhere deep inside Giper Baza,
+             * where nobody is listening, and the text would be gone without a word.
+             */
+            text_fits(text) {
+                // Three bytes per character is the worst UTF-8 does below the surrogates, so ordinary
+                // text never pays for the encoding.
+                if (text.length * 3 < $.$bog_wysiwyg_text_limit)
+                    return true;
+                if ($mol_charset_encode(text).length <= $.$bog_wysiwyg_text_limit)
+                    return true;
+                this.notice(this.notice_too_long());
+                return false;
+            }
+            notice_showed() {
+                return !!this.notice();
+            }
+            notice_dismiss(event) {
+                this.notice('');
+                return event;
             }
             /** Override block_type to sync with Baza when connected */
             block_type(id, next) {
@@ -35099,13 +35455,7 @@ var $;
                 }
                 if (cmd === 'image') {
                     this.menu_showed(false);
-                    const url = this.$.$mol_dom_context.prompt(this.$.$mol_locale.text('$bog_wysiwyg_image_url_prompt'));
-                    if (!url) {
-                        this.focus_block(id);
-                        return;
-                    }
-                    this.block_type(id, 'image');
-                    this.block_html(id, '<img src="' + url.replace(/"/g, '&quot;') + '">');
+                    this.image_prompt_open(id);
                     return;
                 }
                 if (cmd.startsWith('heading')) {
@@ -35196,14 +35546,140 @@ var $;
                 this.history_record();
                 return val;
             }
+            // === Pictures ===
             block_image(id, src) {
                 if (!src)
                     return null;
+                if (this.readonly())
+                    return null;
                 this.history_record();
                 this.block_type(id, 'image');
-                this.block_html(id, '<img src="' + src.replace(/"/g, '&quot;') + '">');
+                this.block_html(id, $.$bog_wysiwyg_image_html(src));
                 this.history_record();
                 return src;
+            }
+            /**
+             * A picture straight from a file, without ever becoming a data uri.
+             *
+             * One Sand holds at most 64 KB, so a base64 picture past that size simply does not fit
+             * the block text — and used to be dropped without a word. The bytes go into a
+             * `$giper_baza_file` pawn of the page Land instead, split into chunks by the file itself,
+             * and the block keeps only the `?BAZA:file=…` address. That is the form the exporter and
+             * the reader already speak.
+             *
+             * Returns null when there is no Land to put the file in, and the caller falls back to a
+             * data uri — small pictures then keep working in a Land-less editor exactly as before.
+             */
+            block_image_file(id, file) {
+                if (!file)
+                    return null;
+                if (this.readonly())
+                    return null;
+                const land = this.page_land();
+                if (!land)
+                    return null;
+                const pawn = land.Pawn($giper_baza_file).Head(land.self_make());
+                if ($giper_baza_file.meta)
+                    pawn.meta($giper_baza_file.meta);
+                pawn.blob(file);
+                this.history_record();
+                this.block_type(id, 'image');
+                this.block_html(id, $.$bog_wysiwyg_image_html(pawn.uri(), file.name));
+                this.history_record();
+                return file;
+            }
+            /** No Land to keep the bytes in, so the picture stays inline. Small ones only. */
+            image_data_uri(file) {
+                const bytes = new Uint8Array($mol_wire_sync(file).arrayBuffer());
+                return 'data:' + (file.type || 'image/png') + ';base64,' + $mol_base64_encode(bytes);
+            }
+            // === Prompt panels ===
+            //
+            // Everything here used to be a native `prompt()`. A browser modal freezes the renderer,
+            // and a frozen renderer answers neither the user nor the debug protocol — so an automated
+            // pass over the editor died on the very first picture. It also only ever asked for an
+            // address, while the thing people actually want is to pick a file.
+            /** Put a panel right under the block it was called from, like the slash menu. */
+            prompt_anchor(id) {
+                const rect = this.Block(id).dom_node().getBoundingClientRect();
+                this.prompt_pos_y(rect.bottom);
+                this.prompt_pos_x(rect.left);
+            }
+            image_prompt_open(id) {
+                this.active_block_id(id);
+                this.prompt_anchor(id);
+                this.image_url('');
+                this.image_prompt_showed(true);
+            }
+            /** Address typed into the picture panel. */
+            image_submit(event) {
+                const id = this.active_block_id();
+                const url = this.image_url().trim();
+                this.image_prompt_showed(false);
+                if (!id || !url)
+                    return null;
+                this.image_url('');
+                this.block_image(id, url);
+                return event ?? null;
+            }
+            /** File picked in the picture panel. */
+            image_files(next) {
+                const file = next?.[0];
+                const id = this.active_block_id();
+                if (file && id) {
+                    this.image_prompt_showed(false);
+                    if (!this.block_image_file(id, file)) {
+                        this.block_image(id, this.image_data_uri(file));
+                    }
+                }
+                return next ?? [];
+            }
+            /**
+             * What the link panel is being filled in for: an inline link inside the text, or a
+             * standalone embed block. Plain field — nothing renders off it.
+             */
+            link_target = '';
+            /** Ctrl+K inside a block. */
+            block_link(id, event) {
+                if (!event)
+                    return null;
+                if (this.readonly())
+                    return null;
+                this.link_prompt_open(id, '');
+                return event;
+            }
+            link_prompt_open(id, target) {
+                this.active_block_id(id);
+                this.prompt_anchor(id);
+                this.link_url('');
+                this.link_target = target;
+                this.link_prompt_showed(true);
+            }
+            link_submit(event) {
+                const id = this.active_block_id();
+                const url = this.link_url().trim();
+                const target = this.link_target;
+                this.link_prompt_showed(false);
+                this.link_target = '';
+                if (!id || !url)
+                    return null;
+                this.link_url('');
+                if (target === 'embed')
+                    this.block_embed(id, url);
+                else
+                    this.block_view(id).link_apply(url);
+                return event ?? null;
+            }
+            /** A link on a line of its own, as the embed plugin makes it. */
+            block_embed(id, url) {
+                const quote = (text) => text.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+                let display = url.replace(/^https?:\/\//, '');
+                if (display.length > 60)
+                    display = display.slice(0, 57) + '...';
+                this.history_record();
+                this.block_type(id, 'embed');
+                this.block_html(id, '<a href="' + quote(url) + '" target="_blank" rel="noopener">' + quote(display) + '</a>');
+                this.history_record();
             }
             menu_picked(next) {
                 const val = next ?? '';
@@ -35747,6 +36223,15 @@ var $;
             $mol_mem
         ], $bog_wysiwyg.prototype, "active_block_id", null);
         __decorate([
+            $mol_action
+        ], $bog_wysiwyg.prototype, "block_image_file", null);
+        __decorate([
+            $mol_action
+        ], $bog_wysiwyg.prototype, "image_data_uri", null);
+        __decorate([
+            $mol_mem
+        ], $bog_wysiwyg.prototype, "image_files", null);
+        __decorate([
             $mol_mem
         ], $bog_wysiwyg.prototype, "menu_picked", null);
         __decorate([
@@ -35857,6 +36342,30 @@ var $;
                 shrink: 0,
             },
             minWidth: 0,
+        },
+        /** Says out loud what a write refused to store. Click dismisses it. */
+        Notice: {
+            position: 'fixed',
+            zIndex: 100,
+            bottom: '1rem',
+            left: '1rem',
+            right: '1rem',
+            margin: {
+                left: 'auto',
+                right: 'auto',
+            },
+            maxWidth: '30rem',
+            textAlign: 'left',
+            justifyContent: 'flex-start',
+            borderRadius: '0.5rem',
+            padding: '0.75rem',
+            color: $mol_theme.text,
+            background: {
+                color: $mol_theme.focus,
+            },
+            ':not([bog_wysiwyg_notice_showed])': {
+                display: 'none',
+            },
         },
         Block_list: {
             flex: {
@@ -36100,6 +36609,14 @@ var $;
 			if(next !== undefined) return next;
 			return null;
 		}
+		on_image_file(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		on_link(next){
+			if(next !== undefined) return next;
+			return null;
+		}
 		ai_open(){
 			return false;
 		}
@@ -36182,6 +36699,8 @@ var $;
 	($mol_mem(($.$bog_wysiwyg_block.prototype), "on_slash"));
 	($mol_mem(($.$bog_wysiwyg_block.prototype), "on_menu_key"));
 	($mol_mem(($.$bog_wysiwyg_block.prototype), "on_image"));
+	($mol_mem(($.$bog_wysiwyg_block.prototype), "on_image_file"));
+	($mol_mem(($.$bog_wysiwyg_block.prototype), "on_link"));
 	($mol_mem(($.$bog_wysiwyg_block.prototype), "on_ai"));
 	($mol_mem(($.$bog_wysiwyg_block.prototype), "on_ai_key"));
 	($mol_mem(($.$bog_wysiwyg_block.prototype), "on_paste_blocks"));
@@ -36999,6 +37518,27 @@ var $;
             is_image() {
                 return this.type() === 'image';
             }
+            /**
+             * Body with every `?BAZA:file=…` turned into something the browser can fetch.
+             *
+             * That address is a Harp query resolved by an offline service worker, and no app here
+             * installs one, so an object url over the file bytes is what actually shows a picture.
+             * Only the static branch of `auto()` uses this: an editable block writes its innerHTML
+             * back into the model, and an object url must never be what gets written.
+             */
+            html_shown() {
+                const html = this.html();
+                if (!html.includes('?BAZA:file='))
+                    return html;
+                return html.replace(/\?BAZA:file=([^;"'\s]+)[^"']*/g, (whole, link) => this.file_uri(link) || whole);
+            }
+            /** Object url over the bytes of a file pawn. Empty while the file is still coming in. */
+            file_uri(link) {
+                const file = this.$.$giper_baza_glob.Pawn(new $giper_baza_link(link), $giper_baza_file);
+                if (!file.filled())
+                    return '';
+                return URL.createObjectURL(file.blob());
+            }
             is_static() {
                 if (this.type() === 'image' || this.type() === 'embed')
                     return true;
@@ -37193,7 +37733,7 @@ var $;
                 }
                 if (readonly || this.is_static()) {
                     node.contentEditable = 'false';
-                    const html = this.html();
+                    const html = this.html_shown();
                     if (node.innerHTML !== html) {
                         node.innerHTML = html;
                     }
@@ -37318,15 +37858,28 @@ var $;
                 this.html(this.dom_node().innerHTML);
                 return event;
             }
+            /** Where the link goes, remembered while the panel holds the focus. */
+            link_range = null;
             link_exec(event) {
                 if (!event)
                     return null;
                 event.preventDefault();
-                const url = this.$.$mol_dom_context.prompt(this.$.$mol_locale.text('$bog_wysiwyg_block_link_url_prompt'));
-                if (!url)
-                    return event;
+                const sel = this.selection();
+                this.link_range = sel && sel.rangeCount ? sel.getRangeAt(0).cloneRange() : null;
+                this.on_link(event);
+                return event;
+            }
+            /** Put a link where the caret was when the panel opened. */
+            link_apply(url) {
                 const doc = this.$.$mol_dom_context.document;
-                const sel = doc.defaultView?.getSelection();
+                const node = this.node_el();
+                node.focus();
+                const sel = this.selection();
+                if (sel && this.link_range) {
+                    sel.removeAllRanges();
+                    sel.addRange(this.link_range);
+                }
+                this.link_range = null;
                 if (sel && sel.toString().length > 0) {
                     doc.execCommand('createLink', false, url);
                 }
@@ -37336,8 +37889,7 @@ var $;
                     a.textContent = url;
                     doc.execCommand('insertHTML', false, a.outerHTML);
                 }
-                this.html(this.dom_node().innerHTML);
-                return event;
+                this.html(node.innerHTML);
             }
             paste_event(event) {
                 if (!event)
@@ -37440,7 +37992,17 @@ var $;
                 event.preventDefault();
                 return event;
             }
+            /**
+             * The bytes go to the editor as they are.
+             *
+             * Turning them into a data uri first grows them by a third and, past 64 KB, the result no
+             * longer fits one Giper Baza Sand — which is how pasted pictures used to disappear. The
+             * reader stays as the fallback for an editor with no Land behind it, where there is
+             * nowhere to put a file pawn.
+             */
             insert_image_file(file) {
+                if (this.on_image_file(file))
+                    return;
                 const reader = new FileReader();
                 reader.onload = () => {
                     const src = reader.result;
@@ -37572,6 +38134,9 @@ var $;
         __decorate([
             $mol_mem
         ], $bog_wysiwyg_block.prototype, "is_empty", null);
+        __decorate([
+            $mol_mem_key
+        ], $bog_wysiwyg_block.prototype, "file_uri", null);
         $$.$bog_wysiwyg_block = $bog_wysiwyg_block;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
@@ -51322,6 +51887,19 @@ var $;
             }
             return params;
         }
+        /**
+         * Полное состояние роутера после перехода: текущие ключи плюс заданные,
+         * `null` убирает ключ (его выбросит make_link).
+         *
+         * Базовая реализация складывает `dict_cut( Object.keys( next ) )`, а та
+         * останавливает обход на ПЕРВОМ упомянутом ключе — всё, что в словаре
+         * идёт после него, из ссылки пропадает. В hash-роутере это компенсируется
+         * тем, что адрес всё равно собирается заново, а здесь ссылка становится
+         * единственным источником правды (см. on_click), и терять ключи нельзя.
+         */
+        static link(next) {
+            return this.make_link({ ...this.dict(), ...next });
+        }
         static make_link(next) {
             const chunks = [];
             for (const key in next) {
@@ -51433,22 +52011,23 @@ var $;
                 return;
             if (!decodeURIComponent(a.pathname).startsWith(this.mount))
                 return;
-            // Anchor segments: positional (no '=') replace current positional,
-            // k=v override matching current keys; unmatched current k=v preserved.
-            const a_segments = decodeURIComponent(a.pathname).slice(this.mount.length).split('/').filter(Boolean);
-            const a_positional = a_segments.filter(s => !s.includes('='));
-            const a_kv = a_segments.filter(s => s.includes('='));
-            const cur_path = decodeURIComponent($mol_dom.location.pathname).slice(this.mount.length);
-            const cur_segments = cur_path.split('/').filter(Boolean);
-            const cur_positional = cur_segments.filter(s => !s.includes('='));
-            const cur_kv = cur_segments.filter(s => s.includes('='));
-            const a_kv_keys = new Set(a_kv.map(s => s.split('=')[0]));
-            const kept_kv = cur_kv.filter(s => !a_kv_keys.has(s.split('=')[0]));
-            const new_positional = a_positional.length > 0 ? a_positional : cur_positional;
-            const new_segments = [...new_positional, ...kept_kv, ...a_kv];
-            const new_path = new_segments.join('/');
-            const target = $mol_dom.location.origin + this.mount + new_path + (a.search || $mol_dom.location.search);
+            // Адрес ссылки — цель целиком, без подмешивания текущих ключей.
+            //
+            // Раньше здесь склеивались ключи из href с ключами текущего адреса, и
+            // всё, чего в href нет, сохранялось. Выглядит удобно, но приводит к
+            // двум вещам. Первая: убрать ключ становится нечем. Приложение просит
+            // это через `arg * key null`, `null` — это «удалить», но в адрес такой
+            // ключ просто не попадает, а склейка читает отсутствие как «оставить
+            // как было» и возвращает его обратно. Вторая, хуже: одна и та же
+            // ссылка начинает значить разное, если по ней кликнуть и если открыть
+            // её в новой вкладке — при холодной загрузке никакой склейки нет.
+            //
+            // Ключи, которые надо сохранить, в ссылке уже есть: link() собирает её
+            // из полного текущего состояния. Так что здесь остаётся навигация.
+            const target = a.origin + a.pathname + (a.search || $mol_dom.location.search);
             const current = $mol_dom.location.href;
+            // Совпало — пусть браузер делает своё дело: у ссылки может быть #якорь,
+            // и прокрутка к нему не наша забота.
             if (target === current)
                 return;
             e.preventDefault();

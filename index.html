@@ -3533,6 +3533,46 @@ h6[mol_text_header] {
 	background-color: var(--mol_theme_hover);
 	font-weight: bold;
 }
+</style><style id="$mol_style_attach:$bog_wysiwyg_prompt">[bog_wysiwyg_prompt] {
+	position: fixed;
+	z-index: 100;
+	bottom: 0.5rem;
+	right: 0.5rem;
+	max-height: fit-content;
+	max-width: fit-content;
+	background-color: var(--mol_theme_back);
+	border-width: 1px;
+	border-style: solid;
+	border-color: var(--mol_theme_line);
+	border-radius: 0.5rem;
+	padding: 0.5rem;
+	min-width: 18rem;
+	flex-direction: column;
+	gap: 0.25rem;
+	box-shadow: 0 0.25rem 1rem 0 #00000026;
+}
+[bog_wysiwyg_prompt]:not([bog_wysiwyg_prompt_showed]) {
+	display: none;
+}
+[bog_wysiwyg_prompt_label] {
+	color: var(--mol_theme_shade);
+	font-size: 0.75rem;
+}
+[bog_wysiwyg_prompt_row] {
+	gap: 0.25rem;
+	align-items: stretch;
+}
+[bog_wysiwyg_prompt_field] {
+	flex-grow: 1;
+	min-width: 0;
+}
+[bog_wysiwyg_prompt_submit] {
+	flex-shrink: 0;
+}
+[bog_wysiwyg_prompt_open] {
+	justify-content: flex-start;
+	gap: 0.25rem;
+}
 </style><style id="$mol_style_attach:$bog_wysiwyg">[bog_wysiwyg] {
 	position: relative;
 	flex-direction: column;
@@ -3551,6 +3591,25 @@ h6[mol_text_header] {
 [bog_wysiwyg_status] {
 	flex-shrink: 0;
 	min-width: 0;
+}
+[bog_wysiwyg_notice] {
+	position: fixed;
+	z-index: 100;
+	bottom: 1rem;
+	left: 1rem;
+	right: 1rem;
+	margin-left: auto;
+	margin-right: auto;
+	max-width: 30rem;
+	text-align: left;
+	justify-content: flex-start;
+	border-radius: 0.5rem;
+	padding: 0.75rem;
+	color: var(--mol_theme_text);
+	background-color: var(--mol_theme_focus);
+}
+[bog_wysiwyg_notice]:not([bog_wysiwyg_notice_showed]) {
+	display: none;
 }
 [bog_wysiwyg_block_list] {
 	flex-shrink: 1;
