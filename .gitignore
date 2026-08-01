@@ -1,0 +1,22 @@
+node_modules/
+
+# MAM build output
+app/-/
+
+# Generated files
+-view.tree/
+-css/
+-node/
+-test/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+-*

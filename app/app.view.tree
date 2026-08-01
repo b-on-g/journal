@@ -1,0 +1,20 @@
+$bog_journal_app $mol_page
+	title @ \Journal
+	author_link \
+	plugins /
+		<= Theme $mol_theme_auto
+	tools /
+		<= Status $giper_baza_status
+		<= Lights $mol_lights_toggle
+	body <= app_content /
+		<= Profile $bog_journal_profile
+			author_link <= author_link
+		<= Start $mol_view
+			sub /
+				<= Start_title $mol_paragraph
+					title @ \No journal here yet
+				<= Start_hint $mol_paragraph
+					title @ \Create your own journal to start publishing posts.
+				<= Start_button $mol_button_major
+					title @ \Create journal
+					click?event <=> journal_create?event null

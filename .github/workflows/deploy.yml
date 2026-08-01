@@ -1,0 +1,39 @@
+name: $bog_journal_app
+
+permissions: write-all
+
+on:
+    workflow_dispatch:
+    push:
+    pull_request:
+    delete:
+
+concurrency:
+    group: deploy-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: hyoo-ru/mam_build@master2
+              with:
+                  package: "bog/journal"
+                  modules: 'app'
+
+            - name: SPA fallback for deep links
+              if: github.ref == 'refs/heads/main'
+              run: |
+                  # Path routing means /journal/author=…/post=… has no matching file.
+                  # GitHub Pages answers such paths with 404.html; its rafgraph redirect
+                  # hands the deep-link back to index.html, where the router expands it
+                  # into the real pathname. Without this every shared link 404s on a
+                  # cold load — and the $bog_seo crawler walks real hrefs, so it would
+                  # hit exactly that.
+                  cp bog/journal/404.html bog/journal/app/-/404.html
+
+            - uses: hyoo-ru/gh-deploy@v4.4.1
+              if: github.ref == 'refs/heads/main'
+              with:
+                  folder: "bog/journal/app/-"

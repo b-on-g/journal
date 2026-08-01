@@ -1,0 +1,136 @@
+- Author's personal page: identity card on top, their posts below.
+- Everything editable is swapped for a read-only twin when the visitor is not
+- an owner/editor of the journal Land, see can_edit in profile.view.ts.
+$bog_journal_profile $mol_view
+	author_link \
+	author_id \
+	can_edit false
+	avatar_uri \
+	name_shown \
+	bio_shown \
+	posts_empty_text \
+	post_state_draft @ \Draft
+	post_state_live @ \Published
+	post_new_title @ \Untitled post
+	name_fallback @ \Unnamed author
+	bio_fallback @ \No bio yet.
+	posts_empty_none @ \No posts yet.
+	posts_empty_query @ \Nothing found.
+	sub /
+		<= Card $mol_view
+			sub /
+				<= Avatar_circle $mol_view
+					sub /
+						<= avatar_preview null
+				<= avatar_upload null
+				<= name_view null
+				<= bio_view null
+				<= Links_section $mol_view
+					sub /
+						<= Links_list $mol_list
+							rows <= link_rows /
+						<= link_form null
+		<= Posts_section $mol_view
+			sub /
+				<= Posts_head $mol_view
+					sub /
+						<= Posts_title $mol_paragraph
+							title @ \Posts
+						<= post_add null
+				<= Posts_search $mol_search
+					hint @ \Search posts
+					query? <=> posts_query? \
+				<= Posts_list $mol_list
+					rows <= post_rows /
+				<= Posts_empty $mol_paragraph
+					title <= posts_empty_text
+	Avatar_image $mol_image
+		uri <= avatar_uri
+		title <= name_shown
+	Avatar_icon $mol_avatar
+		id <= author_id
+	Avatar_open $mol_button_open
+		sub /
+			<= Avatar_label $mol_paragraph
+				title @ \Change photo
+			<= Avatar_native $mol_button_open_native
+				files? <=> avatar_files? /File
+				accept \image/*
+				multiple false
+	Name_input $mol_string_button
+		hint @ \Your name
+		value? <=> author_name? \
+	Name_label $mol_paragraph
+		title <= name_shown
+	Bio_input $bog_journal_profile_text
+		hint @ \A few words about you
+		value? <=> author_bio? \
+	Bio_label $mol_paragraph
+		title <= bio_shown
+	Link_form $mol_view
+		sub /
+			<= Link_draft $mol_string
+				hint @ \https://example.com/@me
+				value? <=> link_draft? \
+				submit?event <=> link_add?event null
+			<= Link_add $mol_button_minor
+				title @ \Add link
+				click?event <=> link_add?event null
+	Post_add $mol_button_minor
+		title @ \New post
+		click?event <=> post_create?event null
+	Link_row* $bog_journal_profile_link
+		uri <= link_uri* \
+		title <= link_title* \
+		editable <= can_edit
+		drop?event <=> link_drop*?event null
+	Post_row* $bog_journal_profile_post
+		arg <= post_arg* *
+		title <= post_title* \
+		summary <= post_summary* \
+		details <= post_details* \
+		state <= post_state* \
+		draft <= post_draft* false
+
+- Plain multiline field. $mol_textarea would drag the whole code editor in.
+$bog_journal_profile_text $mol_string
+	dom_name \textarea
+	minimal_height 96
+
+$bog_journal_profile_link $mol_view
+	uri \
+	title \
+	editable false
+	drop?event null
+	sub <= link_content /
+		<= Open $mol_link
+			uri <= uri
+			target \_blank
+			title <= title
+		<= Drop $mol_button_minor
+			hint @ \Remove link
+			click?event <=> drop?event null
+			sub /
+				<= Drop_icon $mol_icon_close
+
+$bog_journal_profile_post $mol_link
+	arg *
+	title \
+	summary \
+	details \
+	state \
+	draft false
+	attr *
+		^
+		bog_journal_profile_post_draft <= draft
+	sub /
+		<= Info $mol_view
+			sub /
+				<= Title $mol_paragraph
+					title <= title
+				<= Summary $mol_paragraph
+					title <= summary
+				<= Details $mol_paragraph
+					title <= details
+		<= State $mol_paragraph
+			title <= state

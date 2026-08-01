@@ -1,0 +1,322 @@
+namespace $.$$ {
+
+	/** Public read preset: anybody, signed in or not, can pull the Land. */
+	const public_read: $giper_baza_rank_preset = [[ null, $giper_baza_rank_read ]]
+
+	export class $bog_journal_profile extends $.$bog_journal_profile {
+
+		// === Land access =========================================================
+		//
+		// Giper Baza objects (land, pawn, list) are never returned from @$mol_mem:
+		// the atom would own them and run destructor() on graph rebuild, which ends
+		// in `yard.forget_land()` → circular subscription. Caching already happens
+		// inside `glob.Land()` / `land.Pawn()`.
+
+		/** Root pawn of the journal Land the page shows. */
+		author() {
+			const str = this.author_link()
+			if( !str ) return null
+			return this.$.$giper_baza_glob.Pawn( new $giper_baza_link( str ), $bog_journal_model_author )
+		}
+
+		/** Land the journal lives in. Rights are per-Land, not per-pawn. */
+		author_land() {
+			const str = this.author_link()
+			if( !str ) return null
+			return this.$.$giper_baza_glob.Land( new $giper_baza_link( str ).land() )
+		}
+
+		/** Seed for the generated fallback avatar. */
+		override author_id() {
+			return this.author_link()
+		}
+
+		// === Rights ==============================================================
+		//
+		// Same check as bog/wysiwyg/app: read the current pass's rank in the Land
+		// and compare tiers. rule = owner, post = editor, read = viewer.
+
+		@ $mol_mem
+		tier(): $giper_baza_rank_tier {
+			const land = this.author_land()
+			if( !land ) return $giper_baza_rank_tier.deny
+			const pass = this.$.$giper_baza_auth.current().pass()
+			return $giper_baza_rank_tier_of( land.pass_rank( pass ) )
+		}
+
+		@ $mol_mem
+		override can_edit() {
+			return this.tier() >= $giper_baza_rank_tier.post
+		}
+
+		// === Name ================================================================
+
+		@ $mol_mem
+		author_name( next?: string ) {
+			const author = this.author()
+			if( !author ) return ''
+			if( next !== undefined ) {
+				author.Name( 'auto' )?.val( next )
+				return next
+			}
+			return author.Name()?.val() ?? ''
+		}
+
+		override name_shown() {
+			return this.author_name() || this.name_fallback()
+		}
+
+		name_view() {
+			return this.can_edit() ? this.Name_input() : this.Name_label()
+		}
+
+		// === Bio =================================================================
+
+		@ $mol_mem
+		author_bio( next?: string ) {
+			const author = this.author()
+			if( !author ) return ''
+			if( next !== undefined ) {
+				author.Bio( 'auto' )?.val( next )
+				return next
+			}
+			return author.Bio()?.val() ?? ''
+		}
+
+		override bio_shown() {
+			return this.author_bio() || this.bio_fallback()
+		}
+
+		bio_view() {
+			return this.can_edit() ? this.Bio_input() : this.Bio_label()
+		}
+
+		// === Avatar ==============================================================
+
+		/**
+		 * Object URL instead of `$giper_baza_file.uri()`: the latter is a
+		 * `?BAZA:file=…` query that only resolves through the offline service
+		 * worker, which we do not install here. Reading the blob keeps the image
+		 * working on a cold load and on the mam dev server alike.
+		 */
+		@ $mol_mem
+		override avatar_uri() {
+			const files = this.avatar_files()
+			if( files.length ) return URL.createObjectURL( files[0] )
+
+			const file = this.author()?.Avatar()?.remote()
+			if( !file || !file.filled() ) return ''
+			return URL.createObjectURL( file.blob() )
+		}
+
+		@ $mol_mem
+		avatar_files( next?: readonly File[] ) {
+			if( next?.length && this.can_edit() ) {
+				const author = this.author()
+				const link = author?.Avatar( 'auto' )
+				const store = link?.ensure( null )
+				if( link && store ) {
+					store.blob( next[0] )
+					// Re-point the atom at the freshly filled pawn, otherwise the
+					// file units never make it into the Land diff.
+					link.remote( store )
+				}
+			}
+			return next ?? []
+		}
+
+		@ $mol_mem
+		avatar_preview() {
+			try {
+				if( this.avatar_uri() ) return this.Avatar_image()
+			} catch( error ) {
+				if( $mol_promise_like( error ) ) $mol_fail_hidden( error )
+			}
+			return this.Avatar_icon()
+		}
+
+		avatar_upload() {
+			return this.can_edit() ? this.Avatar_open() : null
+		}
+
+		// === Social links ========================================================
+
+		@ $mol_mem
+		links(): readonly string[] {
+			return this.author()?.Links()?.items() ?? []
+		}
+
+		@ $mol_mem
+		link_rows() {
+			return this.links().map( ( _, index )=> this.Link_row( index ) )
+		}
+
+		link_uri( index: number ) {
+			return this.links()[ index ] ?? ''
+		}
+
+		link_title( index: number ) {
+			return this.link_uri( index ).replace( /^https?:\/\//, '' ).replace( /\/+$/, '' )
+		}
+
+		@ $mol_action
+		link_drop( index: number, event?: Event ) {
+			if( !event ) return null
+			const list = this.author()?.Links( 'auto' )
+			if( !list ) return event
+			list.items( this.links().filter( ( _, i )=> i !== index ) )
+			return event
+		}
+
+		@ $mol_action
+		link_add( event?: Event ) {
+			if( !event ) return null
+			const uri = this.link_draft().trim()
+			if( !uri ) return event
+			// Dedupe: an event handler fiber restarts from the top when it suspends,
+			// so a plain append could land twice.
+			if( this.links().includes( uri ) ) return event
+			const list = this.author()?.Links( 'auto' )
+			if( !list ) return event
+			list.items([ ... this.links(), uri ])
+			this.link_draft( '' )
+			return event
+		}
+
+		link_form() {
+			return this.can_edit() ? this.Link_form() : null
+		}
+
+		// === Posts ===============================================================
+
+		/**
+		 * Post metadata pawns of this journal. Drafts are hidden from visitors —
+		 * a cosmetic filter only, the units themselves are in a publicly readable
+		 * Land, so nothing secret should live in an unpublished post yet.
+		 */
+		@ $mol_mem
+		posts() {
+			const list = this.author()?.Posts()
+			if( !list ) return []
+			const all = list.remote_list()
+			const mine = this.can_edit()
+			return all.filter( post => mine || post.published() )
+		}
+
+		/** Drafts first, then published newest-first. */
+		@ $mol_mem
+		posts_sorted() {
+			return this.posts().slice().sort( ( a, b )=> {
+				const left = a.Published()?.val() ?? 0
+				const right = b.Published()?.val() ?? 0
+				if( !left && !right ) return 0
+				if( !left ) return -1
+				if( !right ) return 1
+				return right - left
+			} )
+		}
+
+		@ $mol_mem
+		posts_filtered() {
+			const query = this.posts_query().toLowerCase().trim()
+			const all = this.posts_sorted()
+			if( !query ) return all
+			return all.filter( post => {
+				const title = ( post.Title()?.val() ?? '' ).toLowerCase()
+				const summary = ( post.Summary()?.val() ?? '' ).toLowerCase()
+				return title.includes( query ) || summary.includes( query )
+			} )
+		}
+
+		@ $mol_mem
+		post_rows() {
+			return this.posts_filtered().map( ( _, index )=> this.Post_row( index ) )
+		}
+
+		post_record( index: number ) {
+			return this.posts_filtered()[ index ] ?? null
+		}
+
+		post_title( index: number ) {
+			return this.post_record( index )?.Title()?.val() || this.post_new_title()
+		}
+
+		post_summary( index: number ) {
+			return this.post_record( index )?.Summary()?.val() ?? ''
+		}
+
+		post_draft( index: number ) {
+			return !this.post_record( index )?.published()
+		}
+
+		post_state( index: number ) {
+			return this.post_draft( index ) ? this.post_state_draft() : this.post_state_live()
+		}
+
+		post_details( index: number ) {
+			const post = this.post_record( index )
+			if( !post ) return ''
+			const time = post.Published()?.val() ?? 0
+			const date = time ? new $mol_time_moment( new Date( time ) ).toString( 'YYYY-MM-DD' ) : ''
+			const tags = post.Tags()?.items() ?? []
+			return [ date, ... tags.map( tag => '#' + tag ) ].filter( Boolean ).join( ' · ' )
+		}
+
+		post_arg( index: number ) {
+			const post = this.post_record( index )
+			return {
+				author: this.author_link(),
+				post: post ? post.link().str : null,
+			}
+		}
+
+		override posts_empty_text() {
+			if( this.posts_filtered().length ) return ''
+			return this.posts().length ? this.posts_empty_query() : this.posts_empty_none()
+		}
+
+		post_add() {
+			return this.can_edit() ? this.Post_add() : null
+		}
+
+		/**
+		 * Metadata pawn goes into the journal Land, the body gets a Land of its
+		 * own so it can be shared, forked and served to anonymous readers apart
+		 * from the journal.
+		 *
+		 * `land_grab` runs first on purpose: it is the only Proof-of-Work step and
+		 * it suspends the fiber. Both it and `list.make()` are @$mol_action, so
+		 * they are memoised per fiber and a resumed handler reuses them instead of
+		 * minting a second Land / a duplicate post.
+		 */
+		@ $mol_action
+		post_create( event?: Event ) {
+			if( !event ) return null
+			if( !this.can_edit() ) return null
+
+			const author = this.author()
+			const posts = author?.Posts( 'auto' )
+			if( !posts ) return null
+
+			const body = this.$.$giper_baza_glob.land_grab( public_read )
+			const page = body.Data( $bog_wysiwyg_model_page )
+
+			const post = posts.make( null )
+			post.Title( 'auto' )?.val( this.post_new_title() )
+			post.Published( 'auto' )?.val( 0 )
+			post.Page( 'auto' )?.val( page.link() )
+
+			return event
+		}
+
+	}
+
+	export class $bog_journal_profile_link extends $.$bog_journal_profile_link {
+
+		link_content() {
+			return this.editable() ? [ this.Open(), this.Drop() ] : [ this.Open() ]
+		}
+
+	}
+
+}
