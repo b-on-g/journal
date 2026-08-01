@@ -40641,16 +40641,35 @@ var $;
                 return { author: this.author_id(), post: null };
             }
             // --- body ---
-            /** Body blocks as plain records: the input of the pure renderer. */
+            /**
+             * Body blocks as plain records: the input of the pure renderer.
+             *
+             * A block named twice is read once, at its first position. The order of
+             * blocks is a CRDT list, and nothing in it forbids the same link appearing
+             * more than once — two devices editing the same article can merge into
+             * exactly that. The editor never shows it, because a repeated id resolves
+             * to one and the same keyed view and the duplicates collapse in the DOM;
+             * a reader building a row per entry has no such luck and prints the
+             * paragraph again. Whatever put them there, the article has one of each.
+             */
             blocks() {
                 const page = this.post()?.Page()?.remote();
                 if (!page)
                     return [];
-                return (page.Blocks()?.remote_list() ?? []).map(block => ({
-                    type: block.Type()?.text() || 'paragraph',
-                    level: block.Level()?.val() ?? undefined,
-                    content: block.Content()?.val() ?? '',
-                }));
+                const seen = new Set();
+                const blocks = [];
+                for (const block of page.Blocks()?.remote_list() ?? []) {
+                    const link = block.link().str;
+                    if (seen.has(link))
+                        continue;
+                    seen.add(link);
+                    blocks.push({
+                        type: block.Type()?.text() || 'paragraph',
+                        level: block.Level()?.val() ?? undefined,
+                        content: block.Content()?.val() ?? '',
+                    });
+                }
+                return blocks;
             }
             rows() {
                 return $bog_journal_post_rows(this.blocks());
@@ -58200,6 +58219,25 @@ var $;
         function markup_of($, rows) {
             return page_of($, rows).Body().dom_tree().innerHTML;
         }
+        /** Stand-in for a block pawn carrying only what `blocks()` reads off it. */
+        function block_pawn(link, content) {
+            return {
+                link: () => ({ str: link }),
+                Type: () => ({ text: () => 'paragraph' }),
+                Level: () => null,
+                Content: () => ({ val: () => content }),
+            };
+        }
+        /** Page whose article Land hands back exactly this order of blocks. */
+        function page_over($, pawns) {
+            const post = {
+                Page: () => ({ remote: () => ({ Blocks: () => ({ remote_list: () => pawns }) }) }),
+            };
+            return $bog_journal_post_page.make({
+                $,
+                post: () => post,
+            });
+        }
         $mol_test({
             'body headings render as real h2 h3 h4 under the h1 title'($) {
                 const html = markup_of($, [
@@ -58322,6 +58360,15 @@ var $;
                 const page = page_of($, [], { file_base: () => '' });
                 $mol_assert_equal(page.meta().og_image, '');
                 $mol_assert_equal('og_image' in ($bog_meta_compact(page.meta()) ?? {}), false);
+            },
+            'a block the order names twice is read once, at its first place'($) {
+                const first = block_pawn('a', 'раз');
+                const page = page_over($, [first, block_pawn('b', 'два'), first, block_pawn('c', 'три')]);
+                $mol_assert_equal(page.blocks().map(block => block.content).join(' '), 'раз два три');
+            },
+            'the same block reached through two pawn objects still counts once'($) {
+                const page = page_over($, [block_pawn('a', 'раз'), block_pawn('a', 'раз')]);
+                $mol_assert_equal(page.blocks().length, 1);
             },
         });
     })($$ = $_1.$$ || ($_1.$$ = {}));
