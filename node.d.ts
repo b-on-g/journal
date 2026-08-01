@@ -56366,6 +56366,13 @@ declare namespace $.$$ {
                 offset: number;
             };
         };
+        /** The part of a snapshot two undo steps are told apart by */
+        history_blocks(): {
+            id: string;
+            type: string;
+            level: number;
+            content: string;
+        }[];
         /** Block and text offset the caret is currently at */
         caret_state(): {
             id: string;

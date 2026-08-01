@@ -10543,6 +10543,63 @@ var $;
                     drop();
                 }
             },
+            'block_paste_blocks seats every draft exactly once'() {
+                const { editor, drop } = make_editor(Array.from({ length: 6 }, (_, i) => ({ id: 'b' + i, html: 'was ' + i })));
+                try {
+                    const drafts = Array.from({ length: 20 }, (_, i) => ({
+                        type: 'paragraph',
+                        content: 'new ' + i,
+                    }));
+                    editor.block_paste_blocks('b3', { drafts, head: 'was 3', tail: '' });
+                    const ids = editor.block_ids();
+                    // The block pasted into keeps its seat and swallows the first draft
+                    $mol_assert_equal(ids.length, 6 + 20 - 1);
+                    $mol_assert_equal(new Set(ids).size, ids.length);
+                    $mol_assert_equal(ids.slice(0, 4), ['b0', 'b1', 'b2', 'b3']);
+                    $mol_assert_equal(ids.slice(-2), ['b4', 'b5']);
+                    $mol_assert_equal(editor.block_html('b3'), 'was 3new 0');
+                    $mol_assert_equal(ids.slice(4, -2).map(id => editor.block_html(id)), drafts.slice(1).map(draft => draft.content));
+                }
+                finally {
+                    drop();
+                }
+            },
+            /*
+             * With Giper Baza behind the page, `make_block_id` mints a pawn through
+             * `$giper_baza_list_link_to.make`, and that appends it to the block list on the spot — so
+             * a `block_ids()` read taken afterwards already names everything just minted. The paste
+             * has to seat the fresh ids itself instead of trusting an order read back after minting.
+             * This editor reproduces the side effect without a Land.
+             */
+            'block_paste_blocks seats minted ids once even when minting appends them'() {
+                const { editor, drop } = make_editor([
+                    { id: 'a', html: 'first' },
+                    { id: 'b', html: '' },
+                    { id: 'c', html: 'last' },
+                ]);
+                try {
+                    let minted = 0;
+                    editor.make_block_id = () => {
+                        const id = 'made' + (++minted);
+                        editor.block_ids([...editor.block_ids(), id]);
+                        return id;
+                    };
+                    editor.block_paste_blocks('b', { drafts: [
+                            { type: 'paragraph', content: 'one' },
+                            { type: 'paragraph', content: 'two' },
+                            { type: 'paragraph', content: 'three' },
+                        ] });
+                    const ids = editor.block_ids();
+                    $mol_assert_equal(new Set(ids).size, ids.length);
+                    $mol_assert_equal(ids, ['a', 'b', 'made1', 'made2', 'c']);
+                    $mol_assert_equal(editor.block_html('b'), 'one');
+                    $mol_assert_equal(editor.block_html('made1'), 'two');
+                    $mol_assert_equal(editor.block_html('made2'), 'three');
+                }
+                finally {
+                    drop();
+                }
+            },
             // === Clipboard end to end ===
             'pasting markdown in the middle of a block splits the article'() {
                 const helper = make_editor([

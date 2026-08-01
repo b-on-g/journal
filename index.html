@@ -3981,20 +3981,25 @@ h6[mol_text_header] {
 [bog_journal_profile_post_info] {
 	flex-direction: column;
 	flex-grow: 1;
+	flex-shrink: 1;
 	gap: 0.125rem;
 	min-width: 0;
 }
 [bog_journal_profile_post_title] {
 	font-size: 1rem;
 	font-weight: 600;
+	min-width: 0;
 }
 [bog_journal_profile_post_summary] {
 	font-size: 0.875rem;
 	opacity: 0.7;
+	min-width: 0;
 }
 [bog_journal_profile_post_details] {
 	font-size: 0.75rem;
 	opacity: 0.5;
+	min-width: 0;
+	overflow-wrap: anywhere;
 }
 [bog_journal_profile_post_state] {
 	font-size: 0.75rem;
@@ -4672,9 +4677,21 @@ h6[mol_text_header] {
 	border-top-color: var(--mol_theme_line);
 	padding-top: 1rem;
 }
+</style><style id="$mol_style_attach:$bog_journal_edit_export">[bog_journal_edit_export_bubble] {
+	max-width: calc(min( 30rem, 100vw - 1rem ));
+}
+[bog_journal_edit_export_output] {
+	overflow-wrap: anywhere;
+	min-width: 0;
+}
 </style><style id="$mol_style_attach:$bog_journal_edit_text">[bog_journal_edit_text] {
 	font-family: inherit;
 	min-height: 4.5rem;
+}
+@media (max-width: 640px) {
+[bog_journal_edit_text] {
+	min-height: 7rem;
+}
 }
 </style><style id="$mol_style_attach:$bog_journal_edit_chip">[bog_journal_edit_chip] {
 	align-items: center;
@@ -5511,7 +5528,10 @@ h6[mol_text_header] {
 	min-width: 0;
 }
 
-</style><style id="$mol_style_attach:$bog_journal_app">[bog_journal_app_tools] {
+</style><style id="$mol_style_attach:$bog_journal_app">[bog_journal_app_body] {
+	contain: style;
+}
+[bog_journal_app_tools] {
 	flex-wrap: wrap;
 	align-items: center;
 	gap: 0.25rem;

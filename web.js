@@ -35165,11 +35165,14 @@ var $;
                         last.content += tail;
                     }
                 }
+                // Read the order before minting: with Baza connected `make_block_id` already appends
+                // the fresh pawns to the page list, so an order read afterwards would name them twice.
+                const ids = [...this.block_ids()];
+                const at = ids.indexOf(id);
                 const slot_ids = [id];
                 while (slot_ids.length < slots.length)
                     slot_ids.push(this.make_block_id());
-                const ids = [...this.block_ids()];
-                ids.splice(ids.indexOf(id) + 1, 0, ...slot_ids.slice(1));
+                ids.splice(at + 1, 0, ...slot_ids.slice(1));
                 this.block_ids(ids);
                 for (let i = 0; i < slots.length; i++) {
                     this.block_type(slot_ids[i], slots[i].type);
@@ -35314,18 +35317,30 @@ var $;
                 return 500;
             }
             history_snapshot() {
-                const blocks = this.block_ids().map(id => ({
+                return { blocks: this.history_blocks(), caret: this.caret_state() };
+            }
+            /** The part of a snapshot two undo steps are told apart by */
+            history_blocks() {
+                return this.block_ids().map(id => ({
                     id,
                     type: this.block_type(id),
                     level: this.block_level(id),
                     content: this.block_html(id),
                 }));
-                return { blocks, caret: this.caret_state() };
             }
             /** Block and text offset the caret is currently at */
             caret_state() {
                 for (const id of this.block_ids()) {
-                    const offset = this.block_view(id).caret_offset();
+                    // Only a block with a live DOM node can be holding the caret, and a node built
+                    // right here would be detached anyway. Probing keeps the walk from bringing a
+                    // view and a node into being for every block of the document — $mol_list keeps
+                    // a couple of dozen of them around, not one per block.
+                    const view = $mol_wire_probe(() => this.block_view(id));
+                    if (!view)
+                        continue;
+                    if (!$mol_wire_probe(() => view.dom_node()))
+                        continue;
+                    const offset = view.caret_offset();
                     if (offset >= 0)
                         return { id, offset };
                 }
@@ -35357,12 +35372,14 @@ var $;
                 if (this.history_locked)
                     return;
                 this.history_cancel();
-                const next = this.history_snapshot();
+                // Only the blocks decide whether this is a new step, so the caret is read after that
+                // is settled: most calls land on an unchanged document and return right here.
+                const blocks = this.history_blocks();
                 const prev = this.history_states[this.history_pos];
-                if (prev && $mol_compare_deep(prev.blocks, next.blocks))
+                if (prev && $mol_compare_deep(prev.blocks, blocks))
                     return;
                 this.history_states.length = this.history_pos + 1;
-                this.history_states.push(next);
+                this.history_states.push({ blocks, caret: this.caret_state() });
                 if (this.history_states.length > this.history_limit())
                     this.history_states.shift();
                 this.history_pos = this.history_states.length - 1;
@@ -38494,10 +38511,18 @@ var $;
                 color: $mol_theme.card,
             },
             minWidth: 0,
+            /**
+             * `shrink: 1` is the load-bearing part: $mol_view defaults to
+             * `flex: 0 0 auto`, so without it this column sizes to the longest line of
+             * the teaser and pushes the "Published" badge clean off a phone screen.
+             * The children need `minWidth: 0` for the same reason one level down —
+             * their automatic minimum is min-content.
+             */
             Info: {
                 flex: {
                     direction: 'column',
                     grow: 1,
+                    shrink: 1,
                 },
                 gap: '0.125rem',
                 minWidth: 0,
@@ -38507,18 +38532,22 @@ var $;
                     size: '1rem',
                     weight: 600,
                 },
+                minWidth: 0,
             },
             Summary: {
                 font: {
                     size: '0.875rem',
                 },
                 opacity: 0.7,
+                minWidth: 0,
             },
             Details: {
                 font: {
                     size: '0.75rem',
                 },
                 opacity: 0.5,
+                minWidth: 0,
+                overflowWrap: 'anywhere',
             },
             State: {
                 font: {
@@ -42743,11 +42772,40 @@ var $;
                 },
             },
         });
+        /**
+         * An article with an inline picture exports as one markdown line tens of
+         * kilobytes long — a data uri has nothing to wrap on. The popup sized itself
+         * to that line and hung far past the right edge of the window, taking its
+         * "copy" button with it. Breaking mid-token is what actually fixes that.
+         *
+         * The narrower cap is for the leftovers: the bubble is laid out from the left
+         * edge of the button that opened it, and 48rem of it does not fit to the
+         * right of that point until the window is well past 1200px. Nothing here can
+         * repair the placement itself — the offset is an inline style written by
+         * $mol_pop — so the width is what gives.
+         */
+        $mol_style_define($bog_journal_edit_export, {
+            Bubble: {
+                maxWidth: $mol_style_func.calc('min( 30rem, 100vw - 1rem )'),
+            },
+            Output: {
+                overflowWrap: 'anywhere',
+                minWidth: 0,
+            },
+        });
         $mol_style_define($bog_journal_edit_text, {
             font: {
                 family: 'inherit',
             },
             minHeight: '4.5rem',
+            // The teaser that fits one line on a desktop takes three on a phone, and
+            // the field does not grow with it, so the last line came out sliced
+            // through the middle.
+            '@media': {
+                '(max-width: 640px)': {
+                    minHeight: '7rem',
+                },
+            },
         });
         $mol_style_define($bog_journal_edit_chip, {
             align: {
@@ -51910,6 +51968,16 @@ var $;
     var $$;
     (function ($$) {
         $mol_style_define($bog_journal_app, {
+            // $mol_scroll ships `contain: content`, and paint containment makes the
+            // scroller a containing block for `position: fixed`. Every popup opened
+            // from inside the page then lays itself out against the scroller instead
+            // of the viewport and gets clipped by it: the editor's slash menu came out
+            // two items tall, the markdown export bubble stuck to the top edge with
+            // its "copy" button past the right one. Style containment alone keeps the
+            // isolation that matters here and leaves fixed positioning alone.
+            Body: {
+                contain: 'style',
+            },
             // The toolbar carries the whole navigation, so on a narrow screen it has
             // to wrap instead of pushing the page into a horizontal scroll.
             Tools: {
