@@ -1,0 +1,68 @@
+$bog_journal_post_page $mol_view
+	dom_name \article
+	post_link \
+	author_fallback @ \Unnamed author
+	sub /
+		<= Head $mol_view
+			dom_name \header
+			sub <= head_content /
+		<= Body $mol_view
+			sub <= body_rows /
+	Cover $mol_image
+		uri <= cover_uri \
+		title <= cover_alt \
+		loading \eager
+	Title $mol_view
+		dom_name \h1
+		sub / <= post_title \
+	Summary $mol_view
+		sub / <= post_summary \
+	Byline $mol_view
+		sub <= byline_content /
+	Published $mol_view
+		dom_name \time
+		attr *
+			^
+			datetime <= published_iso \
+		sub / <= published_label \
+	Draft $mol_view
+		sub / <= draft_label @ \Draft
+	Author_link $mol_link
+		arg <= author_arg *
+		hint <= author_label \
+		sub <= author_content /
+	Author_avatar $mol_image
+		uri <= author_avatar_uri \
+		title <= author_label
+	Author_name $mol_view
+		sub / <= author_label
+	Tags $mol_view
+		sub <= tag_chips /
+	Tag* $mol_view
+		sub / <= tag* \
+	Heading* $bog_journal_post_html
+		dom_name <= heading_name* \h2
+		html <= row_html* \
+	Paragraph* $bog_journal_post_html
+		dom_name \p
+		html <= row_html*
+	Quote* $bog_journal_post_html
+		dom_name \blockquote
+		html <= row_html*
+	List* $mol_view
+		dom_name \ul
+		sub <= list_items* /
+	Item* $bog_journal_post_html
+		dom_name \li
+		html <= item_html* \
+	Code* $mol_view
+		dom_name \pre
+		attr *
+			^
+			bog_journal_post_lang <= code_lang* null
+		sub / <= code_text* \
+	Divider* $mol_view
+		dom_name \hr
+	Picture* $mol_image
+		uri <= picture_src* \
+		title <= picture_alt* \

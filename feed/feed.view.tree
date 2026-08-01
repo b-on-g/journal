@@ -1,0 +1,141 @@
+- Reader's timeline: every journal of one feed merged into a single
+- chronological strip, freshest first. Drafts never show up here.
+-
+- Everything that navigates is a real $mol_link, so the rendered html carries an
+- <a href> a crawler can follow. A click handler on a $mol_view would move the
+- reader just fine and leave the post unindexed.
+$bog_journal_feed_page $mol_view
+	feed_link \
+	title_fallback @ \Feed
+	subscribe_hint @ \Journal link
+	subscribe_add @ \Follow
+	subscribe_bad @ \That does not look like a journal link.
+	subscribe_dup @ \This journal is already in the feed.
+	source_wait @ \loading
+	source_fail @ \unavailable
+	empty_none @ \No journals yet. Paste a link to one above and its posts will show up here.
+	empty_quiet @ \Nothing published yet.
+	empty_nofeed @ \No feed opened.
+	author_unnamed @ \Unnamed author
+	post_untitled @ \Untitled post
+	sub /
+		<= Head $mol_view
+			sub <= head_content /
+				<= Title $mol_paragraph
+					title <= title_shown \
+				<= Subscribe $mol_view
+					sub /
+						<= Subscribe_input $mol_string
+							hint <= subscribe_hint
+							value? <=> subscribe_draft? \
+							submit?event <=> subscribe?event null
+						<= Subscribe_button $mol_button_major
+							title <= subscribe_add
+							click?event <=> subscribe?event null
+				<= Subscribe_error $mol_paragraph
+					title <= subscribe_error? \
+		<= Sources $mol_view
+			sub <= source_rows /
+		<= Posts $mol_view
+			sub <= card_rows /
+		<= Empty $mol_paragraph
+			title <= empty_text \
+	Source* $bog_journal_feed_source
+		author_arg <= source_arg* *
+		title <= source_name* \
+		status <= source_status* \
+		drop?event <=> source_drop*?event null
+	Card* $bog_journal_feed_card
+		post_arg <= post_arg* *
+		author_arg <= author_arg* *
+		title <= post_title* \
+		summary <= post_summary* \
+		author_name <= post_author_name* \
+		avatar_file <= post_avatar_file* \
+		avatar_seed <= post_author* \
+		moment <= post_moment* \
+		cover_uri <= post_cover_uri* \
+		has_cover <= post_has_cover* false
+		tags <= post_tags* /
+
+- One post in the timeline. Cover, title and author are three separate anchors
+- rather than one card-sized link: an <a> nested in an <a> is invalid html and
+- the parser tears such markup apart.
+$bog_journal_feed_card $mol_view
+	dom_name \article
+	post_arg *
+	author_arg *
+	title \
+	summary \
+	author_name \
+	avatar_file \
+	avatar_seed \
+	moment \
+	cover_uri \
+	has_cover false
+	tags /
+	sub <= card_content /
+		<= Cover_link $mol_link
+			arg <= post_arg
+			hint <= title
+			sub /
+				<= Cover $mol_image
+					uri <= cover_uri
+					title <= title
+		<= Body $mol_view
+			sub /
+				<= Title_link $mol_link
+					arg <= post_arg
+					title <= title
+				<= Summary $mol_paragraph
+					title <= summary
+				<= Tags $mol_view
+					sub <= tag_rows /
+				<= Foot $mol_view
+					sub /
+						<= Author_link $mol_link
+							arg <= author_arg
+							hint <= author_name
+							sub /
+								<= Avatar $bog_journal_feed_avatar
+									file_link <= avatar_file
+									seed <= avatar_seed
+									hint <= author_name
+								<= Author_name $mol_paragraph
+									title <= author_name
+						<= Moment $mol_paragraph
+							title <= moment
+	Tag* $mol_view
+		sub /
+			<= tag_text* \
+
+- Author's picture. A view of its own so a cover-sized blob still loading
+- suspends just this circle instead of the card around it.
+$bog_journal_feed_avatar $mol_view
+	file_link \
+	seed \
+	hint \
+	sub <= face /
+	Picture $mol_image
+		uri <= uri \
+		title <= hint
+	Fallback $mol_avatar
+		id <= seed
+
+- One subscription: where it leads, whether it arrived, and a way out of it.
+$bog_journal_feed_source $mol_view
+	author_arg *
+	title \
+	status \
+	drop?event null
+	sub /
+		<= Open $mol_link
+			arg <= author_arg
+			title <= title
+		<= Status $mol_paragraph
+			title <= status
+		<= Drop $mol_button_minor
+			hint @ \Unfollow
+			click?event <=> drop?event null
+			sub /
+				<= Drop_icon $mol_icon_close

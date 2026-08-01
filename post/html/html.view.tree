@@ -1,0 +1,4 @@
+$bog_journal_post_html $mol_view
+	html \
+	dom_name \p
+	sub /
