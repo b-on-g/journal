@@ -51959,19 +51959,6 @@ var $;
             }
             return params;
         }
-        /**
-         * Полное состояние роутера после перехода: текущие ключи плюс заданные,
-         * `null` убирает ключ (его выбросит make_link).
-         *
-         * Базовая реализация складывает `dict_cut( Object.keys( next ) )`, а та
-         * останавливает обход на ПЕРВОМ упомянутом ключе — всё, что в словаре
-         * идёт после него, из ссылки пропадает. В hash-роутере это компенсируется
-         * тем, что адрес всё равно собирается заново, а здесь ссылка становится
-         * единственным источником правды (см. on_click), и терять ключи нельзя.
-         */
-        static link(next) {
-            return this.make_link({ ...this.dict(), ...next });
-        }
         static make_link(next) {
             const chunks = [];
             for (const key in next) {
@@ -52083,40 +52070,27 @@ var $;
                 return;
             if (!decodeURIComponent(a.pathname).startsWith(this.mount))
                 return;
-            // Адрес ссылки — цель целиком, без подмешивания текущих ключей.
-            //
-            // Раньше здесь склеивались ключи из href с ключами текущего адреса, и
-            // всё, чего в href нет, сохранялось. Выглядит удобно, но приводит к
-            // двум вещам. Первая: убрать ключ становится нечем. Приложение просит
-            // это через `arg * key null`, `null` — это «удалить», но в адрес такой
-            // ключ просто не попадает, а склейка читает отсутствие как «оставить
-            // как было» и возвращает его обратно. Вторая, хуже: одна и та же
-            // ссылка начинает значить разное, если по ней кликнуть и если открыть
-            // её в новой вкладке — при холодной загрузке никакой склейки нет.
-            //
-            // Ключи, которые надо сохранить, в ссылке уже есть: link() собирает её
-            // из полного текущего состояния. Так что здесь остаётся навигация.
-            const target = a.origin + a.pathname + (a.search || $mol_dom.location.search);
+            // Anchor segments: positional (no '=') replace current positional,
+            // k=v override matching current keys; unmatched current k=v preserved.
+            const a_segments = decodeURIComponent(a.pathname).slice(this.mount.length).split('/').filter(Boolean);
+            const a_positional = a_segments.filter(s => !s.includes('='));
+            const a_kv = a_segments.filter(s => s.includes('='));
+            const cur_path = decodeURIComponent($mol_dom.location.pathname).slice(this.mount.length);
+            const cur_segments = cur_path.split('/').filter(Boolean);
+            const cur_positional = cur_segments.filter(s => !s.includes('='));
+            const cur_kv = cur_segments.filter(s => s.includes('='));
+            const a_kv_keys = new Set(a_kv.map(s => s.split('=')[0]));
+            const kept_kv = cur_kv.filter(s => !a_kv_keys.has(s.split('=')[0]));
+            const new_positional = a_positional.length > 0 ? a_positional : cur_positional;
+            const new_segments = [...new_positional, ...kept_kv, ...a_kv];
+            const new_path = new_segments.join('/');
+            const target = $mol_dom.location.origin + this.mount + new_path + (a.search || $mol_dom.location.search);
             const current = $mol_dom.location.href;
-            // Совпало — пусть браузер делает своё дело: у ссылки может быть #якорь,
-            // и прокрутка к нему не наша забота.
             if (target === current)
                 return;
             e.preventDefault();
             $mol_dom.history.pushState(null, '', target);
-            // Обновлять надо тот роутер, который приложение читает как
-            // `$mol_state_arg`, а не обязательно `this`.
-            //
-            // `at()` заводит отдельный подкласс под каждый mount, и у каждого
-            // подкласса свой кеш `href`. Обработчик клика может оказаться
-            // подписан не тем классом, который в итоге встал глобально —
-            // тогда pushState проходит, адрес в строке меняется, а состояние
-            // приложения остаётся прежним: страница «переключается» только
-            // после ручной перезагрузки, когда href читается из location
-            // заново. Ровно это и наблюдалось на проде.
-            const active = $.$mol_state_arg;
-            const router = typeof active?.href === 'function' ? active : this;
-            router.href(target);
+            this.href(target);
         }
     }
     __decorate([
@@ -52294,7 +52268,76 @@ var $;
              * hash router keeps working against the non-SPA file server.
              */
             static {
+                $bog_journal_app.nav_intercept('/journal/');
                 $bog_builderui_router.activate('/journal/');
+            }
+            /**
+             * Переход ведёт ровно туда, что написано в ссылке.
+             *
+             * Роутер при клике склеивает ключи из href с ключами текущего адреса и
+             * сохраняет всё, чего в href нет. Для приложения с двумя ключами это
+             * незаметно, а здесь их четыре, и переходы как раз убирают лишние:
+             * «Журнал» со страницы поста должен снять `post=`, «Смотреть» из
+             * редактора — снять `edit=`. Просить это через `arg * key null`
+             * бесполезно: ключ со значением `null` в href не попадает вовсе, а
+             * склейка читает его отсутствие как «оставить как было».
+             *
+             * Поэтому клик перехватывается здесь и переводится в честный `go()` с
+             * полным набором ключей, где отсутствующие явно погашены. Слушатель
+             * ставится в capture ДО `activate()`, так что роутер видит уже
+             * `defaultPrevented` и в навигацию не вмешивается.
+             *
+             * Чинить это в самом роутере значило бы менять поведение общего модуля
+             * ради одного приложения — там от склейки зависят другие.
+             */
+            static nav_intercept(mount) {
+                if (typeof window === 'undefined')
+                    return;
+                if (typeof document === 'undefined')
+                    return;
+                // Тот же guard, что и у роутера: на дев-сервере путь вида
+                // `/bog/journal/app/-/test.html` обслуживает обычная файловая
+                // раздача без SPA-фолбэка, там остаётся хеш-роутер и перехватывать
+                // нечего.
+                const here = decodeURIComponent($mol_dom.location.pathname);
+                if (/\/-\/|\.html$/.test(here))
+                    return;
+                const keys = ['author', 'post', 'feed', 'edit'];
+                self.addEventListener('click', (event) => {
+                    if (event.defaultPrevented)
+                        return;
+                    if (event.button !== 0)
+                        return;
+                    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+                        return;
+                    let node = event.target;
+                    while (node && node.tagName !== 'A')
+                        node = node.parentElement;
+                    if (!node)
+                        return;
+                    const link = node;
+                    if (link.hasAttribute('download'))
+                        return;
+                    if (link.target && link.target !== '' && link.target !== '_self')
+                        return;
+                    if (link.origin !== $mol_dom.location.origin)
+                        return;
+                    const path = decodeURIComponent(link.pathname);
+                    if (!path.startsWith(mount))
+                        return;
+                    const next = {};
+                    for (const key of keys)
+                        next[key] = null;
+                    for (const chunk of path.slice(mount.length).split('/')) {
+                        if (!chunk)
+                            continue;
+                        const parts = chunk.split('=');
+                        const key = parts.shift();
+                        next[key] = parts.join('=');
+                    }
+                    event.preventDefault();
+                    this.$.$mol_state_arg.go(next);
+                }, true);
             }
             /**
              * Master node this app syncs through. `baza=<url>` in the URL points it at

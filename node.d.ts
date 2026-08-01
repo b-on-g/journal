@@ -68848,6 +68848,26 @@ declare namespace $.$$ {
     type Screen = 'edit' | 'post' | 'feed' | 'profile' | 'start';
     export class $bog_journal_app extends $.$bog_journal_app {
         /**
+         * Переход ведёт ровно туда, что написано в ссылке.
+         *
+         * Роутер при клике склеивает ключи из href с ключами текущего адреса и
+         * сохраняет всё, чего в href нет. Для приложения с двумя ключами это
+         * незаметно, а здесь их четыре, и переходы как раз убирают лишние:
+         * «Журнал» со страницы поста должен снять `post=`, «Смотреть» из
+         * редактора — снять `edit=`. Просить это через `arg * key null`
+         * бесполезно: ключ со значением `null` в href не попадает вовсе, а
+         * склейка читает его отсутствие как «оставить как было».
+         *
+         * Поэтому клик перехватывается здесь и переводится в честный `go()` с
+         * полным набором ключей, где отсутствующие явно погашены. Слушатель
+         * ставится в capture ДО `activate()`, так что роутер видит уже
+         * `defaultPrevented` и в навигацию не вмешивается.
+         *
+         * Чинить это в самом роутере значило бы менять поведение общего модуля
+         * ради одного приложения — там от склейки зависят другие.
+         */
+        static nav_intercept(mount: string): void;
+        /**
          * Master node this app syncs through. `baza=<url>` in the URL points it at
          * a local node instead. Registering here rather than at module load keeps
          * the override readable from $mol_state_arg.
