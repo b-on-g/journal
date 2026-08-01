@@ -1,0 +1,17 @@
+{
+	"$bog_journal_profile_Posts_title_title": "Посты",
+	"$bog_journal_profile_Posts_search_hint": "Поиск по постам",
+	"$bog_journal_profile_Avatar_label_title": "Сменить фото",
+	"$bog_journal_profile_Link_draft_hint": "https://example.com/@me",
+	"$bog_journal_profile_Link_add_title": "Добавить ссылку",
+	"$bog_journal_profile_post_state_draft": "Черновик",
+	"$bog_journal_profile_post_state_live": "Опубликован",
+	"$bog_journal_profile_post_new_title": "Пост без заголовка",
+	"$bog_journal_profile_name_fallback": "Автор без имени",
+	"$bog_journal_profile_bio_fallback": "О себе пока ничего.",
+	"$bog_journal_profile_posts_empty_none": "Постов пока нет.",
+	"$bog_journal_profile_posts_empty_query": "Ничего не нашлось.",
+	"$bog_journal_profile_Name_input_hint": "Ваше имя",
+	"$bog_journal_profile_Bio_input_hint": "Пара слов о себе",
+	"$bog_journal_profile_link_Drop_hint": "Убрать ссылку"
+}

@@ -59,7 +59,11 @@ $bog_journal_profile $mol_view
 	Name_input $mol_string_button
 		hint @ \Your name
 		value? <=> author_name? \
+	- The author's name is what this page is about, so it is the page's h1 now
+	- that the app header stopped claiming that role. Only the read-only twin
+	- gets it: for the owner this slot is a text field.
 	Name_label $mol_paragraph
+		dom_name \h1
 		title <= name_shown
 	Bio_input $bog_journal_profile_text
 		hint @ \A few words about you

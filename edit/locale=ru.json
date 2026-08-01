@@ -1,0 +1,18 @@
+{
+	"$bog_journal_edit_page_Denied_title": "Этот журнал чужой. Прочитать можно, править нельзя.",
+	"$bog_journal_edit_page_Title_field_hint": "Заголовок поста",
+	"$bog_journal_edit_page_Slug_field_hint": "имя-в-адресе",
+	"$bog_journal_edit_page_Slug_reset_hint": "Собрать имя в адресе заново из заголовка",
+	"$bog_journal_edit_page_Slug_reset_title": "Из заголовка",
+	"$bog_journal_edit_page_Summary_field_hint": "Короткая подводка для списков, лент и карточек в соцсетях",
+	"$bog_journal_edit_page_Cover_label_title": "Обложка",
+	"$bog_journal_edit_page_Tag_draft_hint": "Добавить тег",
+	"$bog_journal_edit_page_Tag_add_title": "Добавить",
+	"$bog_journal_edit_page_Publish_check_title": "Опубликован",
+	"$bog_journal_edit_page_publish_note_draft": "Черновик спрятан из списков, но не из сети: журнал — это публично читаемый ленд, и у кого на руках эта ссылка, тот уже может его прочитать.",
+	"$bog_journal_edit_page_publish_note_live": "Опубликован: пост в списке журнала и в лентах тех, кто на него подписан. Снимете с публикации — уйдёт из обоих, ссылка продолжит работать.",
+	"$bog_journal_edit_page_post_new_title": "Пост без заголовка",
+	"$bog_journal_edit_page_published_never": "Не опубликован",
+	"$bog_journal_edit_page_Cover_clear_title": "Убрать обложку",
+	"$bog_journal_edit_chip_Drop_hint": "Убрать тег"
+}

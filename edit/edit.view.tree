@@ -11,6 +11,8 @@ $bog_journal_edit_page $mol_view
 	published_label \
 	post_new_title @ \Untitled post
 	published_never @ \Not published
+	publish_note_draft @ \A draft is hidden from the lists, not from the network: the journal is a publicly readable Land, so anyone holding this link can already read it.
+	publish_note_live @ \Published: the post is in the journal's list and in the feeds that follow it. Unpublishing takes it out of both, the link keeps working.
 	sub <= page_content /
 		<= Denied $mol_paragraph
 			title @ \This journal belongs to somebody else. You can read it, but not edit it.
@@ -69,11 +71,11 @@ $bog_journal_edit_page $mol_view
 									blocks <= body_blocks /$bog_wysiwyg_export_block
 									page_title <= post_title
 									summary <= post_summary
-									tags <= tags /string
+									tags <= tags_export /string
 									cover <= cover_share_uri \
 									base_uri <= file_base \
 						<= Publish_note $mol_paragraph
-							title @ \A draft is hidden from the lists, not from the network: the journal is a publicly readable Land, so anyone holding this link can already read it.
+							title <= publish_note \
 		<= Body $bog_wysiwyg
 			page_land_link <= body_land_link
 			readonly <= body_readonly

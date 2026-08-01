@@ -1,0 +1,21 @@
+{
+	"$bog_journal_app_Nav_feed_title": "Лента",
+	"$bog_journal_app_Feed_make_title": "Лента",
+	"$bog_journal_app_Feed_make_hint": "Завести ленту чтения",
+	"$bog_journal_app_Nav_profile_title": "Журнал",
+	"$bog_journal_app_Nav_read_title": "Смотреть",
+	"$bog_journal_app_Nav_edit_title": "Править",
+	"$bog_journal_app_Post_new_title": "Новый пост",
+	"$bog_journal_app_Registry_add_title": "В каталог",
+	"$bog_journal_app_Registry_add_hint": "Добавить журнал в публичный каталог",
+	"$bog_journal_app_Lang_hint": "Сменить язык интерфейса",
+	"$bog_journal_app_Start_title_title": "Журнала здесь пока нет",
+	"$bog_journal_app_Start_hint_title": "Заведите свой журнал, чтобы публиковать посты.",
+	"$bog_journal_app_Start_button_title": "Завести журнал",
+	"$bog_journal_app_Directory_title_title": "Журналы здесь",
+	"$bog_journal_app_title_journal": "Журнал",
+	"$bog_journal_app_title_feed": "Лента",
+	"$bog_journal_app_title_post": "Пост",
+	"$bog_journal_app_title_edit": "Правка",
+	"$bog_journal_app_journal_untitled": "Журнал без названия"
+}

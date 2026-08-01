@@ -1,4 +1,14 @@
+- The stock $mol_page marks its header caption as the page's h1. On an article
+- that caption is the second one: the post itself opens with a real h1, and two
+- competing top-level headings on a page is worse than none. Same body as the
+- base declaration, only the tag changes — the caption stays where it was and
+- keeps reading as a caption, it just stops claiming to be the heading.
 $bog_journal_app $mol_page
+	Title $mol_view
+		dom_name \div
+		sub <= title_content /
+			<= Logo null
+			<= title
 	title <= screen_title \
 	author_link \
 	post_link \
@@ -36,6 +46,14 @@ $bog_journal_app $mol_page
 			title @ \List publicly
 			hint @ \Add this journal to the public directory
 			click?event <=> registry_add?event null
+		- Icon rather than the language's name: spelled out it took the toolbar
+		- onto a second row on a phone, and it sits next to two other icon
+		- controls anyway. Which language is on is visible from the whole page.
+		<= Lang $mol_button_minor
+			hint @ \Switch language
+			click?event <=> lang_toggle?event null
+			sub /
+				<= Lang_icon $mol_icon_translate
 		<= Status $giper_baza_status
 		<= Lights $mol_lights_toggle
 	body <= app_content /
@@ -51,6 +69,7 @@ $bog_journal_app $mol_page
 		<= Start $mol_view
 			sub /
 				<= Start_title $mol_paragraph
+					dom_name \h1
 					title @ \No journal here yet
 				<= Start_hint $mol_paragraph
 					title @ \Create your own journal to start publishing posts.

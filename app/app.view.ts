@@ -132,13 +132,44 @@ namespace $.$$ {
 			}
 		}
 
+		/**
+		 * What the browser tab, the history entry and the page caption say. On an
+		 * article that has to be the article, not the word "Post" — a reader with
+		 * five tabs open cannot tell them apart otherwise, and neither can their
+		 * bookmarks a week later.
+		 *
+		 * The title is read straight off the post page, which owns that Land, so
+		 * the two never disagree. While the Land is still syncing the read gives
+		 * an empty string and the generic caption stands in until it arrives.
+		 */
 		override screen_title() {
 			switch( this.screen() ) {
 				case 'edit': return this.title_edit()
-				case 'post': return this.title_post()
+				case 'post': return this.post_title() || this.title_post()
 				case 'feed': return this.title_feed()
 				default: return this.title_journal()
 			}
+		}
+
+		/** The cast is the usual one: view.tree only knows the generated base. */
+		post_title() {
+			return ( this.Post() as $.$$.$bog_journal_post_page ).post_title()
+		}
+
+		// === Language ============================================================
+		//
+		// Without a switch the language is decided for the reader by whatever
+		// navigator.language happens to say, and the journal's own strings and the
+		// ones coming from $mol and the editor can land on different answers. One
+		// button, two languages, the choice persisted by $mol_locale in local
+		// storage and read reactively by every `@ \…` string on the page.
+
+		@ $mol_action
+		lang_toggle( event?: Event ) {
+			if( !event ) return null
+			const locale = this.$.$mol_locale
+			locale.lang( locale.lang() === 'ru' ? 'en' : 'ru' )
+			return event
 		}
 
 		// === SEO =================================================================
@@ -357,7 +388,7 @@ namespace $.$$ {
 				if( this.registry_addable() ) parts.push( this.Registry_add() )
 			}
 
-			parts.push( this.Status(), this.Lights() )
+			parts.push( this.Lang(), this.Status(), this.Lights() )
 			return parts
 		}
 

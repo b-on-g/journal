@@ -199,21 +199,50 @@ namespace $.$$ {
 			return event
 		}
 
+		/**
+		 * Identity of a tag, as opposed to its wording. Two tags are the same tag
+		 * when they slugify alike, so `Local First` does not sit next to
+		 * `local-first`, and `Локал-фёрст` not next to `локал фёрст`.
+		 *
+		 * A script the transliteration table knows nothing about (CJK, Arabic)
+		 * slugifies to an empty string; there the lowercased label is the identity,
+		 * which is weaker but never merges two unrelated tags into one.
+		 */
+		tag_key( label: string ) {
+			return $bog_journal_edit_slug( label ) || label.trim().toLowerCase()
+		}
+
 		@ $mol_action
 		tag_add( event?: Event ) {
 			if( !event ) return null
-			// Tags share the slug shape, so `Local First` and `local-first` do not
-			// end up as two different tags.
-			const tag = $bog_journal_edit_slug( this.tag_draft() )
-			if( !tag ) return event
+
+			// Stored as typed. The slug used to be stored instead, and the author
+			// who typed `Локал-фёрст` got `lokal-ferst` back on every screen —
+			// machine-readable, but not what anybody wrote or wants to read.
+			const label = this.tag_draft().trim().replace( /\s+/g, ' ' )
+			if( !label ) return event
+
+			const key = this.tag_key( label )
 			// Dedupe: an event handler fiber restarts from the top when it suspends,
 			// so a plain append could land twice.
-			if( this.tags().includes( tag ) ) return event
+			if( this.tags().some( tag => this.tag_key( tag ) === key ) ) return event
+
 			const list = this.post()?.Tags( 'auto' )
 			if( !list ) return event
-			list.items([ ... this.tags(), tag ])
+			list.items([ ... this.tags(), label ])
 			this.tag_draft( '' )
 			return event
+		}
+
+		/**
+		 * Tags for the dev.to front matter. That field wants machine names, and the
+		 * exporter only strips punctuation — it would pass Cyrillic straight
+		 * through, and dev.to rejects it. Transliterating here keeps the label the
+		 * author sees and the name the platform accepts as two separate things.
+		 */
+		@ $mol_mem
+		tags_export(): readonly string[] {
+			return this.tags().map( tag => $bog_journal_edit_slug( tag ) ).filter( Boolean )
 		}
 
 		// === Publication =========================================================
@@ -228,6 +257,15 @@ namespace $.$$ {
 				return next
 			}
 			return ( post.Published()?.val() ?? 0 ) > 0
+		}
+
+		/**
+		 * The note under the checkbox used to warn about drafts whatever the state
+		 * was, so a published post still explained what a draft is. Both halves are
+		 * worth saying, just not at the same time.
+		 */
+		override publish_note() {
+			return this.published() ? this.publish_note_live() : this.publish_note_draft()
 		}
 
 		@ $mol_mem

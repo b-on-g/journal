@@ -1,0 +1,15 @@
+{
+	"$bog_journal_feed_page_title_fallback": "Лента",
+	"$bog_journal_feed_page_subscribe_hint": "Ссылка на журнал",
+	"$bog_journal_feed_page_subscribe_add": "Подписаться",
+	"$bog_journal_feed_page_subscribe_bad": "Не похоже на ссылку на журнал.",
+	"$bog_journal_feed_page_subscribe_dup": "Этот журнал уже в ленте.",
+	"$bog_journal_feed_page_source_wait": "грузится",
+	"$bog_journal_feed_page_source_fail": "недоступен",
+	"$bog_journal_feed_page_empty_none": "Журналов пока нет. Вставьте ссылку выше, и посты появятся здесь.",
+	"$bog_journal_feed_page_empty_quiet": "Пока ничего не опубликовано.",
+	"$bog_journal_feed_page_empty_nofeed": "Лента не открыта.",
+	"$bog_journal_feed_page_author_unnamed": "Автор без имени",
+	"$bog_journal_feed_page_post_untitled": "Пост без заголовка",
+	"$bog_journal_feed_source_Drop_hint": "Отписаться"
+}

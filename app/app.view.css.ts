@@ -13,6 +13,23 @@ namespace $.$$ {
 			contain: 'style',
 		},
 
+		// The caption is an article title now, not the word "Post", so it can run
+		// long. Left alone it pushes the whole toolbar onto a second and third row
+		// on a phone; one line with an ellipsis costs nothing, the full text is on
+		// the page right below anyway.
+		Title: {
+			display: 'block',
+			minWidth: 0,
+			flex: {
+				shrink: 1,
+			},
+			whiteSpace: 'nowrap',
+			overflow: {
+				x: 'hidden',
+			},
+			textOverflow: 'ellipsis',
+		},
+
 		// The toolbar carries the whole navigation, so on a narrow screen it has
 		// to wrap instead of pushing the page into a horizontal scroll.
 		Tools: {
@@ -101,6 +118,43 @@ namespace $.$$ {
 		Start_button: {
 			margin: {
 				top: '0.5rem',
+			},
+		},
+
+		// Three navigation links and three icon controls come to a few pixels over
+		// a 390px row, and the odd one out drops to a line of its own. Tighter
+		// padding buys back more than enough.
+		'@media': {
+			'(max-width: 640px)': {
+
+				Nav_feed: {
+					padding: {
+						left: '0.375rem',
+						right: '0.375rem',
+					},
+				},
+
+				Nav_profile: {
+					padding: {
+						left: '0.375rem',
+						right: '0.375rem',
+					},
+				},
+
+				Nav_read: {
+					padding: {
+						left: '0.375rem',
+						right: '0.375rem',
+					},
+				},
+
+				Nav_edit: {
+					padding: {
+						left: '0.375rem',
+						right: '0.375rem',
+					},
+				},
+
 			},
 		},
 
