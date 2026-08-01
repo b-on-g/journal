@@ -12,6 +12,27 @@ namespace $.$$ {
 		return ( page_of( $, rows ).Body().dom_tree() as HTMLElement ).innerHTML
 	}
 
+	/** Stand-in for a block pawn carrying only what `blocks()` reads off it. */
+	function block_pawn( link: string, content: string ) {
+		return {
+			link: ()=> ( { str: link } ),
+			Type: ()=> ( { text: ()=> 'paragraph' } ),
+			Level: ()=> null,
+			Content: ()=> ( { val: ()=> content } ),
+		}
+	}
+
+	/** Page whose article Land hands back exactly this order of blocks. */
+	function page_over( $: $, pawns: readonly ReturnType< typeof block_pawn >[] ) {
+		const post = {
+			Page: ()=> ( { remote: ()=> ( { Blocks: ()=> ( { remote_list: ()=> pawns } ) } ) } ),
+		}
+		return $bog_journal_post_page.make( {
+			$,
+			post: ()=> post as unknown as $bog_journal_model_post,
+		} )
+	}
+
 	$mol_test( {
 
 		'body headings render as real h2 h3 h4 under the h1 title'( $ ) {
@@ -165,6 +186,17 @@ namespace $.$$ {
 			const page = page_of( $, [], { file_base: ()=> '' } )
 			$mol_assert_equal( page.meta().og_image, '' )
 			$mol_assert_equal( 'og_image' in ( $bog_meta_compact( page.meta() ) ?? {} ), false )
+		},
+
+		'a block the order names twice is read once, at its first place'( $ ) {
+			const first = block_pawn( 'a', 'раз' )
+			const page = page_over( $, [ first, block_pawn( 'b', 'два' ), first, block_pawn( 'c', 'три' ) ] )
+			$mol_assert_equal( page.blocks().map( block => block.content ).join( ' ' ), 'раз два три' )
+		},
+
+		'the same block reached through two pawn objects still counts once'( $ ) {
+			const page = page_over( $, [ block_pawn( 'a', 'раз' ), block_pawn( 'a', 'раз' ) ] )
+			$mol_assert_equal( page.blocks().length, 1 )
 		},
 
 	} )

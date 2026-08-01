@@ -158,18 +158,41 @@ namespace $.$$ {
 
 		// --- body ---
 
-		/** Body blocks as plain records: the input of the pure renderer. */
+		/**
+		 * Body blocks as plain records: the input of the pure renderer.
+		 *
+		 * A block named twice is read once, at its first position. The order of
+		 * blocks is a CRDT list, and nothing in it forbids the same link appearing
+		 * more than once — two devices editing the same article can merge into
+		 * exactly that. The editor never shows it, because a repeated id resolves
+		 * to one and the same keyed view and the duplicates collapse in the DOM;
+		 * a reader building a row per entry has no such luck and prints the
+		 * paragraph again. Whatever put them there, the article has one of each.
+		 */
 		@ $mol_mem
 		blocks(): $bog_journal_post_block[] {
 
 			const page = this.post()?.Page()?.remote()
 			if( !page ) return []
 
-			return ( page.Blocks()?.remote_list() ?? [] ).map( block => ( {
-				type: block.Type()?.text() || 'paragraph',
-				level: block.Level()?.val() ?? undefined,
-				content: block.Content()?.val() ?? '',
-			} ) )
+			const seen = new Set< string >()
+			const blocks: $bog_journal_post_block[] = []
+
+			for( const block of page.Blocks()?.remote_list() ?? [] ) {
+
+				const link = block.link().str
+				if( seen.has( link ) ) continue
+				seen.add( link )
+
+				blocks.push( {
+					type: block.Type()?.text() || 'paragraph',
+					level: block.Level()?.val() ?? undefined,
+					content: block.Content()?.val() ?? '',
+				} )
+
+			}
+
+			return blocks
 		}
 
 		@ $mol_mem
