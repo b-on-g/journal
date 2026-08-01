@@ -184,7 +184,7 @@ async function main() {
 	const summary = [
 		`Снапшотов оставлено: ${ kept }`,
 		`Выброшено пустых: ${ dropped }`,
-		`Адресов переписано с localhost: ${ rewritten }`,
+		`Файлов с переписанным localhost: ${ rewritten }`,
 	]
 	for( const line of summary ) console.log( line )
 
