@@ -2,6 +2,62 @@ namespace $.$$ {
 
 	$mol_style_define( $bog_journal_app, {
 
+		// The toolbar carries the whole navigation, so on a narrow screen it has
+		// to wrap instead of pushing the page into a horizontal scroll.
+		Tools: {
+			flex: {
+				wrap: 'wrap',
+			},
+			align: {
+				items: 'center',
+			},
+			gap: '0.25rem',
+			minWidth: 0,
+		},
+
+		Nav_feed: {
+			padding: {
+				top: '0.375rem',
+				bottom: '0.375rem',
+				left: '0.625rem',
+				right: '0.625rem',
+			},
+			borderRadius: '6px',
+		},
+
+		Nav_profile: {
+			padding: {
+				top: '0.375rem',
+				bottom: '0.375rem',
+				left: '0.625rem',
+				right: '0.625rem',
+			},
+			borderRadius: '6px',
+		},
+
+		Nav_read: {
+			padding: {
+				top: '0.375rem',
+				bottom: '0.375rem',
+				left: '0.625rem',
+				right: '0.625rem',
+			},
+			borderRadius: '6px',
+		},
+
+		Nav_edit: {
+			padding: {
+				top: '0.375rem',
+				bottom: '0.375rem',
+				left: '0.625rem',
+				right: '0.625rem',
+			},
+			borderRadius: '6px',
+			font: {
+				weight: 600,
+			},
+		},
+
 		Start: {
 			flex: {
 				direction: 'column',

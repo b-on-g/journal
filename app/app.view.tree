@@ -1,13 +1,47 @@
 $bog_journal_app $mol_page
-	title @ \Journal
+	title <= screen_title \
 	author_link \
+	post_link \
+	feed_link \
+	edit_link \
+	own_feed_link \
+	title_journal @ \Journal
+	title_feed @ \Feed
+	title_post @ \Post
+	title_edit @ \Editing
 	plugins /
 		<= Theme $mol_theme_auto
-	tools /
+	tools <= tool_bar /
+		<= Nav_feed $bog_journal_app_nav
+			arg <= feed_arg *
+			title @ \Feed
+		<= Feed_make $mol_button_minor
+			title @ \Feed
+			hint @ \Start a reading feed
+			click?event <=> feed_create?event null
+		<= Nav_profile $bog_journal_app_nav
+			arg <= profile_arg *
+			title @ \Journal
+		<= Nav_read $bog_journal_app_nav
+			arg <= read_arg *
+			title @ \View
+		<= Nav_edit $bog_journal_app_nav
+			arg <= edit_arg *
+			title @ \Edit
+		<= Post_new $mol_button_minor
+			title @ \New post
+			click?event <=> post_create?event null
 		<= Status $giper_baza_status
 		<= Lights $mol_lights_toggle
 	body <= app_content /
 		<= Profile $bog_journal_profile
+			author_link <= author_link
+		<= Post $bog_journal_post_page
+			post_link <= post_link
+		<= Feed $bog_journal_feed_page
+			feed_link <= feed_link
+		<= Edit $bog_journal_edit_page
+			post_link <= edit_link
 			author_link <= author_link
 		<= Start $mol_view
 			sub /
@@ -18,3 +52,14 @@ $bog_journal_app $mol_page
 				<= Start_button $mol_button_major
 					title @ \Create journal
 					click?event <=> journal_create?event null
+
+- Navigation link that never toggles itself off.
+-
+- $mol_link declares itself "current" as soon as every non-null key of its arg
+- already matches the route, and a click on a current link goes to uri_off,
+- which nulls every key the arg mentions. A nav link spells out the keys it
+- wants cleared, so that inversion wipes the whole route and drops the app on
+- the start screen. Pinning uri_off to uri makes a repeat click a no-op while
+- keeping the mol_link_current attribute available for styling.
+$bog_journal_app_nav $mol_link
+	uri_off <= uri

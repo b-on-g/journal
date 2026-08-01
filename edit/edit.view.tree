@@ -1,0 +1,100 @@
+- Post workshop: metadata that lives in the journal Land on top, the body
+- underneath. The body is $bog_wysiwyg as shipped — this page never reaches
+- inside it, it only hands over the link of the Land the article text lives in.
+$bog_journal_edit_page $mol_view
+	post_link \
+	author_link \
+	can_edit false
+	cover_uri \
+	body_land_link \
+	body_readonly true
+	published_label \
+	post_new_title @ \Untitled post
+	published_never @ \Not published
+	sub <= page_content /
+		<= Denied $mol_paragraph
+			title @ \This journal belongs to somebody else. You can read it, but not edit it.
+		<= Meta $mol_view
+			sub /
+				<= Title_field $mol_string
+					hint @ \Post title
+					value? <=> post_title? \
+				<= Slug_row $mol_view
+					sub /
+						<= Slug_field $mol_string
+							hint @ \url-name
+							value? <=> post_slug? \
+						<= Slug_reset $mol_button_minor
+							hint @ \Rebuild the slug from the title
+							title @ \From title
+							click?event <=> slug_reset?event null
+				<= Summary_field $bog_journal_edit_text
+					hint @ \Short teaser for lists, feeds and social cards
+					value? <=> post_summary? \
+				<= Cover $mol_view
+					sub <= cover_content /
+						<= cover_preview null
+						<= Cover_open $mol_button_open
+							sub /
+								<= Cover_label $mol_paragraph
+									title @ \Cover image
+								<= Cover_native $mol_button_open_native
+									files? <=> cover_files? /File
+									accept \image/*
+									multiple false
+						<= cover_clear null
+				<= Tags $mol_view
+					sub /
+						<= Tag_list $mol_list
+							rows <= tag_rows /
+						<= Tag_form $mol_view
+							sub /
+								<= Tag_draft $mol_string
+									hint @ \Add a tag
+									value? <=> tag_draft? \
+									submit?event <=> tag_add?event null
+								<= Tag_add $mol_button_minor
+									title @ \Add
+									click?event <=> tag_add?event null
+				<= Publish $mol_view
+					sub /
+						<= Publish_row $mol_view
+							sub /
+								<= Publish_check $mol_check_box
+									title @ \Published
+									checked? <=> published? false
+								<= Published_at $mol_paragraph
+									title <= published_label
+						<= Publish_note $mol_paragraph
+							title @ \A draft is hidden from the lists, not from the network: the journal is a publicly readable Land, so anyone holding this link can already read it.
+		<= Body $bog_wysiwyg
+			page_land_link <= body_land_link
+			readonly <= body_readonly
+	Cover_image $mol_image
+		uri <= cover_uri
+		title <= post_title
+	Cover_clear $mol_button_minor
+		title @ \Remove cover
+		click?event <=> cover_remove?event null
+	Tag_row* $bog_journal_edit_chip
+		title <= tag_title* \
+		drop?event <=> tag_drop*?event null
+
+- Plain multiline field, same reason as the one on the profile page: the stock
+- mol textarea pulls a syntax highlighter in. Do not name it here, mam scans
+- comments for dependencies.
+$bog_journal_edit_text $mol_string
+	dom_name \textarea
+	minimal_height 72
+
+$bog_journal_edit_chip $mol_view
+	title \
+	drop?event null
+	sub /
+		<= Label $mol_paragraph
+			title <= title
+		<= Drop $mol_button_minor
+			hint @ \Remove tag
+			click?event <=> drop?event null
+			sub /
+				<= Drop_icon $mol_icon_close

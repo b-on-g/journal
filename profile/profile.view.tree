@@ -36,7 +36,6 @@ $bog_journal_profile $mol_view
 					sub /
 						<= Posts_title $mol_paragraph
 							title @ \Posts
-						<= post_add null
 				<= Posts_search $mol_search
 					hint @ \Search posts
 					query? <=> posts_query? \
@@ -76,9 +75,6 @@ $bog_journal_profile $mol_view
 			<= Link_add $mol_button_minor
 				title @ \Add link
 				click?event <=> link_add?event null
-	Post_add $mol_button_minor
-		title @ \New post
-		click?event <=> post_create?event null
 	Link_row* $bog_journal_profile_link
 		uri <= link_uri* \
 		title <= link_title* \
@@ -92,7 +88,9 @@ $bog_journal_profile $mol_view
 		state <= post_state* \
 		draft <= post_draft* false
 
-- Plain multiline field. $mol_textarea would drag the whole code editor in.
+- Plain multiline field. The stock mol textarea would drag the whole syntax
+- highlighting code editor into the bundle, so this is a bare input instead.
+- Do not name that component here: mam scans comments for dependencies.
 $bog_journal_profile_text $mol_string
 	dom_name \textarea
 	minimal_height 96

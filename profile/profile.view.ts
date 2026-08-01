@@ -1,8 +1,5 @@
 namespace $.$$ {
 
-	/** Public read preset: anybody, signed in or not, can pull the Land. */
-	const public_read: $giper_baza_rank_preset = [[ null, $giper_baza_rank_read ]]
-
 	export class $bog_journal_profile extends $.$bog_journal_profile {
 
 		// === Land access =========================================================
@@ -273,40 +270,6 @@ namespace $.$$ {
 		override posts_empty_text() {
 			if( this.posts_filtered().length ) return ''
 			return this.posts().length ? this.posts_empty_query() : this.posts_empty_none()
-		}
-
-		post_add() {
-			return this.can_edit() ? this.Post_add() : null
-		}
-
-		/**
-		 * Metadata pawn goes into the journal Land, the body gets a Land of its
-		 * own so it can be shared, forked and served to anonymous readers apart
-		 * from the journal.
-		 *
-		 * `land_grab` runs first on purpose: it is the only Proof-of-Work step and
-		 * it suspends the fiber. Both it and `list.make()` are @$mol_action, so
-		 * they are memoised per fiber and a resumed handler reuses them instead of
-		 * minting a second Land / a duplicate post.
-		 */
-		@ $mol_action
-		post_create( event?: Event ) {
-			if( !event ) return null
-			if( !this.can_edit() ) return null
-
-			const author = this.author()
-			const posts = author?.Posts( 'auto' )
-			if( !posts ) return null
-
-			const body = this.$.$giper_baza_glob.land_grab( public_read )
-			const page = body.Data( $bog_wysiwyg_model_page )
-
-			const post = posts.make( null )
-			post.Title( 'auto' )?.val( this.post_new_title() )
-			post.Published( 'auto' )?.val( 0 )
-			post.Page( 'auto' )?.val( page.link() )
-
-			return event
 		}
 
 	}
