@@ -2426,6 +2426,98 @@ declare namespace $ {
 
 //# sourceMappingURL=minor.view.tree.d.ts.map
 declare namespace $ {
+    /** State of time moment */
+    class $mol_state_time extends $mol_object {
+        static task(precision: number, reset?: null): $mol_after_timeout | $mol_after_frame;
+        static now(precision: number): number;
+    }
+}
+
+declare namespace $ {
+
+	export class $mol_svg extends $mol_view {
+		dom_name( ): string
+		dom_name_space( ): string
+		font_size( ): number
+		font_family( ): string
+		style_size( ): Record<string, any>
+	}
+	
+}
+
+//# sourceMappingURL=svg.view.tree.d.ts.map
+declare namespace $.$$ {
+    /** Base SVG component to display SVG images or icons. */
+    class $mol_svg extends $.$mol_svg {
+        computed_style(): Record<string, any>;
+        font_size(): number;
+        font_family(): any;
+    }
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
+
+	export class $mol_svg_root extends $mol_svg {
+		view_box( ): string
+		aspect( ): string
+		dom_name( ): string
+		attr( ): ({ 
+			'viewBox': ReturnType< $mol_svg_root['view_box'] >,
+			'preserveAspectRatio': ReturnType< $mol_svg_root['aspect'] >,
+		})  & ReturnType< $mol_svg['attr'] >
+	}
+	
+}
+
+//# sourceMappingURL=root.view.tree.d.ts.map
+declare namespace $ {
+
+	export class $mol_svg_path extends $mol_svg {
+		geometry( ): string
+		dom_name( ): string
+		attr( ): ({ 
+			'd': ReturnType< $mol_svg_path['geometry'] >,
+		})  & ReturnType< $mol_svg['attr'] >
+	}
+	
+}
+
+//# sourceMappingURL=path.view.tree.d.ts.map
+declare namespace $ {
+}
+
+declare namespace $ {
+
+	type $mol_svg_path__geometry_mol_icon_1 = $mol_type_enforce<
+		ReturnType< $mol_icon['path'] >
+		,
+		ReturnType< $mol_svg_path['geometry'] >
+	>
+	export class $mol_icon extends $mol_svg_root {
+		path( ): string
+		Path( ): $mol_svg_path
+		view_box( ): string
+		minimal_width( ): number
+		minimal_height( ): number
+		sub( ): readonly(any)[]
+	}
+	
+}
+
+//# sourceMappingURL=icon.view.tree.d.ts.map
+declare namespace $ {
+
+	export class $mol_icon_translate extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=translate.view.tree.d.ts.map
+declare namespace $ {
 
 	export class $mol_ghost extends $mol_view {
 		Sub( ): $mol_view
@@ -3113,89 +3205,6 @@ declare namespace $.$$ {
 declare namespace $ {
 }
 
-declare namespace $ {
-    /** State of time moment */
-    class $mol_state_time extends $mol_object {
-        static task(precision: number, reset?: null): $mol_after_timeout | $mol_after_frame;
-        static now(precision: number): number;
-    }
-}
-
-declare namespace $ {
-
-	export class $mol_svg extends $mol_view {
-		dom_name( ): string
-		dom_name_space( ): string
-		font_size( ): number
-		font_family( ): string
-		style_size( ): Record<string, any>
-	}
-	
-}
-
-//# sourceMappingURL=svg.view.tree.d.ts.map
-declare namespace $.$$ {
-    /** Base SVG component to display SVG images or icons. */
-    class $mol_svg extends $.$mol_svg {
-        computed_style(): Record<string, any>;
-        font_size(): number;
-        font_family(): any;
-    }
-}
-
-declare namespace $ {
-}
-
-declare namespace $ {
-
-	export class $mol_svg_root extends $mol_svg {
-		view_box( ): string
-		aspect( ): string
-		dom_name( ): string
-		attr( ): ({ 
-			'viewBox': ReturnType< $mol_svg_root['view_box'] >,
-			'preserveAspectRatio': ReturnType< $mol_svg_root['aspect'] >,
-		})  & ReturnType< $mol_svg['attr'] >
-	}
-	
-}
-
-//# sourceMappingURL=root.view.tree.d.ts.map
-declare namespace $ {
-
-	export class $mol_svg_path extends $mol_svg {
-		geometry( ): string
-		dom_name( ): string
-		attr( ): ({ 
-			'd': ReturnType< $mol_svg_path['geometry'] >,
-		})  & ReturnType< $mol_svg['attr'] >
-	}
-	
-}
-
-//# sourceMappingURL=path.view.tree.d.ts.map
-declare namespace $ {
-}
-
-declare namespace $ {
-
-	type $mol_svg_path__geometry_mol_icon_1 = $mol_type_enforce<
-		ReturnType< $mol_icon['path'] >
-		,
-		ReturnType< $mol_svg_path['geometry'] >
-	>
-	export class $mol_icon extends $mol_svg_root {
-		path( ): string
-		Path( ): $mol_svg_path
-		view_box( ): string
-		minimal_width( ): number
-		minimal_height( ): number
-		sub( ): readonly(any)[]
-	}
-	
-}
-
-//# sourceMappingURL=icon.view.tree.d.ts.map
 declare namespace $ {
 
 	export class $mol_icon_close extends $mol_icon {
@@ -61709,77 +61718,82 @@ declare namespace $ {
 		,
 		ReturnType< $mol_string_button['value'] >
 	>
-	type $mol_paragraph__title_bog_journal_profile_27 = $mol_type_enforce<
+	type $mol_paragraph__dom_name_bog_journal_profile_27 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_paragraph['dom_name'] >
+	>
+	type $mol_paragraph__title_bog_journal_profile_28 = $mol_type_enforce<
 		ReturnType< $bog_journal_profile['name_shown'] >
 		,
 		ReturnType< $mol_paragraph['title'] >
 	>
-	type $bog_journal_profile_text__hint_bog_journal_profile_28 = $mol_type_enforce<
+	type $bog_journal_profile_text__hint_bog_journal_profile_29 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $bog_journal_profile_text['hint'] >
 	>
-	type $bog_journal_profile_text__value_bog_journal_profile_29 = $mol_type_enforce<
+	type $bog_journal_profile_text__value_bog_journal_profile_30 = $mol_type_enforce<
 		ReturnType< $bog_journal_profile['author_bio'] >
 		,
 		ReturnType< $bog_journal_profile_text['value'] >
 	>
-	type $mol_paragraph__title_bog_journal_profile_30 = $mol_type_enforce<
+	type $mol_paragraph__title_bog_journal_profile_31 = $mol_type_enforce<
 		ReturnType< $bog_journal_profile['bio_shown'] >
 		,
 		ReturnType< $mol_paragraph['title'] >
 	>
-	type $mol_view__sub_bog_journal_profile_31 = $mol_type_enforce<
+	type $mol_view__sub_bog_journal_profile_32 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $bog_journal_profile_link__uri_bog_journal_profile_32 = $mol_type_enforce<
+	type $bog_journal_profile_link__uri_bog_journal_profile_33 = $mol_type_enforce<
 		ReturnType< $bog_journal_profile['link_uri'] >
 		,
 		ReturnType< $bog_journal_profile_link['uri'] >
 	>
-	type $bog_journal_profile_link__title_bog_journal_profile_33 = $mol_type_enforce<
+	type $bog_journal_profile_link__title_bog_journal_profile_34 = $mol_type_enforce<
 		ReturnType< $bog_journal_profile['link_title'] >
 		,
 		ReturnType< $bog_journal_profile_link['title'] >
 	>
-	type $bog_journal_profile_link__editable_bog_journal_profile_34 = $mol_type_enforce<
+	type $bog_journal_profile_link__editable_bog_journal_profile_35 = $mol_type_enforce<
 		ReturnType< $bog_journal_profile['can_edit'] >
 		,
 		ReturnType< $bog_journal_profile_link['editable'] >
 	>
-	type $bog_journal_profile_link__drop_bog_journal_profile_35 = $mol_type_enforce<
+	type $bog_journal_profile_link__drop_bog_journal_profile_36 = $mol_type_enforce<
 		ReturnType< $bog_journal_profile['link_drop'] >
 		,
 		ReturnType< $bog_journal_profile_link['drop'] >
 	>
-	type $bog_journal_profile_post__arg_bog_journal_profile_36 = $mol_type_enforce<
+	type $bog_journal_profile_post__arg_bog_journal_profile_37 = $mol_type_enforce<
 		ReturnType< $bog_journal_profile['post_arg'] >
 		,
 		ReturnType< $bog_journal_profile_post['arg'] >
 	>
-	type $bog_journal_profile_post__title_bog_journal_profile_37 = $mol_type_enforce<
+	type $bog_journal_profile_post__title_bog_journal_profile_38 = $mol_type_enforce<
 		ReturnType< $bog_journal_profile['post_title'] >
 		,
 		ReturnType< $bog_journal_profile_post['title'] >
 	>
-	type $bog_journal_profile_post__summary_bog_journal_profile_38 = $mol_type_enforce<
+	type $bog_journal_profile_post__summary_bog_journal_profile_39 = $mol_type_enforce<
 		ReturnType< $bog_journal_profile['post_summary'] >
 		,
 		ReturnType< $bog_journal_profile_post['summary'] >
 	>
-	type $bog_journal_profile_post__details_bog_journal_profile_39 = $mol_type_enforce<
+	type $bog_journal_profile_post__details_bog_journal_profile_40 = $mol_type_enforce<
 		ReturnType< $bog_journal_profile['post_details'] >
 		,
 		ReturnType< $bog_journal_profile_post['details'] >
 	>
-	type $bog_journal_profile_post__state_bog_journal_profile_40 = $mol_type_enforce<
+	type $bog_journal_profile_post__state_bog_journal_profile_41 = $mol_type_enforce<
 		ReturnType< $bog_journal_profile['post_state'] >
 		,
 		ReturnType< $bog_journal_profile_post['state'] >
 	>
-	type $bog_journal_profile_post__draft_bog_journal_profile_41 = $mol_type_enforce<
+	type $bog_journal_profile_post__draft_bog_journal_profile_42 = $mol_type_enforce<
 		ReturnType< $bog_journal_profile['post_draft'] >
 		,
 		ReturnType< $bog_journal_profile_post['draft'] >
@@ -64168,7 +64182,7 @@ declare namespace $ {
 		ReturnType< $bog_journal_edit_export['summary'] >
 	>
 	type $bog_journal_edit_export__tags_bog_journal_edit_page_32 = $mol_type_enforce<
-		ReturnType< $bog_journal_edit_page['tags'] >
+		ReturnType< $bog_journal_edit_page['tags_export'] >
 		,
 		ReturnType< $bog_journal_edit_export['tags'] >
 	>
@@ -64188,7 +64202,7 @@ declare namespace $ {
 		ReturnType< $mol_view['sub'] >
 	>
 	type $mol_paragraph__title_bog_journal_edit_page_36 = $mol_type_enforce<
-		string
+		ReturnType< $bog_journal_edit_page['publish_note'] >
 		,
 		ReturnType< $mol_paragraph['title'] >
 	>
@@ -64273,11 +64287,12 @@ declare namespace $ {
 		Publish_check( ): $mol_check_box
 		Published_at( ): $mol_paragraph
 		body_blocks( ): readonly($bog_wysiwyg_export_block)[]
-		tags( ): readonly(string)[]
+		tags_export( ): readonly(string)[]
 		cover_share_uri( ): string
 		file_base( ): string
 		Export( ): $bog_journal_edit_export
 		Publish_row( ): $mol_view
+		publish_note( ): string
 		Publish_note( ): $mol_paragraph
 		Publish( ): $mol_view
 		Meta( ): $mol_view
@@ -64295,6 +64310,8 @@ declare namespace $ {
 		published_label( ): string
 		post_new_title( ): string
 		published_never( ): string
+		publish_note_draft( ): string
+		publish_note_live( ): string
 		sub( ): ReturnType< $bog_journal_edit_page['page_content'] >
 		Cover_image( ): $mol_image
 		Cover_clear( ): $mol_button_minor
@@ -64386,9 +64403,32 @@ declare namespace $.$$ {
         tag_rows(): $bog_journal_edit_chip[];
         tag_title(index: number): string;
         tag_drop(index: number, event?: Event): Event | null;
+        /**
+         * Identity of a tag, as opposed to its wording. Two tags are the same tag
+         * when they slugify alike, so `Local First` does not sit next to
+         * `local-first`, and `Локал-фёрст` not next to `локал фёрст`.
+         *
+         * A script the transliteration table knows nothing about (CJK, Arabic)
+         * slugifies to an empty string; there the lowercased label is the identity,
+         * which is weaker but never merges two unrelated tags into one.
+         */
+        tag_key(label: string): string;
         tag_add(event?: Event): Event | null;
+        /**
+         * Tags for the dev.to front matter. That field wants machine names, and the
+         * exporter only strips punctuation — it would pass Cyrillic straight
+         * through, and dev.to rejects it. Transliterating here keeps the label the
+         * author sees and the name the platform accepts as two separate things.
+         */
+        tags_export(): readonly string[];
         /** `Published` doubles as the flag and the timestamp: 0 means draft. */
         published(next?: boolean): boolean;
+        /**
+         * The note under the checkbox used to warn about drafts whatever the state
+         * was, so a published post still explained what a draft is. Both halves are
+         * worth saying, just not at the same time.
+         */
+        publish_note(): string;
         published_label(): string;
         /** Land of the article text. $bog_wysiwyg takes it from here and owns it. */
         body_land_link(): string;
@@ -68311,82 +68351,114 @@ declare namespace $ {
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $bog_journal_profile__author_link_bog_journal_app_17 = $mol_type_enforce<
+	type $mol_button_minor__hint_bog_journal_app_17 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_button_minor['hint'] >
+	>
+	type $mol_button_minor__click_bog_journal_app_18 = $mol_type_enforce<
+		ReturnType< $bog_journal_app['lang_toggle'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_button_minor__sub_bog_journal_app_19 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_button_minor['sub'] >
+	>
+	type $bog_journal_profile__author_link_bog_journal_app_20 = $mol_type_enforce<
 		ReturnType< $bog_journal_app['author_link'] >
 		,
 		ReturnType< $bog_journal_profile['author_link'] >
 	>
-	type $bog_journal_post_page__post_link_bog_journal_app_18 = $mol_type_enforce<
+	type $bog_journal_post_page__post_link_bog_journal_app_21 = $mol_type_enforce<
 		ReturnType< $bog_journal_app['post_link'] >
 		,
 		ReturnType< $bog_journal_post_page['post_link'] >
 	>
-	type $bog_journal_feed_page__feed_link_bog_journal_app_19 = $mol_type_enforce<
+	type $bog_journal_feed_page__feed_link_bog_journal_app_22 = $mol_type_enforce<
 		ReturnType< $bog_journal_app['feed_link'] >
 		,
 		ReturnType< $bog_journal_feed_page['feed_link'] >
 	>
-	type $bog_journal_edit_page__post_link_bog_journal_app_20 = $mol_type_enforce<
+	type $bog_journal_edit_page__post_link_bog_journal_app_23 = $mol_type_enforce<
 		ReturnType< $bog_journal_app['edit_link'] >
 		,
 		ReturnType< $bog_journal_edit_page['post_link'] >
 	>
-	type $bog_journal_edit_page__author_link_bog_journal_app_21 = $mol_type_enforce<
+	type $bog_journal_edit_page__author_link_bog_journal_app_24 = $mol_type_enforce<
 		ReturnType< $bog_journal_app['author_link'] >
 		,
 		ReturnType< $bog_journal_edit_page['author_link'] >
 	>
-	type $mol_paragraph__title_bog_journal_app_22 = $mol_type_enforce<
+	type $mol_paragraph__dom_name_bog_journal_app_25 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_paragraph['dom_name'] >
+	>
+	type $mol_paragraph__title_bog_journal_app_26 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_paragraph['title'] >
-	>
-	type $mol_paragraph__title_bog_journal_app_23 = $mol_type_enforce<
-		string
-		,
-		ReturnType< $mol_paragraph['title'] >
-	>
-	type $mol_button_major__title_bog_journal_app_24 = $mol_type_enforce<
-		string
-		,
-		ReturnType< $mol_button_major['title'] >
-	>
-	type $mol_button_major__click_bog_journal_app_25 = $mol_type_enforce<
-		ReturnType< $bog_journal_app['journal_create'] >
-		,
-		ReturnType< $mol_button_major['click'] >
-	>
-	type $mol_view__sub_bog_journal_app_26 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_view['sub'] >
 	>
 	type $mol_paragraph__title_bog_journal_app_27 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_paragraph['title'] >
 	>
-	type $mol_list__rows_bog_journal_app_28 = $mol_type_enforce<
-		ReturnType< $bog_journal_app['journal_rows'] >
+	type $mol_button_major__title_bog_journal_app_28 = $mol_type_enforce<
+		string
 		,
-		ReturnType< $mol_list['rows'] >
+		ReturnType< $mol_button_major['title'] >
 	>
-	type $mol_view__sub_bog_journal_app_29 = $mol_type_enforce<
+	type $mol_button_major__click_bog_journal_app_29 = $mol_type_enforce<
+		ReturnType< $bog_journal_app['journal_create'] >
+		,
+		ReturnType< $mol_button_major['click'] >
+	>
+	type $mol_view__sub_bog_journal_app_30 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $bog_journal_app_nav__arg_bog_journal_app_30 = $mol_type_enforce<
+	type $mol_paragraph__title_bog_journal_app_31 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_paragraph['title'] >
+	>
+	type $mol_list__rows_bog_journal_app_32 = $mol_type_enforce<
+		ReturnType< $bog_journal_app['journal_rows'] >
+		,
+		ReturnType< $mol_list['rows'] >
+	>
+	type $mol_view__dom_name_bog_journal_app_33 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_view['dom_name'] >
+	>
+	type $mol_view__sub_bog_journal_app_34 = $mol_type_enforce<
+		ReturnType< $bog_journal_app['title_content'] >
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_view__sub_bog_journal_app_35 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $bog_journal_app_nav__arg_bog_journal_app_36 = $mol_type_enforce<
 		ReturnType< $bog_journal_app['journal_arg'] >
 		,
 		ReturnType< $bog_journal_app_nav['arg'] >
 	>
-	type $bog_journal_app_nav__title_bog_journal_app_31 = $mol_type_enforce<
+	type $bog_journal_app_nav__title_bog_journal_app_37 = $mol_type_enforce<
 		ReturnType< $bog_journal_app['journal_title'] >
 		,
 		ReturnType< $bog_journal_app_nav['title'] >
 	>
 	export class $bog_journal_app extends $mol_page {
+		Logo( ): any
+		title_content( ): readonly(any)[]
 		screen_title( ): string
 		Theme( ): $mol_theme_auto
 		feed_arg( ): Record<string, any>
@@ -68403,6 +68475,9 @@ declare namespace $ {
 		Post_new( ): $mol_button_minor
 		registry_add( next?: any ): any
 		Registry_add( ): $mol_button_minor
+		lang_toggle( next?: any ): any
+		Lang_icon( ): $mol_icon_translate
+		Lang( ): $mol_button_minor
 		Status( ): $giper_baza_status
 		Lights( ): $mol_lights_toggle
 		tool_bar( ): readonly(any)[]
@@ -68422,6 +68497,7 @@ declare namespace $ {
 		Directory_list( ): $mol_list
 		journal_arg( id: any): Record<string, any>
 		journal_title( id: any): string
+		Title( ): $mol_view
 		title( ): ReturnType< $bog_journal_app['screen_title'] >
 		author_link( ): string
 		post_link( ): string
@@ -68480,7 +68556,20 @@ declare namespace $.$$ {
          */
         screen(): Screen;
         app_content(): $mol_view[] | $.$bog_journal_edit_page[] | $.$bog_journal_post_page[] | $.$bog_journal_feed_page[] | $.$bog_journal_profile[];
+        /**
+         * What the browser tab, the history entry and the page caption say. On an
+         * article that has to be the article, not the word "Post" — a reader with
+         * five tabs open cannot tell them apart otherwise, and neither can their
+         * bookmarks a week later.
+         *
+         * The title is read straight off the post page, which owns that Land, so
+         * the two never disagree. While the Land is still syncing the read gives
+         * an empty string and the generic caption stands in until it arrives.
+         */
         screen_title(): string;
+        /** The cast is the usual one: view.tree only knows the generated base. */
+        post_title(): string;
+        lang_toggle(event?: Event): Event | null;
         /**
          * Absolute url of this page. Under path routing the location already is
          * the canonical url. Same helper as the post and profile pages.

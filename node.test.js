@@ -6234,6 +6234,192 @@ var $;
 
 
 ;
+	($.$mol_svg) = class $mol_svg extends ($.$mol_view) {
+		dom_name(){
+			return "svg";
+		}
+		dom_name_space(){
+			return "http://www.w3.org/2000/svg";
+		}
+		font_size(){
+			return 16;
+		}
+		font_family(){
+			return "";
+		}
+		style_size(){
+			return {};
+		}
+	};
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    /** State of time moment */
+    class $mol_state_time extends $mol_object {
+        static task(precision, reset) {
+            if (precision) {
+                return new $mol_after_timeout(precision, () => this.task(precision, null));
+            }
+            else {
+                return new $mol_after_frame(() => this.task(precision, null));
+            }
+        }
+        static now(precision) {
+            this.task(precision);
+            return Date.now();
+        }
+    }
+    __decorate([
+        $mol_mem_key
+    ], $mol_state_time, "task", null);
+    __decorate([
+        $mol_mem_key
+    ], $mol_state_time, "now", null);
+    $.$mol_state_time = $mol_state_time;
+})($ || ($ = {}));
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        /** Base SVG component to display SVG images or icons. */
+        class $mol_svg extends $.$mol_svg {
+            computed_style() {
+                const win = this.$.$mol_dom_context;
+                const style = win.getComputedStyle(this.dom_node());
+                if (!style['font-size'])
+                    $mol_state_time.now(0);
+                return style;
+            }
+            font_size() {
+                return parseInt(this.computed_style()['font-size']) || 16;
+            }
+            font_family() {
+                return this.computed_style()['font-family'];
+            }
+        }
+        __decorate([
+            $mol_mem
+        ], $mol_svg.prototype, "computed_style", null);
+        __decorate([
+            $mol_mem
+        ], $mol_svg.prototype, "font_size", null);
+        __decorate([
+            $mol_mem
+        ], $mol_svg.prototype, "font_family", null);
+        $$.$mol_svg = $mol_svg;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+	($.$mol_svg_root) = class $mol_svg_root extends ($.$mol_svg) {
+		view_box(){
+			return "0 0 100 100";
+		}
+		aspect(){
+			return "xMidYMid";
+		}
+		dom_name(){
+			return "svg";
+		}
+		attr(){
+			return {
+				...(super.attr()), 
+				"viewBox": (this.view_box()), 
+				"preserveAspectRatio": (this.aspect())
+			};
+		}
+	};
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_style_attach("mol/svg/root/root.view.css", "[mol_svg_root] {\n\toverflow: hidden;\n}\n");
+})($ || ($ = {}));
+
+;
+"use strict";
+
+
+;
+	($.$mol_svg_path) = class $mol_svg_path extends ($.$mol_svg) {
+		geometry(){
+			return "";
+		}
+		dom_name(){
+			return "path";
+		}
+		attr(){
+			return {...(super.attr()), "d": (this.geometry())};
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon) = class $mol_icon extends ($.$mol_svg_root) {
+		path(){
+			return "";
+		}
+		Path(){
+			const obj = new this.$.$mol_svg_path();
+			(obj.geometry) = () => ((this.path()));
+			return obj;
+		}
+		view_box(){
+			return "0 0 24 24";
+		}
+		minimal_width(){
+			return 16;
+		}
+		minimal_height(){
+			return 16;
+		}
+		sub(){
+			return [(this.Path())];
+		}
+	};
+	($mol_mem(($.$mol_icon.prototype), "Path"));
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_style_attach("mol/icon/icon.view.css", "[mol_icon] {\n\tfill: currentColor;\n\tstroke: none;\n\twidth: 1em;\n\theight: 1.5em;\n\tflex: 0 0 auto;\n\tvertical-align: top;\n\tdisplay: inline-block;\n\tfilter: drop-shadow(0px 1px 1px var(--mol_theme_back));\n\ttransform-origin: center;\n}\n\n[mol_icon_path] {\n\ttransform-origin: center;\n}\n");
+})($ || ($ = {}));
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_translate) = class $mol_icon_translate extends ($.$mol_icon) {
+		path(){
+			return "M12.87,15.07L10.33,12.56L10.36,12.53C12.1,10.59 13.34,8.36 14.07,6H17V4H10V2H8V4H1V6H12.17C11.5,7.92 10.44,9.75 9,11.35C8.07,10.32 7.3,9.19 6.69,8H4.69C5.42,9.63 6.42,11.17 7.67,12.56L2.58,17.58L4,19L9,14L12.11,17.11L12.87,15.07M18.5,10H16.5L12,22H14L15.12,19H19.87L21,22H23L18.5,10M15.88,17L17.5,12.67L19.12,17H15.88Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
 	($.$mol_ghost) = class $mol_ghost extends ($.$mol_view) {
 		Sub(){
 			const obj = new this.$.$mol_view();
@@ -8013,180 +8199,6 @@ var $;
 (function ($) {
     $mol_style_attach("mol/string/string.view.css", "[mol_string] {\n\tbox-sizing: border-box;\n\toutline-offset: 0;\n\tborder: none;\n\tborder-radius: var(--mol_gap_round);\n\twhite-space: pre-line;\n\toverflow: hidden;\n\ttext-overflow: ellipsis;\n\tpadding: var(--mol_gap_text);\n\ttext-align: left;\n\tposition: relative;\n\tfont: inherit;\n\tflex: 1 1 auto;\n\tbackground: transparent;\n\tmin-width: 0;\n\tcolor: inherit;\n\tbackground: var(--mol_theme_field);\n}\n\n[mol_string]:disabled:not(:placeholder-shown) {\n\tbackground-color: transparent;\n\tcolor: var(--mol_theme_text);\n}\n\n[mol_string]:where(:not(:disabled)) {\n\tbox-shadow: inset 0 0 0 1px var(--mol_theme_line);\n}\n\n[mol_string]:where(:not(:disabled)):hover {\n\tbox-shadow: inset 0 0 0 2px var(--mol_theme_line);\n\tz-index: var(--mol_layer_hover);\n}\n\n[mol_string]:focus {\n\toutline: none;\n\tz-index: var(--mol_layer_focus);\n\tcolor: var(--mol_theme_text);\n\tbox-shadow: inset 0 0 0 1px var(--mol_theme_focus);\n}\n\n[mol_string]::placeholder {\n\tcolor: var(--mol_theme_shade);\n}\n\n[mol_string]::-ms-clear {\n\tdisplay: none;\n}\n");
 })($ || ($ = {}));
-
-;
-	($.$mol_svg) = class $mol_svg extends ($.$mol_view) {
-		dom_name(){
-			return "svg";
-		}
-		dom_name_space(){
-			return "http://www.w3.org/2000/svg";
-		}
-		font_size(){
-			return 16;
-		}
-		font_family(){
-			return "";
-		}
-		style_size(){
-			return {};
-		}
-	};
-
-
-;
-"use strict";
-var $;
-(function ($) {
-    /** State of time moment */
-    class $mol_state_time extends $mol_object {
-        static task(precision, reset) {
-            if (precision) {
-                return new $mol_after_timeout(precision, () => this.task(precision, null));
-            }
-            else {
-                return new $mol_after_frame(() => this.task(precision, null));
-            }
-        }
-        static now(precision) {
-            this.task(precision);
-            return Date.now();
-        }
-    }
-    __decorate([
-        $mol_mem_key
-    ], $mol_state_time, "task", null);
-    __decorate([
-        $mol_mem_key
-    ], $mol_state_time, "now", null);
-    $.$mol_state_time = $mol_state_time;
-})($ || ($ = {}));
-
-;
-"use strict";
-
-
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        /** Base SVG component to display SVG images or icons. */
-        class $mol_svg extends $.$mol_svg {
-            computed_style() {
-                const win = this.$.$mol_dom_context;
-                const style = win.getComputedStyle(this.dom_node());
-                if (!style['font-size'])
-                    $mol_state_time.now(0);
-                return style;
-            }
-            font_size() {
-                return parseInt(this.computed_style()['font-size']) || 16;
-            }
-            font_family() {
-                return this.computed_style()['font-family'];
-            }
-        }
-        __decorate([
-            $mol_mem
-        ], $mol_svg.prototype, "computed_style", null);
-        __decorate([
-            $mol_mem
-        ], $mol_svg.prototype, "font_size", null);
-        __decorate([
-            $mol_mem
-        ], $mol_svg.prototype, "font_family", null);
-        $$.$mol_svg = $mol_svg;
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-
-;
-	($.$mol_svg_root) = class $mol_svg_root extends ($.$mol_svg) {
-		view_box(){
-			return "0 0 100 100";
-		}
-		aspect(){
-			return "xMidYMid";
-		}
-		dom_name(){
-			return "svg";
-		}
-		attr(){
-			return {
-				...(super.attr()), 
-				"viewBox": (this.view_box()), 
-				"preserveAspectRatio": (this.aspect())
-			};
-		}
-	};
-
-
-;
-"use strict";
-var $;
-(function ($) {
-    $mol_style_attach("mol/svg/root/root.view.css", "[mol_svg_root] {\n\toverflow: hidden;\n}\n");
-})($ || ($ = {}));
-
-;
-"use strict";
-
-
-;
-	($.$mol_svg_path) = class $mol_svg_path extends ($.$mol_svg) {
-		geometry(){
-			return "";
-		}
-		dom_name(){
-			return "path";
-		}
-		attr(){
-			return {...(super.attr()), "d": (this.geometry())};
-		}
-	};
-
-
-;
-"use strict";
-
-
-;
-	($.$mol_icon) = class $mol_icon extends ($.$mol_svg_root) {
-		path(){
-			return "";
-		}
-		Path(){
-			const obj = new this.$.$mol_svg_path();
-			(obj.geometry) = () => ((this.path()));
-			return obj;
-		}
-		view_box(){
-			return "0 0 24 24";
-		}
-		minimal_width(){
-			return 16;
-		}
-		minimal_height(){
-			return 16;
-		}
-		sub(){
-			return [(this.Path())];
-		}
-	};
-	($mol_mem(($.$mol_icon.prototype), "Path"));
-
-
-;
-"use strict";
-var $;
-(function ($) {
-    $mol_style_attach("mol/icon/icon.view.css", "[mol_icon] {\n\tfill: currentColor;\n\tstroke: none;\n\twidth: 1em;\n\theight: 1.5em;\n\tflex: 0 0 auto;\n\tvertical-align: top;\n\tdisplay: inline-block;\n\tfilter: drop-shadow(0px 1px 1px var(--mol_theme_back));\n\ttransform-origin: center;\n}\n\n[mol_icon_path] {\n\ttransform-origin: center;\n}\n");
-})($ || ($ = {}));
-
-;
-"use strict";
-
 
 ;
 	($.$mol_icon_close) = class $mol_icon_close extends ($.$mol_icon) {
@@ -19093,6 +19105,7 @@ var $;
 		}
 		Name_label(){
 			const obj = new this.$.$mol_paragraph();
+			(obj.dom_name) = () => ("h1");
 			(obj.title) = () => ((this.name_shown()));
 			return obj;
 		}
@@ -42732,7 +42745,7 @@ var $;
 		body_blocks(){
 			return [];
 		}
-		tags(){
+		tags_export(){
 			return [];
 		}
 		cover_share_uri(){
@@ -42746,7 +42759,7 @@ var $;
 			(obj.blocks) = () => ((this.body_blocks()));
 			(obj.page_title) = () => ((this.post_title()));
 			(obj.summary) = () => ((this.post_summary()));
-			(obj.tags) = () => ((this.tags()));
+			(obj.tags) = () => ((this.tags_export()));
 			(obj.cover) = () => ((this.cover_share_uri()));
 			(obj.base_uri) = () => ((this.file_base()));
 			return obj;
@@ -42760,9 +42773,12 @@ var $;
 			]);
 			return obj;
 		}
+		publish_note(){
+			return "";
+		}
 		Publish_note(){
 			const obj = new this.$.$mol_paragraph();
-			(obj.title) = () => ((this.$.$mol_locale.text("$bog_journal_edit_page_Publish_note_title")));
+			(obj.title) = () => ((this.publish_note()));
 			return obj;
 		}
 		Publish(){
@@ -42832,6 +42848,12 @@ var $;
 		}
 		published_never(){
 			return (this.$.$mol_locale.text("$bog_journal_edit_page_published_never"));
+		}
+		publish_note_draft(){
+			return (this.$.$mol_locale.text("$bog_journal_edit_page_publish_note_draft"));
+		}
+		publish_note_live(){
+			return (this.$.$mol_locale.text("$bog_journal_edit_page_publish_note_live"));
 		}
 		sub(){
 			return (this.page_content());
@@ -43161,24 +43183,47 @@ var $;
                 list.items(this.tags().filter((_, i) => i !== index));
                 return event;
             }
+            /**
+             * Identity of a tag, as opposed to its wording. Two tags are the same tag
+             * when they slugify alike, so `Local First` does not sit next to
+             * `local-first`, and `Локал-фёрст` not next to `локал фёрст`.
+             *
+             * A script the transliteration table knows nothing about (CJK, Arabic)
+             * slugifies to an empty string; there the lowercased label is the identity,
+             * which is weaker but never merges two unrelated tags into one.
+             */
+            tag_key(label) {
+                return $bog_journal_edit_slug(label) || label.trim().toLowerCase();
+            }
             tag_add(event) {
                 if (!event)
                     return null;
-                // Tags share the slug shape, so `Local First` and `local-first` do not
-                // end up as two different tags.
-                const tag = $bog_journal_edit_slug(this.tag_draft());
-                if (!tag)
+                // Stored as typed. The slug used to be stored instead, and the author
+                // who typed `Локал-фёрст` got `lokal-ferst` back on every screen —
+                // machine-readable, but not what anybody wrote or wants to read.
+                const label = this.tag_draft().trim().replace(/\s+/g, ' ');
+                if (!label)
                     return event;
+                const key = this.tag_key(label);
                 // Dedupe: an event handler fiber restarts from the top when it suspends,
                 // so a plain append could land twice.
-                if (this.tags().includes(tag))
+                if (this.tags().some(tag => this.tag_key(tag) === key))
                     return event;
                 const list = this.post()?.Tags('auto');
                 if (!list)
                     return event;
-                list.items([...this.tags(), tag]);
+                list.items([...this.tags(), label]);
                 this.tag_draft('');
                 return event;
+            }
+            /**
+             * Tags for the dev.to front matter. That field wants machine names, and the
+             * exporter only strips punctuation — it would pass Cyrillic straight
+             * through, and dev.to rejects it. Transliterating here keeps the label the
+             * author sees and the name the platform accepts as two separate things.
+             */
+            tags_export() {
+                return this.tags().map(tag => $bog_journal_edit_slug(tag)).filter(Boolean);
             }
             // === Publication =========================================================
             /** `Published` doubles as the flag and the timestamp: 0 means draft. */
@@ -43191,6 +43236,14 @@ var $;
                     return next;
                 }
                 return (post.Published()?.val() ?? 0) > 0;
+            }
+            /**
+             * The note under the checkbox used to warn about drafts whatever the state
+             * was, so a published post still explained what a draft is. Both halves are
+             * worth saying, just not at the same time.
+             */
+            publish_note() {
+                return this.published() ? this.publish_note_live() : this.publish_note_draft();
             }
             published_label() {
                 const time = this.post()?.Published()?.val() ?? 0;
@@ -43318,6 +43371,9 @@ var $;
         __decorate([
             $mol_action
         ], $bog_journal_edit_page.prototype, "tag_add", null);
+        __decorate([
+            $mol_mem
+        ], $bog_journal_edit_page.prototype, "tags_export", null);
         __decorate([
             $mol_mem
         ], $bog_journal_edit_page.prototype, "published", null);
@@ -43599,6 +43655,12 @@ var $;
 
 ;
 	($.$bog_journal_app) = class $bog_journal_app extends ($.$mol_page) {
+		Logo(){
+			return null;
+		}
+		title_content(){
+			return [(this.Logo()), (this.title())];
+		}
 		screen_title(){
 			return "";
 		}
@@ -43674,6 +43736,21 @@ var $;
 			(obj.click) = (next) => ((this.registry_add(next)));
 			return obj;
 		}
+		lang_toggle(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Lang_icon(){
+			const obj = new this.$.$mol_icon_translate();
+			return obj;
+		}
+		Lang(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.hint) = () => ((this.$.$mol_locale.text("$bog_journal_app_Lang_hint")));
+			(obj.click) = (next) => ((this.lang_toggle(next)));
+			(obj.sub) = () => ([(this.Lang_icon())]);
+			return obj;
+		}
 		Status(){
 			const obj = new this.$.$giper_baza_status();
 			return obj;
@@ -43691,6 +43768,7 @@ var $;
 				(this.Nav_edit()), 
 				(this.Post_new()), 
 				(this.Registry_add()), 
+				(this.Lang()), 
 				(this.Status()), 
 				(this.Lights())
 			];
@@ -43718,6 +43796,7 @@ var $;
 		}
 		Start_title(){
 			const obj = new this.$.$mol_paragraph();
+			(obj.dom_name) = () => ("h1");
 			(obj.title) = () => ((this.$.$mol_locale.text("$bog_journal_app_Start_title_title")));
 			return obj;
 		}
@@ -43776,6 +43855,12 @@ var $;
 		}
 		journal_title(id){
 			return "";
+		}
+		Title(){
+			const obj = new this.$.$mol_view();
+			(obj.dom_name) = () => ("div");
+			(obj.sub) = () => ((this.title_content()));
+			return obj;
 		}
 		title(){
 			return (this.screen_title());
@@ -43842,6 +43927,9 @@ var $;
 	($mol_mem(($.$bog_journal_app.prototype), "Post_new"));
 	($mol_mem(($.$bog_journal_app.prototype), "registry_add"));
 	($mol_mem(($.$bog_journal_app.prototype), "Registry_add"));
+	($mol_mem(($.$bog_journal_app.prototype), "lang_toggle"));
+	($mol_mem(($.$bog_journal_app.prototype), "Lang_icon"));
+	($mol_mem(($.$bog_journal_app.prototype), "Lang"));
 	($mol_mem(($.$bog_journal_app.prototype), "Status"));
 	($mol_mem(($.$bog_journal_app.prototype), "Lights"));
 	($mol_mem(($.$bog_journal_app.prototype), "Profile"));
@@ -43855,6 +43943,7 @@ var $;
 	($mol_mem(($.$bog_journal_app.prototype), "Start"));
 	($mol_mem(($.$bog_journal_app.prototype), "Directory_title"));
 	($mol_mem(($.$bog_journal_app.prototype), "Directory_list"));
+	($mol_mem(($.$bog_journal_app.prototype), "Title"));
 	($mol_mem(($.$bog_journal_app.prototype), "Directory"));
 	($mol_mem_key(($.$bog_journal_app.prototype), "Journal_row"));
 	($.$bog_journal_app_nav) = class $bog_journal_app_nav extends ($.$mol_link) {
@@ -45942,13 +46031,41 @@ var $;
                     default: return [this.Start()];
                 }
             }
+            /**
+             * What the browser tab, the history entry and the page caption say. On an
+             * article that has to be the article, not the word "Post" — a reader with
+             * five tabs open cannot tell them apart otherwise, and neither can their
+             * bookmarks a week later.
+             *
+             * The title is read straight off the post page, which owns that Land, so
+             * the two never disagree. While the Land is still syncing the read gives
+             * an empty string and the generic caption stands in until it arrives.
+             */
             screen_title() {
                 switch (this.screen()) {
                     case 'edit': return this.title_edit();
-                    case 'post': return this.title_post();
+                    case 'post': return this.post_title() || this.title_post();
                     case 'feed': return this.title_feed();
                     default: return this.title_journal();
                 }
+            }
+            /** The cast is the usual one: view.tree only knows the generated base. */
+            post_title() {
+                return this.Post().post_title();
+            }
+            // === Language ============================================================
+            //
+            // Without a switch the language is decided for the reader by whatever
+            // navigator.language happens to say, and the journal's own strings and the
+            // ones coming from $mol and the editor can land on different answers. One
+            // button, two languages, the choice persisted by $mol_locale in local
+            // storage and read reactively by every `@ \…` string on the page.
+            lang_toggle(event) {
+                if (!event)
+                    return null;
+                const locale = this.$.$mol_locale;
+                locale.lang(locale.lang() === 'ru' ? 'en' : 'ru');
+                return event;
             }
             // === SEO =================================================================
             /**
@@ -46142,7 +46259,7 @@ var $;
                     if (this.registry_addable())
                         parts.push(this.Registry_add());
                 }
-                parts.push(this.Status(), this.Lights());
+                parts.push(this.Lang(), this.Status(), this.Lights());
                 return parts;
             }
             // === Actions =============================================================
@@ -46249,6 +46366,9 @@ var $;
             $mol_mem
         ], $bog_journal_app.prototype, "app_content", null);
         __decorate([
+            $mol_action
+        ], $bog_journal_app.prototype, "lang_toggle", null);
+        __decorate([
             $mol_mem_key
         ], $bog_journal_app.prototype, "can_edit", null);
         __decorate([
@@ -46301,6 +46421,22 @@ var $;
             // isolation that matters here and leaves fixed positioning alone.
             Body: {
                 contain: 'style',
+            },
+            // The caption is an article title now, not the word "Post", so it can run
+            // long. Left alone it pushes the whole toolbar onto a second and third row
+            // on a phone; one line with an ellipsis costs nothing, the full text is on
+            // the page right below anyway.
+            Title: {
+                display: 'block',
+                minWidth: 0,
+                flex: {
+                    shrink: 1,
+                },
+                whiteSpace: 'nowrap',
+                overflow: {
+                    x: 'hidden',
+                },
+                textOverflow: 'ellipsis',
             },
             // The toolbar carries the whole navigation, so on a narrow screen it has
             // to wrap instead of pushing the page into a horizontal scroll.
@@ -46382,6 +46518,37 @@ var $;
             Start_button: {
                 margin: {
                     top: '0.5rem',
+                },
+            },
+            // Three navigation links and three icon controls come to a few pixels over
+            // a 390px row, and the odd one out drops to a line of its own. Tighter
+            // padding buys back more than enough.
+            '@media': {
+                '(max-width: 640px)': {
+                    Nav_feed: {
+                        padding: {
+                            left: '0.375rem',
+                            right: '0.375rem',
+                        },
+                    },
+                    Nav_profile: {
+                        padding: {
+                            left: '0.375rem',
+                            right: '0.375rem',
+                        },
+                    },
+                    Nav_read: {
+                        padding: {
+                            left: '0.375rem',
+                            right: '0.375rem',
+                        },
+                    },
+                    Nav_edit: {
+                        padding: {
+                            left: '0.375rem',
+                            right: '0.375rem',
+                        },
+                    },
                 },
             },
         });

@@ -70,6 +70,37 @@ $mol_button_typed $mol_button
 
 $mol_button_minor $mol_button_typed
 
+$mol_svg $mol_view
+	dom_name \svg
+	dom_name_space \http://www.w3.org/2000/svg
+	font_size 16
+	font_family \
+	style_size *
+
+$mol_svg_root $mol_svg
+	dom_name \svg
+	attr *
+		^
+		viewBox <= view_box \0 0 100 100
+		preserveAspectRatio <= aspect \xMidYMid
+
+$mol_svg_path $mol_svg
+	dom_name \path
+	attr *
+		^
+		d <= geometry \
+
+
+$mol_icon $mol_svg_root
+	view_box \0 0 24 24
+	minimal_width 16
+	minimal_height 16
+	sub /
+		<= Path $mol_svg_path
+			geometry <= path \
+
+$mol_icon_translate $mol_icon path \M12.87,15.07L10.33,12.56L10.36,12.53C12.1,10.59 13.34,8.36 14.07,6H17V4H10V2H8V4H1V6H12.17C11.5,7.92 10.44,9.75 9,11.35C8.07,10.32 7.3,9.19 6.69,8H4.69C5.42,9.63 6.42,11.17 7.67,12.56L2.58,17.58L4,19L9,14L12.11,17.11L12.87,15.07M18.5,10H16.5L12,22H14L15.12,19H19.87L21,22H23L18.5,10M15.88,17L17.5,12.67L19.12,17H15.88Z
+
 $mol_ghost $mol_view
 	Sub $mol_view
 
@@ -241,35 +272,6 @@ $mol_string $mol_view
 		<= Submit $mol_hotkey
 			mod_ctrl <= submit_with_ctrl false
 			key * enter? <=> submit? null
-
-$mol_svg $mol_view
-	dom_name \svg
-	dom_name_space \http://www.w3.org/2000/svg
-	font_size 16
-	font_family \
-	style_size *
-
-$mol_svg_root $mol_svg
-	dom_name \svg
-	attr *
-		^
-		viewBox <= view_box \0 0 100 100
-		preserveAspectRatio <= aspect \xMidYMid
-
-$mol_svg_path $mol_svg
-	dom_name \path
-	attr *
-		^
-		d <= geometry \
-
-
-$mol_icon $mol_svg_root
-	view_box \0 0 24 24
-	minimal_width 16
-	minimal_height 16
-	sub /
-		<= Path $mol_svg_path
-			geometry <= path \
 
 $mol_icon_close $mol_icon path \M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z
 
@@ -507,7 +509,11 @@ $bog_journal_profile $mol_view
 	Name_input $mol_string_button
 		hint @ \Your name
 		value? <=> author_name? \
+	- The author's name is what this page is about, so it is the page's h1 now
+	- that the app header stopped claiming that role. Only the read-only twin
+	- gets it: for the owner this slot is a text field.
 	Name_label $mol_paragraph
+		dom_name \h1
 		title <= name_shown
 	Bio_input $bog_journal_profile_text
 		hint @ \A few words about you
@@ -2736,6 +2742,8 @@ $bog_journal_edit_page $mol_view
 	published_label \
 	post_new_title @ \Untitled post
 	published_never @ \Not published
+	publish_note_draft @ \A draft is hidden from the lists, not from the network: the journal is a publicly readable Land, so anyone holding this link can already read it.
+	publish_note_live @ \Published: the post is in the journal's list and in the feeds that follow it. Unpublishing takes it out of both, the link keeps working.
 	sub <= page_content /
 		<= Denied $mol_paragraph
 			title @ \This journal belongs to somebody else. You can read it, but not edit it.
@@ -2794,11 +2802,11 @@ $bog_journal_edit_page $mol_view
 									blocks <= body_blocks /$bog_wysiwyg_export_block
 									page_title <= post_title
 									summary <= post_summary
-									tags <= tags /string
+									tags <= tags_export /string
 									cover <= cover_share_uri \
 									base_uri <= file_base \
 						<= Publish_note $mol_paragraph
-							title @ \A draft is hidden from the lists, not from the network: the journal is a publicly readable Land, so anyone holding this link can already read it.
+							title <= publish_note \
 		<= Body $bog_wysiwyg
 			page_land_link <= body_land_link
 			readonly <= body_readonly
@@ -2837,7 +2845,17 @@ $bog_journal_edit_chip $mol_view
 $bog_journal_edit_export $bog_wysiwyg_export
 	summary \
 
+- The stock $mol_page marks its header caption as the page's h1. On an article
+- that caption is the second one: the post itself opens with a real h1, and two
+- competing top-level headings on a page is worse than none. Same body as the
+- base declaration, only the tag changes — the caption stays where it was and
+- keeps reading as a caption, it just stops claiming to be the heading.
 $bog_journal_app $mol_page
+	Title $mol_view
+		dom_name \div
+		sub <= title_content /
+			<= Logo null
+			<= title
 	title <= screen_title \
 	author_link \
 	post_link \
@@ -2875,6 +2893,14 @@ $bog_journal_app $mol_page
 			title @ \List publicly
 			hint @ \Add this journal to the public directory
 			click?event <=> registry_add?event null
+		- Icon rather than the language's name: spelled out it took the toolbar
+		- onto a second row on a phone, and it sits next to two other icon
+		- controls anyway. Which language is on is visible from the whole page.
+		<= Lang $mol_button_minor
+			hint @ \Switch language
+			click?event <=> lang_toggle?event null
+			sub /
+				<= Lang_icon $mol_icon_translate
 		<= Status $giper_baza_status
 		<= Lights $mol_lights_toggle
 	body <= app_content /
@@ -2890,6 +2916,7 @@ $bog_journal_app $mol_page
 		<= Start $mol_view
 			sub /
 				<= Start_title $mol_paragraph
+					dom_name \h1
 					title @ \No journal here yet
 				<= Start_hint $mol_paragraph
 					title @ \Create your own journal to start publishing posts.
