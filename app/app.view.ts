@@ -1,8 +1,5 @@
 namespace $.$$ {
 
-	/** Giper Baza node every journal syncs through. */
-	const prod_master = 'https://baza.87.120.36.150.ip.giper.dev/'
-
 	/** Public read preset: anybody, signed in or not, can pull the Land. */
 	const public_read: $giper_baza_rank_preset = [[ null, $giper_baza_rank_read ]]
 
@@ -50,7 +47,7 @@ namespace $.$$ {
 		@ $mol_mem
 		baza_master() {
 			const custom = this.$.$mol_state_arg.value( 'baza' ) ?? ''
-			const url = custom || prod_master
+			const url = custom || $bog_journal_model_master
 			const masters = this.$.$giper_baza_yard.masters_default
 			if( !masters.includes( url ) ) masters.unshift( url )
 			return url
@@ -211,6 +208,109 @@ namespace $.$$ {
 			return $giper_baza_rank_tier_of( land.pass_rank( pass ) ) >= $giper_baza_rank_tier.post
 		}
 
+		// === Directory ===========================================================
+		//
+		// The public catalogue of journals, see model/registry. It answers the one
+		// question the data model cannot: which journals exist. A journal link
+		// lives in its author's home Land, and a home Land is readable by its owner
+		// alone, so without the catalogue every other reader — the crawler
+		// included — has to be told about a new author by hand.
+		//
+		// Baza objects are never cached in an atom here, same rule the profile
+		// page follows: glob already caches them, and an atom would own them and
+		// destruct them on rebuild.
+
+		/** Catalogue Land, `null` while no catalogue is pinned in the bundle. */
+		registry_land() {
+			if( !$bog_journal_model_registry_link ) return null
+			return this.$.$giper_baza_glob.Land( new $giper_baza_link( $bog_journal_model_registry_link ).land() )
+		}
+
+		/** Root record of the catalogue. */
+		registry() {
+			return this.registry_land()?.Data( $bog_journal_model_registry ) ?? null
+		}
+
+		/**
+		 * Journals in the catalogue, newest first — a Baza list adds at the head.
+		 * Plain strings, exactly what the router puts into `author=`.
+		 */
+		@ $mol_mem
+		registry_journals(): readonly string[] {
+			const links = this.registry()?.Journals()?.items() ?? []
+			return links.map( link => link.str ).filter( str => !!str )
+		}
+
+		/**
+		 * Whether a journal is already listed. Compares Lands rather than whole
+		 * links: the same journal can be named by its root pawn or by its Land,
+		 * and both mean one journal.
+		 */
+		registry_has( link: string ) {
+			if( !link ) return false
+			const land = new $giper_baza_link( link ).land().str
+			return this.registry_journals().some( str => new $giper_baza_link( str ).land().str === land )
+		}
+
+		/**
+		 * Whether this user may write into the catalogue. Reading the journal list
+		 * above is what makes the Land sync at all — asking for the rank alone
+		 * answers "no" on a cold load and never corrects itself.
+		 */
+		@ $mol_mem
+		registry_writable() {
+			const land = this.registry_land()
+			if( !land ) return false
+			this.registry_journals()
+			const pass = this.$.$giper_baza_auth.current().pass()
+			return $giper_baza_rank_tier_of( land.pass_rank( pass ) ) >= $giper_baza_rank_tier.post
+		}
+
+		/** Journals created before the catalogue existed can still be listed. */
+		@ $mol_mem
+		registry_addable() {
+			const link = this.author_link()
+			if( !link || !this.registry_land() ) return false
+			if( this.registry_has( link ) ) return false
+			return this.registry_writable()
+		}
+
+		/**
+		 * Directory of journals under the start screen. Hidden when the catalogue
+		 * is empty or absent, so an unbootstrapped build shows no stray heading.
+		 *
+		 * The start screen is where a reader with no journal of their own lands,
+		 * and where the CI crawl starts, so this doubles as the hub page: every
+		 * journal is one real link away from the root.
+		 */
+		directory() {
+			return this.journal_rows().length ? this.Directory() : null
+		}
+
+		@ $mol_mem
+		journal_rows() {
+			return this.registry_journals().map( ( _, index )=> this.Journal_row( index ) )
+		}
+
+		journal_link( index: number ) {
+			return this.registry_journals()[ index ] ?? ''
+		}
+
+		/** Root pawn of a listed journal, for its name. */
+		journal_record( index: number ) {
+			const link = this.journal_link( index )
+			if( !link ) return null
+			return this.$.$giper_baza_glob.Pawn( new $giper_baza_link( link ), $bog_journal_model_author )
+		}
+
+		journal_title( index: number ) {
+			return this.journal_record( index )?.Name()?.val() || this.journal_untitled()
+		}
+
+		journal_arg( index: number ): Record< string, string | null > {
+			return { author: this.journal_link( index ) || null, post: null, edit: null, feed: null }
+		}
+
 		// === Navigation ==========================================================
 		//
 		// Every move between screens is a real <a href> with a path, never a click
@@ -250,7 +350,12 @@ namespace $.$$ {
 			if( screen !== 'profile' && screen !== 'start' ) parts.push( this.Nav_profile() )
 			if( screen === 'edit' ) parts.push( this.Nav_read() )
 			if( screen === 'post' && this.can_edit( this.post_link() ) ) parts.push( this.Nav_edit() )
-			if( screen === 'profile' && this.can_edit( this.author_link() ) ) parts.push( this.Post_new() )
+			if( screen === 'profile' && this.can_edit( this.author_link() ) ) {
+				parts.push( this.Post_new() )
+				// Only the owner asks the catalogue anything: for a plain reader
+				// this would be one more Land pulled for nothing.
+				if( this.registry_addable() ) parts.push( this.Registry_add() )
+			}
 
 			parts.push( this.Status(), this.Lights() )
 			return parts
@@ -263,12 +368,43 @@ namespace $.$$ {
 		 * with public read and writes its root pawn link into the home record in
 		 * one step. Proof-of-Work runs inside this fiber — never from a @$mol_mem,
 		 * where a suspended retry loops forever.
+		 *
+		 * Listing comes before routing, and inside the same fiber: this is the one
+		 * moment when the app is certain a new journal exists, and a catalogue
+		 * entry written later would be a separate decision somebody has to make.
 		 */
 		@ $mol_action
 		journal_create( event?: Event ) {
 			if( !event ) return null
 			const author = this.home().Journal( 'auto' )?.ensure( public_read )
-			if( author ) this.author_link( author.link().str )
+			if( author ) {
+				this.registry_register( author.link().str )
+				this.author_link( author.link().str )
+			}
+			return event
+		}
+
+		/**
+		 * Writes a journal into the public catalogue.
+		 *
+		 * Silent when there is no catalogue in this build, and silent when the
+		 * catalogue refuses the write — `'auto'` hands back `null` instead of
+		 * throwing if the Land grants this user read only. Neither case is worth
+		 * interrupting journal creation for: the journal itself is fine, it is
+		 * only harder to find.
+		 */
+		@ $mol_action
+		registry_register( link: string ) {
+			if( !link ) return
+			if( this.registry_has( link ) ) return
+			this.registry()?.Journals( 'auto' )?.add( new $giper_baza_link( link ) )
+		}
+
+		/** Same, for a journal that predates the catalogue. */
+		@ $mol_action
+		registry_add( event?: Event ) {
+			if( !event ) return null
+			this.registry_register( this.author_link() )
 			return event
 		}
 

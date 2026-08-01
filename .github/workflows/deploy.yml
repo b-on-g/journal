@@ -123,6 +123,32 @@ jobs:
                     --build-dir="$BUILD_DIR" \
                     --base-url="$BASE_URL"
 
+            # Draws an og:image for every post that has no cover of its own, right
+            # into the snapshot directory the post lives in — the page asks for
+            # `<route>/og.png`, so there is no naming scheme to keep in sync.
+            #
+            # Last before deploy on purpose. It reads the finished snapshots, so it
+            # needs the prerender to have run and verify.mjs to have thrown away the
+            # snapshots the Land never reached: drawing earlier would leave cards
+            # orphaned in directories that are about to be deleted.
+            #
+            # Its own puppeteer, because the script lives outside deploy/routes and
+            # node resolves bare imports upwards from the script, never sideways.
+            # The chromium binary is shared through ~/.cache/puppeteer, so the second
+            # install costs a few seconds, not a download.
+            #
+            # Fonts are not installed here: the runner image ships browsers and
+            # therefore font packages, and the script checks for a Cyrillic face
+            # itself, skipping the cards rather than drawing tofu.
+            - name: Draw preview cards
+              if: github.ref == 'refs/heads/main'
+              continue-on-error: true
+              run: |
+                  npm install --prefix bog/journal/assets --no-audit --no-fund
+                  node bog/journal/assets/og_cards.mjs \
+                    --build-dir="$BUILD_DIR" \
+                    --base-url="$BASE_URL"
+
             - uses: hyoo-ru/gh-deploy@v4.4.1
               if: github.ref == 'refs/heads/main'
               with:

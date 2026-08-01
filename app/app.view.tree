@@ -9,6 +9,7 @@ $bog_journal_app $mol_page
 	title_feed @ \Feed
 	title_post @ \Post
 	title_edit @ \Editing
+	journal_untitled @ \Unnamed journal
 	plugins /
 		<= Theme $mol_theme_auto
 	tools <= tool_bar /
@@ -31,6 +32,10 @@ $bog_journal_app $mol_page
 		<= Post_new $mol_button_minor
 			title @ \New post
 			click?event <=> post_create?event null
+		<= Registry_add $mol_button_minor
+			title @ \List publicly
+			hint @ \Add this journal to the public directory
+			click?event <=> registry_add?event null
 		<= Status $giper_baza_status
 		<= Lights $mol_lights_toggle
 	body <= app_content /
@@ -52,6 +57,17 @@ $bog_journal_app $mol_page
 				<= Start_button $mol_button_major
 					title @ \Create journal
 					click?event <=> journal_create?event null
+				<= directory null
+	- Journals from the public catalogue, see directory in app.view.ts
+	Directory $mol_view
+		sub /
+			<= Directory_title $mol_paragraph
+				title @ \Journals here
+			<= Directory_list $mol_list
+				rows <= journal_rows /
+	Journal_row* $bog_journal_app_nav
+		arg <= journal_arg* *
+		title <= journal_title* \
 
 - Navigation link that never toggles itself off.
 -

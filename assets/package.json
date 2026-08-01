@@ -1,0 +1,15 @@
+{
+	"name": "bog-journal-assets",
+	"private": true,
+	"type": "module",
+	"comment": [
+		"Зависимости генератора превью-карточек, og_cards.mjs. Отдельный файл, а не",
+		"общий с deploy/routes: node ищет пакет вверх от самого скрипта, и до",
+		"deploy/routes/node_modules из assets/ ему не дотянуться. Мажор puppeteer тот",
+		"же, что у deploy/routes и у mol-prerender-action, поэтому бинарь chromium в",
+		"~/.cache/puppeteer скачивается один раз на всех."
+	],
+	"dependencies": {
+		"puppeteer": "^25"
+	}
+}

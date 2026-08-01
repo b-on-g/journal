@@ -1,0 +1,27 @@
+- One-off bootstrap of the journal catalogue.
+-
+- Deliberately a module of its own and not a screen of the app: nothing in the
+- app references it, and mam only pulls modules that are referenced, so this
+- page and its buttons never reach the shipped bundle.
+-
+- Build and open it alone: npx mam bog/journal/model/registry/init
+- then http://localhost:9080/bog/journal/model/registry/init/-/test.html
+$bog_journal_model_registry_init $mol_page
+	title \Journal catalogue — bootstrap
+	tools /
+		<= Sync $giper_baza_status
+	body /
+		<= Guide $mol_text
+			text <= guide \
+		<= Owner $mol_paragraph
+			title <= owner_line \
+		<= Make $mol_button_major
+			title \Create the catalogue Land
+			click?event <=> make?event null
+		<= result_block null
+		<= download_button null
+	Result $mol_text
+		text <= result \
+	Download $mol_button_minor
+		title \Download registry.baza
+		click?event <=> download?event null
