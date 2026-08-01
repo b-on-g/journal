@@ -36,7 +36,76 @@ namespace $.$$ {
 		 * hash router keeps working against the non-SPA file server.
 		 */
 		static {
+			$bog_journal_app.nav_intercept( '/journal/' )
 			$bog_builderui_router.activate( '/journal/' )
+		}
+
+		/**
+		 * Переход ведёт ровно туда, что написано в ссылке.
+		 *
+		 * Роутер при клике склеивает ключи из href с ключами текущего адреса и
+		 * сохраняет всё, чего в href нет. Для приложения с двумя ключами это
+		 * незаметно, а здесь их четыре, и переходы как раз убирают лишние:
+		 * «Журнал» со страницы поста должен снять `post=`, «Смотреть» из
+		 * редактора — снять `edit=`. Просить это через `arg * key null`
+		 * бесполезно: ключ со значением `null` в href не попадает вовсе, а
+		 * склейка читает его отсутствие как «оставить как было».
+		 *
+		 * Поэтому клик перехватывается здесь и переводится в честный `go()` с
+		 * полным набором ключей, где отсутствующие явно погашены. Слушатель
+		 * ставится в capture ДО `activate()`, так что роутер видит уже
+		 * `defaultPrevented` и в навигацию не вмешивается.
+		 *
+		 * Чинить это в самом роутере значило бы менять поведение общего модуля
+		 * ради одного приложения — там от склейки зависят другие.
+		 */
+		static nav_intercept( mount: string ) {
+
+			if( typeof window === 'undefined' ) return
+			if( typeof document === 'undefined' ) return
+
+			// Тот же guard, что и у роутера: на дев-сервере путь вида
+			// `/bog/journal/app/-/test.html` обслуживает обычная файловая
+			// раздача без SPA-фолбэка, там остаётся хеш-роутер и перехватывать
+			// нечего.
+			const here = decodeURIComponent( $mol_dom.location.pathname )
+			if( /\/-\/|\.html$/.test( here ) ) return
+
+			const keys = [ 'author', 'post', 'feed', 'edit' ]
+
+			self.addEventListener( 'click', ( event: MouseEvent )=> {
+
+				if( event.defaultPrevented ) return
+				if( event.button !== 0 ) return
+				if( event.metaKey || event.ctrlKey || event.shiftKey || event.altKey ) return
+
+				let node = event.target as HTMLElement | null
+				while( node && node.tagName !== 'A' ) node = node.parentElement
+				if( !node ) return
+
+				const link = node as HTMLAnchorElement
+				if( link.hasAttribute( 'download' ) ) return
+				if( link.target && link.target !== '' && link.target !== '_self' ) return
+				if( link.origin !== $mol_dom.location.origin ) return
+
+				const path = decodeURIComponent( link.pathname )
+				if( !path.startsWith( mount ) ) return
+
+				const next = {} as Record< string, string | null >
+				for( const key of keys ) next[ key ] = null
+
+				for( const chunk of path.slice( mount.length ).split( '/' ) ) {
+					if( !chunk ) continue
+					const parts = chunk.split( '=' )
+					const key = parts.shift()!
+					next[ key ] = parts.join( '=' )
+				}
+
+				event.preventDefault()
+				this.$.$mol_state_arg.go( next )
+
+			}, true )
+
 		}
 
 		/**
