@@ -6,7 +6,15 @@
 	<meta name="mobile-web-app-capable" content="yes" />
 	<title>Journal</title>
 </head>
-<body mol_view_root="$bog_journal_app">
+<body mol_view_root>
+	<!--
+		Приложение рендерится в отдельный контейнер, а не прямо в <body>.
+		$mol перерисовывает содержимое своего корня целиком, поэтому тег
+		скрипта, лежащий внутри него, до пререндера не доживает: снимок
+		страницы получается вообще без ссылки на бандл, и выложенная статика
+		перестаёт быть приложением. Скрипт должен лежать РЯДОМ с корнем.
+	-->
+	<div mol_view_root="$bog_journal_app"></div>
 	<script src="web.js" charset="utf-8"></script>
 </body>
 </html>
