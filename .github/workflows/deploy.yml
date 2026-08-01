@@ -115,7 +115,13 @@ jobs:
 
             # Rewrites the localhost origin the action bakes into canonical/og:url, and
             # throws away snapshots the Land did not reach in time — an empty static
-            # page is worse for search than no page at all. Never fails the build.
+            # page is worse for search than no page at all.
+            #
+            # Fails the job on one thing only: a snapshot with no reference to the
+            # bundle. That is not a degraded page, it is a static corpse that looks
+            # alive and replaces the app for everybody, and it has happened once
+            # already. Everything else here stays advisory. A failure here also skips
+            # the two steps below, so the previous, working deploy stays up.
             - name: Check and normalize snapshots
               if: github.ref == 'refs/heads/main'
               run: |
