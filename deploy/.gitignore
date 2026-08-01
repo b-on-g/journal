@@ -1,3 +1,9 @@
 # Результат build.sh: собранный бандл и архив для scp.
 dist/
 journal-seo.tgz
+
+# Генерируется в CI шагом «Discover published posts».
+sitemap.xml
+
+# Зависимости краулера маршрутов, ставятся в CI.
+routes/node_modules/

@@ -4,9 +4,34 @@ permissions: write-all
 
 on:
     workflow_dispatch:
+        inputs:
+            force:
+                description: "Re-render every page, even when the route list has not changed"
+                type: boolean
+                default: false
     push:
     pull_request:
     delete:
+
+    # Posts are published by flipping a flag in a Land on the master node — no
+    # commit, no build. Without a clock the static snapshots would only ever be
+    # refreshed by unrelated code pushes, so a new article could stay invisible
+    # to crawlers for days.
+    #
+    # Three hours is the middle of a real trade-off. Faster buys little: a young
+    # site is not re-crawled every hour anyway, and each run also pulls Lands
+    # from a master node that lives on a memory-starved box. Slower starts to
+    # hurt the case this whole pipeline exists for — sharing a fresh link, where
+    # the unfurl comes from the static snapshot.
+    #
+    # Runs with nothing new are nearly free: the prerender action keys its cache
+    # on the bundle plus the generated route list, so an unchanged journal
+    # restores from cache instead of launching a browser.
+    #
+    # Minute 17 rather than 0: scheduled runs pile up at the top of the hour and
+    # GitHub delays them.
+    schedule:
+        - cron: "17 */3 * * *"
 
 concurrency:
     group: deploy-${{ github.ref }}
@@ -15,6 +40,15 @@ concurrency:
 jobs:
     build:
         runs-on: ubuntu-latest
+
+        # A hung headless browser would otherwise burn the default six hours,
+        # and this workflow now runs eight times a day on its own.
+        timeout-minutes: 30
+
+        env:
+            BASE_URL: "https://b-on-g.github.io/journal/"
+            BUILD_DIR: "bog/journal/app/-"
+            SITEMAP: "bog/journal/deploy/sitemap.xml"
 
         steps:
             - uses: hyoo-ru/mam_build@master2
@@ -28,10 +62,66 @@ jobs:
                   # Path routing means /journal/author=…/post=… has no matching file.
                   # GitHub Pages answers such paths with 404.html; its rafgraph redirect
                   # hands the deep-link back to index.html, where the router expands it
-                  # into the real pathname. Without this every shared link 404s on a
-                  # cold load — and the $bog_seo crawler walks real hrefs, so it would
-                  # hit exactly that.
+                  # into the real pathname.
+                  #
+                  # Still needed with prerender: snapshots only exist for routes the
+                  # discovery step found, and a page dropped as empty (see the verify
+                  # step) deliberately falls back to this path.
                   cp bog/journal/404.html bog/journal/app/-/404.html
+
+            # The route list cannot come from the repository: posts live in Lands on
+            # the master node, and the prerender action has no crawler of its own —
+            # it reads routes from `screens` and from <loc> in a sitemap, nothing else.
+            # So the sitemap is produced here, by opening the journals listed in
+            # deploy/routes/journals.txt in a real browser and reading their links.
+            # Rationale for a browser rather than a node Baza client is in the script.
+            - name: Discover published posts
+              if: github.ref == 'refs/heads/main'
+              continue-on-error: true
+              run: |
+                  npm install --prefix bog/journal/deploy/routes --no-audit --no-fund
+                  NONCE=""
+                  if [ "${{ inputs.force }}" = "true" ]; then
+                      # Busts the prerender cache when the route list is unchanged but
+                      # article bodies were edited.
+                      NONCE="--nonce=${{ github.run_id }}"
+                  fi
+                  node bog/journal/deploy/routes/routes.mjs \
+                    --build-dir="$BUILD_DIR" \
+                    --base-url="$BASE_URL" \
+                    --seeds=bog/journal/deploy/routes/journals.txt \
+                    --out="$SITEMAP" \
+                    $NONCE
+
+            # Renders every discovered route to <route>/index.html, keeping the scripts
+            # so the same file still boots the SPA for a human, and injecting
+            # <title>/meta/og/canonical from the app's data-bog-meta.
+            #
+            # Non-blocking on purpose: a prerender hiccup leaves the plain SPA plus the
+            # 404.html fallback, which is exactly how the site worked before.
+            - name: Prerender routes to static HTML
+              if: github.ref == 'refs/heads/main'
+              continue-on-error: true
+              uses: b-on-g/mol-prerender-action@main
+              with:
+                  folder: ${{ env.BUILD_DIR }}
+                  base-url: ${{ env.BASE_URL }}
+                  route-format: "path"
+                  sitemap-file: ${{ env.SITEMAP }}
+                  viewport: "1280x900"
+                  # Default is 15s. Content here arrives over a CRDT sync from the
+                  # master node, not from the bundle, so give the first paint room.
+                  timeout: "30000"
+
+            # Rewrites the localhost origin the action bakes into canonical/og:url, and
+            # throws away snapshots the Land did not reach in time — an empty static
+            # page is worse for search than no page at all. Never fails the build.
+            - name: Check and normalize snapshots
+              if: github.ref == 'refs/heads/main'
+              run: |
+                  node bog/journal/deploy/routes/verify.mjs \
+                    --build-dir="$BUILD_DIR" \
+                    --base-url="$BASE_URL"
 
             - uses: hyoo-ru/gh-deploy@v4.4.1
               if: github.ref == 'refs/heads/main'

@@ -1,0 +1,14 @@
+{
+	"name": "bog-journal-routes",
+	"private": true,
+	"type": "module",
+	"comment": [
+		"Отдельный package.json, чтобы npm install для CI не тянул зависимости",
+		"докер-образа из ../package.json. Puppeteer тот же мажор, что ставит себе",
+		"mol-prerender-action, поэтому бинарь chromium в ~/.cache/puppeteer",
+		"скачивается один раз на двоих."
+	],
+	"dependencies": {
+		"puppeteer": "^25"
+	}
+}
