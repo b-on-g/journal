@@ -1,0 +1,10 @@
+{
+	"name": "bog_journal_app",
+	"short_name": "bog_journal_app",
+	"description": "",
+	"id": "bog_journal_app",
+	"start_url": ".",
+	"display": "standalone",
+	"background_color": "#000000",
+	"theme_color": "#000000"
+}

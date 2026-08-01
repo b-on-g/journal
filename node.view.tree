@@ -1,0 +1,3122 @@
+$mol_scroll $mol_view
+	scroll_top? 0
+	scroll_left? 0
+	attr *
+		^
+		tabindex <= tabindex -1
+	event *
+		^
+		scroll? <=> event_scroll? null
+
+$mol_page $mol_view
+	dom_name \article
+	attr *
+		^
+		tabIndex <= tabindex -1
+	sub /
+		<= Head $mol_view
+			minimal_height 64
+			dom_name \header
+			sub <= head /
+				<= Title $mol_view
+					dom_name \h1
+					sub <= title_content /
+						<= Logo null
+						<= title
+				<= Tools $mol_view
+					sub <= tools /$mol_view_content
+		<= Body $mol_scroll
+			scroll_top? => body_scroll_top?
+			sub <= body_content /
+				<= Body_content $mol_view
+					sub <= body /$mol_view
+		<= Foot $mol_view
+			dom_name \footer
+			sub <= foot /$mol_view
+
+$mol_theme_auto $mol_plugin
+	light \$mol_theme_light
+	attr * mol_theme <= theme <= dark \$mol_theme_dark
+
+$mol_speck $mol_view
+	theme \$mol_theme_accent
+	sub /
+		<= value null
+
+$mol_button $mol_view
+	enabled true
+	click? null
+	event_click? null
+	status? /
+	event *
+		^
+		click? <=> activate? <=> event_activate? null
+		dblclick? <=> clicks? null
+		keydown? <=> key_press? <=> event_key_press? null
+	attr *
+		^
+		disabled <= disabled false
+		role \button
+		tabindex <= tab_index 0
+		title <= hint_safe <= hint \
+	sub /$mol_view_content
+		<= title
+	Speck $mol_speck
+		value <= error \
+
+$mol_button_typed $mol_button
+	minimal_height 40
+	minimal_width 40
+
+$mol_button_minor $mol_button_typed
+
+$mol_ghost $mol_view
+	Sub $mol_view
+
+$mol_follower $mol_ghost
+	Anchor $mol_view
+	align /number
+		-.5
+		-.5
+	offset /number
+		0
+		0
+	style *
+		^
+		transform <= transform \
+
+$mol_pop $mol_view
+	showed? false
+	align_vert \
+	align_hor \
+	align \bottom_center
+	prefer \vert
+	auto /
+		<= bubble null
+	sub /
+		<= Anchor null
+	sub_visible /
+		<= Anchor
+		<= Follower $mol_follower
+			offset <= bubble_offset /number
+				0
+				1
+			align <= bubble_align /number
+				0
+				0
+			Anchor <= Anchor
+			Sub <= Bubble $mol_pop_bubble
+				content <= bubble_content /$mol_view_content
+				height_max <= height_max 9999
+
+$mol_pop_bubble $mol_view
+	sub <= content /$mol_view_content
+	style *
+		^
+		maxHeight <= height_max 9999
+	attr *
+		^
+		tabindex 0
+		popover \manual
+
+$mol_check $mol_button_minor
+	attr *
+		^
+		mol_check_checked <= checked? false
+		aria-checked <= aria_checked \false
+		role <= aria_role \checkbox
+	sub /$mol_view_content
+		<= Icon null
+		<= label /
+			<= Title $mol_view
+				sub /
+					<= title \
+
+$mol_pick $mol_pop
+	event *
+		^
+		keydown? <=> keydown? null
+	Anchor <= Trigger $mol_check
+		minimal_width 40
+		minimal_height 40
+		enabled <= trigger_enabled true
+		checked? <=> showed?
+		clicks? <=> clicks? null
+		sub <= trigger_content /$mol_view_content
+			<= title
+		hint <= hint \
+
+$mol_paragraph $mol_view
+	line_height 24
+	letter_width 7
+	width_limit +Infinity
+	row_width 0
+	sub / <= title
+
+$mol_dimmer $mol_paragraph
+	haystack \
+	needle \
+	sub <= parts /$mol_view_content
+	Low* $mol_paragraph
+		sub /
+			<= string* \
+	High* $mol_paragraph
+		sub /
+			<= string* \
+
+$mol_nav $mol_plugin
+	cycle? false
+	-
+	mod_ctrl false
+	mod_shift false
+	mod_alt false
+	-
+	keys_x? /
+	keys_y? /
+	-
+	current_x? null
+	current_y? null
+	-
+	event_up? null
+	event_down? null
+	event_left? null
+	event_right? null
+	event *
+		^
+		keydown? <=> event_key? null
+
+$mol_list $mol_view
+	render_visible_only true
+	render_over 0.1
+	sub <= rows /$mol_view
+		<= Gap_before $mol_view style * paddingTop <= gap_before 0
+		<= Empty $mol_view
+		<= Gap_after $mol_view style * paddingTop <= gap_after 0
+	item_height_min* 1
+	item_width_min* 1
+	view_window_shift? 0
+	view_window /
+		0
+		0
+
+$mol_hotkey $mol_plugin
+	event *
+		^
+		keydown? <=> keydown? null
+	key *
+	mod_ctrl false
+	mod_alt false
+	mod_shift false
+
+$mol_string $mol_view
+	dom_name \input
+	enabled true
+	minimal_height 40
+	autocomplete false
+	selection? /number
+		0
+		0
+	auto /
+		<= selection_watcher null
+		<= error_report null
+	field *
+		^
+		disabled <= disabled false
+		value <= value_changed? <=> value? \
+		placeholder <= hint_visible <= hint \
+		spellcheck <= spellcheck true
+		autocomplete <= autocomplete_native \
+		selectionEnd <= selection_end 0
+		selectionStart <= selection_start 0
+		inputMode <= keyboard \text
+		enterkeyhint <= enter \go
+	attr *
+		^
+		maxlength <= length_max +Infinity
+		type <= type? \text
+	event *
+		^
+		input? <=> event_change? null
+	plugins /
+		<= Submit $mol_hotkey
+			mod_ctrl <= submit_with_ctrl false
+			key * enter? <=> submit? null
+
+$mol_svg $mol_view
+	dom_name \svg
+	dom_name_space \http://www.w3.org/2000/svg
+	font_size 16
+	font_family \
+	style_size *
+
+$mol_svg_root $mol_svg
+	dom_name \svg
+	attr *
+		^
+		viewBox <= view_box \0 0 100 100
+		preserveAspectRatio <= aspect \xMidYMid
+
+$mol_svg_path $mol_svg
+	dom_name \path
+	attr *
+		^
+		d <= geometry \
+
+
+$mol_icon $mol_svg_root
+	view_box \0 0 24 24
+	minimal_width 16
+	minimal_height 16
+	sub /
+		<= Path $mol_svg_path
+			geometry <= path \
+
+$mol_icon_close $mol_icon path \M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z
+
+$mol_search $mol_pop
+	query? \
+	suggests /string
+	plugins /$mol_plugin
+		^
+		<= Hotkey $mol_hotkey
+			key * escape? <=> clear? null
+		<= Nav $mol_nav
+			keys_y <= nav_components /$mol_view
+			current_y? <=> nav_focused? null
+	showed? <=> suggests_showed? false
+	align_hor \right
+	Anchor $mol_view
+		sub <= anchor_content /
+			<= Query $mol_string
+				value? <=> query? \
+				hint <= hint @ \Search...
+				submit? <=> submit? null
+				enabled <= enabled true
+				keyboard <= keyboard \search
+				enter <= enter \search
+				bring => bring
+			<= Clear $mol_button_minor
+				hint @ \Clear
+				enabled <= enabled true
+				click? <=> clear? null
+				sub /
+					<= Clear_icon $mol_icon_close
+	bubble_content /$mol_view_content
+		<= Bubble_pane $mol_scroll
+			sub /
+				<= Menu $mol_list
+					rows <= menu_items /$mol_view
+	Suggest* $mol_button_minor
+		click? <=> suggest_select*? null
+		sub <= suggest_content* /$mol_view_content
+			<= Suggest_label* $mol_dimmer
+				haystack <= suggest_label* \
+				needle <= query? \
+
+$mol_icon_dots_vertical $mol_icon path \M12,16A2,2 0 0,1 14,18A2,2 0 0,1 12,20A2,2 0 0,1 10,18A2,2 0 0,1 12,16M12,10A2,2 0 0,1 14,12A2,2 0 0,1 12,14A2,2 0 0,1 10,12A2,2 0 0,1 12,10M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8A2,2 0 0,1 10,6A2,2 0 0,1 12,4Z
+
+$mol_select $mol_pick
+	dictionary? *
+	options /string
+	value? \
+	option_label_default \
+	Option_row* $mol_button_minor
+		enabled <= enabled true
+		event_click? <=> event_select*? null
+		sub <= option_content* /
+			<= Option_label* $mol_dimmer
+				haystack <= option_label* \
+				needle <= filter_pattern? \
+	No_options $mol_view
+		sub /
+			<= no_options_message @ \No options
+	plugins /
+		^
+		<= Nav $mol_nav
+			keys_y <= nav_components /$mol_view
+			current_y? <=> option_focused? null
+			cycle? <=> nav_cycle? true
+	hint @ \Pick..
+	bubble_content /
+		<= Filter
+		<= Bubble_pane $mol_scroll
+			sub /
+				<= Menu $mol_list
+					rows <= menu_content /$mol_view
+	Filter $mol_search
+		query? <=> filter_pattern? \
+		hint <= filter_hint @ \Filter..
+		submit? <=> submit? null
+		enabled <= enabled true
+	Trigger_icon $mol_icon_dots_vertical
+	trigger_enabled <= enabled
+
+$mol_avatar $mol_icon
+	view_box \0 0 24 24
+	id \
+	path \M 12 12 l 0 0 M 0 0 l 0 0 M 24 24 l 0 0 M 0 24 l 0 0 M 24 0 l 0 0
+
+$mol_icon_sync $mol_icon path \M12,18A6,6 0 0,1 6,12C6,11 6.25,10.03 6.7,9.2L5.24,7.74C4.46,8.97 4,10.43 4,12A8,8 0 0,0 12,20V23L16,19L12,15M12,4V1L8,5L12,9V6A6,6 0 0,1 18,12C18,13 17.75,13.97 17.3,14.8L18.76,16.26C19.54,15.03 20,13.57 20,12A8,8 0 0,0 12,4Z
+
+$mol_icon_sync_off $mol_icon path \M20,4H14V10L16.24,7.76C17.32,8.85 18,10.34 18,12C18,13 17.75,13.94 17.32,14.77L18.78,16.23C19.55,15 20,13.56 20,12C20,9.79 19.09,7.8 17.64,6.36L20,4M2.86,5.41L5.22,7.77C4.45,9 4,10.44 4,12C4,14.21 4.91,16.2 6.36,17.64L4,20H10V14L7.76,16.24C6.68,15.15 6,13.66 6,12C6,11 6.25,10.06 6.68,9.23L14.76,17.31C14.5,17.44 14.26,17.56 14,17.65V19.74C14.79,19.53 15.54,19.2 16.22,18.78L18.58,21.14L19.85,19.87L4.14,4.14L2.86,5.41M10,6.35V4.26C9.2,4.47 8.45,4.8 7.77,5.22L9.23,6.68C9.5,6.56 9.73,6.44 10,6.35Z
+
+$mol_link $mol_view
+	uri \
+	dom_name \a
+	uri_off \
+	uri_native null
+	external false
+	attr *
+		^
+		href <= uri_toggle \
+		title <= hint_safe <= hint \
+		target <= target \_self
+		download <= file_name \
+		mol_link_current <= current false
+		rel <= relation \
+	sub /$mol_view_content
+		<= title
+	arg *
+	event *
+		^
+		click? <=> click? <=> event_click? null
+
+$giper_baza_status $mol_select
+	minimal_width 40
+	minimal_height 40
+	Filter null
+	option_content* /
+		<= Option_logo* $mol_avatar
+			id <= master_id* \
+		<= option_label*
+	trigger_content /
+		<= Link $mol_link
+			uri <= master_link \
+			sub <= link_content /
+				<= Well $mol_avatar
+					id <= master_link \
+				<= Fail $mol_icon_sync_off
+			hint <= message <= hint \Sync status
+
+$mol_check_icon $mol_check
+
+$mol_icon_brightness_4 $mol_icon path \M12,18C11.11,18 10.26,17.8 9.5,17.45C11.56,16.5 13,14.42 13,12C13,9.58 11.56,7.5 9.5,6.55C10.26,6.2 11.11,6 12,6A6,6 0 0,1 18,12A6,6 0 0,1 12,18M20,8.69V4H15.31L12,0.69L8.69,4H4V8.69L0.69,12L4,15.31V20H8.69L12,23.31L15.31,20H20V15.31L23.31,12L20,8.69Z
+
+$mol_lights_toggle $mol_check_icon
+	Icon <= Lights_icon $mol_icon_brightness_4
+	hint @ \Toggle lights
+	checked? <=> lights? false
+
+$mol_icon_upload $mol_icon path \M9,16V10H5L12,3L19,10H15V16H9M5,20V18H19V20H5Z
+
+$mol_button_open $mol_button_minor
+	sub /
+		<= Icon $mol_icon_upload
+		<= Native $mol_button_open_native
+			files? <=> files_handled? <=> files? /File
+			accept <= accept \
+			multiple <= multiple true
+
+$mol_button_open_native $mol_view
+	dom_name \input
+	files? /File
+	attr *
+		type \file
+		accept <= accept \
+		multiple <= multiple true
+	event *
+		change? <=> picked? null
+
+$mol_image $mol_view
+	dom_name \img
+	attr *any
+		^
+		src <= uri \
+		title <= hint
+		alt <= title \
+		loading <= loading \lazy
+		decoding <= decoding \async
+		crossOrigin <= cors null
+		width <= natural_width 0
+		height <= natural_height 0
+	event *any
+		load? <=> load? null
+	minimal_width 16
+	minimal_height 16
+
+$mol_string_button $mol_string
+
+- Author's personal page: identity card on top, their posts below.
+- Everything editable is swapped for a read-only twin when the visitor is not
+- an owner/editor of the journal Land, see can_edit in profile.view.ts.
+$bog_journal_profile $mol_view
+	author_link \
+	author_id \
+	can_edit false
+	avatar_uri \
+	name_shown \
+	bio_shown \
+	posts_empty_text \
+	post_state_draft @ \Draft
+	post_state_live @ \Published
+	post_new_title @ \Untitled post
+	name_fallback @ \Unnamed author
+	bio_fallback @ \No bio yet.
+	posts_empty_none @ \No posts yet.
+	posts_empty_query @ \Nothing found.
+	sub /
+		<= Card $mol_view
+			sub /
+				<= Avatar_circle $mol_view
+					sub /
+						<= avatar_preview null
+				<= avatar_upload null
+				<= name_view null
+				<= bio_view null
+				<= Links_section $mol_view
+					sub /
+						<= Links_list $mol_list
+							rows <= link_rows /
+						<= link_form null
+		<= Posts_section $mol_view
+			sub /
+				<= Posts_head $mol_view
+					sub /
+						<= Posts_title $mol_paragraph
+							title @ \Posts
+				<= Posts_search $mol_search
+					hint @ \Search posts
+					query? <=> posts_query? \
+				<= Posts_list $mol_list
+					rows <= post_rows /
+				<= Posts_empty $mol_paragraph
+					title <= posts_empty_text
+	Avatar_image $mol_image
+		uri <= avatar_uri
+		title <= name_shown
+	Avatar_icon $mol_avatar
+		id <= author_id
+	Avatar_open $mol_button_open
+		sub /
+			<= Avatar_label $mol_paragraph
+				title @ \Change photo
+			<= Avatar_native $mol_button_open_native
+				files? <=> avatar_files? /File
+				accept \image/*
+				multiple false
+	Name_input $mol_string_button
+		hint @ \Your name
+		value? <=> author_name? \
+	Name_label $mol_paragraph
+		title <= name_shown
+	Bio_input $bog_journal_profile_text
+		hint @ \A few words about you
+		value? <=> author_bio? \
+	Bio_label $mol_paragraph
+		title <= bio_shown
+	Link_form $mol_view
+		sub /
+			<= Link_draft $mol_string
+				hint @ \https://example.com/@me
+				value? <=> link_draft? \
+				submit?event <=> link_add?event null
+			<= Link_add $mol_button_minor
+				title @ \Add link
+				click?event <=> link_add?event null
+	Link_row* $bog_journal_profile_link
+		uri <= link_uri* \
+		title <= link_title* \
+		editable <= can_edit
+		drop?event <=> link_drop*?event null
+	Post_row* $bog_journal_profile_post
+		arg <= post_arg* *
+		title <= post_title* \
+		summary <= post_summary* \
+		details <= post_details* \
+		state <= post_state* \
+		draft <= post_draft* false
+
+- Plain multiline field. The stock mol textarea would drag the whole syntax
+- highlighting code editor into the bundle, so this is a bare input instead.
+- Do not name that component here: mam scans comments for dependencies.
+$bog_journal_profile_text $mol_string
+	dom_name \textarea
+	minimal_height 96
+
+$bog_journal_profile_link $mol_view
+	uri \
+	title \
+	editable false
+	drop?event null
+	sub <= link_content /
+		<= Open $mol_link
+			uri <= uri
+			target \_blank
+			title <= title
+		<= Drop $mol_button_minor
+			hint @ \Remove link
+			click?event <=> drop?event null
+			sub /
+				<= Drop_icon $mol_icon_close
+
+$bog_journal_profile_post $mol_link
+	arg *
+	title \
+	summary \
+	details \
+	state \
+	draft false
+	attr *
+		^
+		bog_journal_profile_post_draft <= draft
+	sub /
+		<= Info $mol_view
+			sub /
+				<= Title $mol_paragraph
+					title <= title
+				<= Summary $mol_paragraph
+					title <= summary
+				<= Details $mol_paragraph
+					title <= details
+		<= State $mol_paragraph
+			title <= state
+
+$mol_icon_comment $mol_icon path \M9,22A1,1 0 0,1 8,21V18H4A2,2 0 0,1 2,16V4C2,2.89 2.9,2 4,2H20A2,2 0 0,1 22,4V16A2,2 0 0,1 20,18H13.9L10.2,21.71C10,21.9 9.75,22 9.5,22V22H9Z
+
+$mol_icon_comment_outline $mol_icon path \M9,22A1,1 0 0,1 8,21V18H4A2,2 0 0,1 2,16V4C2,2.89 2.9,2 4,2H20A2,2 0 0,1 22,4V16A2,2 0 0,1 20,18H13.9L10.2,21.71C10,21.9 9.75,22 9.5,22V22H9M10,16V19.08L13.08,16H20V4H4V16H10Z
+
+$mol_stack $mol_view
+
+$mol_text_code_token $mol_dimmer
+	attr *
+		^
+		mol_text_code_token_type <= type \
+
+$mol_text_code_token_link $mol_text_code_token
+	dom_name \a
+	type \code-link
+	attr *
+		^
+		href <= uri \
+		target \_blank
+
+$mol_text_code_line $mol_paragraph
+	text \
+	minimal_height 24
+	numb_showed true
+	syntax null
+	uri_resolve* \
+	Numb $mol_view
+		sub /
+			<= numb 0
+	Token* $mol_text_code_token
+		type <= token_type* \
+		haystack <= token_text* \
+		needle <= highlight \
+	Token_link* $mol_text_code_token_link
+		haystack <= token_text* \
+		needle <= highlight \
+		uri <= token_uri* \
+	find_pos* null
+
+$mol_icon_clipboard $mol_icon path \M19,3H14.82C14.4,1.84 13.3,1 12,1C10.7,1 9.6,1.84 9.18,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M12,3A1,1 0 0,1 13,4A1,1 0 0,1 12,5A1,1 0 0,1 11,4A1,1 0 0,1 12,3
+
+$mol_icon_clipboard_outline $mol_icon path \M19,3H14.82C14.4,1.84 13.3,1 12,1C10.7,1 9.6,1.84 9.18,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M12,3A1,1 0 0,1 13,4A1,1 0 0,1 12,5A1,1 0 0,1 11,4A1,1 0 0,1 12,3M7,7H17V5H19V19H5V5H7V7Z
+
+$mol_button_copy $mol_button_minor
+	blobs /$mol_blob
+		<= text_blob? $mol_blob /
+			/BlobPart <= text <= title
+			* type \text/plain
+		<= html_blob? $mol_blob /
+			/BlobPart <= html \
+			* type \text/html
+	data *
+	sub /
+		<= Icon $mol_icon_clipboard_outline
+		<= title \
+
+$mol_text_code $mol_stack
+	attr *
+		^
+		mol_text_code_sidebar_showed <= sidebar_showed false
+	text \
+	text_lines /string
+	find_pos* null
+	uri_base \
+	row_themes /string
+	sub /
+		<= Rows $mol_list
+			render_visible_only <= render_visible_only false
+			rows <= rows /
+				<= Row*0 $mol_text_code_line
+					numb_showed <= sidebar_showed
+					numb <= row_numb* 0
+					theme <= row_theme* \
+					text <= row_text* \
+					syntax <= syntax null
+					uri_resolve* <= uri_resolve* \
+					highlight <= highlight \
+		<= Copy $mol_button_copy
+			hint @ \Copy whole code
+			text <= text_export \
+
+$mol_textarea $mol_stack
+	attr *
+		^
+		mol_textarea_clickable <= clickable? false
+		mol_textarea_sidebar_showed <= sidebar_showed false
+	event *
+		keydown? <=> press? null
+		pointermove? <=> hover? null
+	sub /
+		<= Edit $mol_textarea_edit
+			value? <=> value? \
+			hint <= hint \ 
+			enabled <= enabled true
+			spellcheck <= spellcheck true
+			length_max <= length_max +Infinity
+			selection? <=> selection? /number
+			bring => bring
+			submit? <=> submit? null
+			submit_with_ctrl <= submit_with_ctrl true
+		<= View $mol_text_code
+			text <= value
+			render_visible_only false
+			row_numb* <= row_numb* 0
+			sidebar_showed <= sidebar_showed
+			highlight <= highlight \
+			syntax <= syntax $mol_syntax2
+	symbols_alt *string
+		comma \<
+		period \>
+		dash \−
+		equals \≈
+		graveAccent \́
+		forwardSlash \÷
+		E \€
+		V \✔
+		X \×
+		C \©
+		P \§
+		H \₽
+		key0 \°
+		key8 \•
+		key2 \@
+		key3 \#
+		key4 \$
+		key6 \^
+		key7 \&
+		bracketOpen \[
+		bracketClose \]
+		slashBack \|
+	symbols_alt_ctrl *string
+		space \ 
+	symbols_alt_shift *string
+		V \✅
+		X \❌
+		O \⭕
+		key1 \❗
+		key4 \💲
+		key7 \❓
+		comma \«
+		period \»
+		semicolon \“
+		quoteSingle \”
+		dash \—
+		equals \≠
+		graveAccent \̱
+		bracketOpen \{
+		bracketClose \}
+
+$mol_textarea_edit $mol_string
+	dom_name \textarea
+	enter \enter
+	field *
+		^
+		scrollTop 0
+
+$bog_wysiwyg_comment_thread $mol_view
+	comment_land_link \
+	comment_count 0
+	sub /
+		<= Comments $mol_list
+			rows <= comment_views /
+		<= Input_row $mol_view
+			sub /
+				<= Input $mol_textarea
+					hint @ \Write a comment...
+					value? <=> draft? \
+				<= Send $mol_button_minor
+					title @ \Send
+					click?event <=> send?event null
+	Comment_row* $mol_view
+		sub /
+			<= Comment_head* $mol_view
+				sub /
+					<= Comment_avatar* $mol_avatar
+						id <= comment_author_id* \
+					<= Comment_author* $mol_paragraph
+						title <= comment_author* \
+			<= Comment_text* $mol_paragraph
+				title <= comment_text* \
+
+$mol_row $mol_view
+
+$bog_blitz_lobby_players $mol_list
+	players_dict null
+	my_lord_str \
+	rows <= player_views /
+	Player* $mol_row
+		attr *
+			bog_blitz_mine <= is_mine* false
+		sub /
+			<= player_avatar_content* null
+			<= Player_id* $mol_paragraph
+				title <= player_id* \
+			<= player_name_content* null
+	Player_icon* $mol_avatar
+		id <= player_id* \
+	Player_image* $mol_image
+		uri <= player_avatar_uri* \
+	Player_name_input* $mol_string_button
+		hint @ \Touch to change
+		value? <=> player_name*? \
+	Player_name_label* $mol_paragraph
+		title <= player_name* \
+	Player_avatar_button* $mol_button_open
+		sub /
+			<= player_avatar* null
+			<= Player_avatar_native* $mol_button_open_native
+				files? <=> player_avatar_files*? /File
+				accept \image/*
+				multiple false
+
+$mol_button_major $mol_button_minor
+	theme \$mol_theme_base
+
+$bog_qr $mol_svg_root
+	uri \
+	module_radius 0.35
+	finder_radius 1.2
+	gradient_angle 45
+	error_correction \M
+	quiet_zone 2
+	center /
+	gradient_id \qr-grad
+	gradient_fill \url(#qr-grad)
+	gradient_stops /
+		\var(--mol_theme_special)
+		\var(--mol_theme_focus)
+	Stop* $mol_svg
+		dom_name \stop
+		attr *
+			^
+			offset <= stop_offset* \0%
+			stop-color <= stop_color* \
+	view_box <= qr_view_box \0 0 1 1
+	sub /
+		<= Defs $mol_svg
+			dom_name \defs
+			sub /
+				<= Gradient $mol_svg
+					dom_name \linearGradient
+					attr *
+						^
+						id <= gradient_id
+						x1 <= grad_x1 \0
+						y1 <= grad_y1 \0
+						x2 <= grad_x2 \1
+						y2 <= grad_y2 \1
+					sub <= gradient_stop_list /
+		<= Modules $mol_svg_path
+			geometry <= modules_d \
+			attr *
+				^
+				fill <= gradient_fill
+		<= Rings $mol_svg_path
+			geometry <= rings_d \
+			attr *
+				^
+				fill <= gradient_fill
+				fill-rule \evenodd
+		<= Centers $mol_svg_path
+			geometry <= centers_d \
+			attr *
+				^
+				fill <= gradient_fill
+		<= Center_wrap $mol_svg
+			dom_name \foreignObject
+			attr *
+				^
+				x <= center_x \0
+				y <= center_y \0
+				width <= center_size \0
+				height <= center_size
+			sub /
+				<= Center_body $mol_view
+					sub <= center
+
+$bog_blitz_lobby_host $mol_page
+	Head null
+	counter_string \
+	land_id \
+	quiz_title \
+	session null
+	quiz_data null
+	body /
+		<= Qr $bog_qr
+			uri <= qr_data \
+			error_correction \M
+			center /
+				<= Logo $mol_image
+					uri \bog/blitz/assets/logo.svg
+			module_radius 0.35
+			finder_radius 1.2
+			gradient_angle 125
+			gradient_stops /
+				\var(--mol_theme_special)
+				\var(--mol_theme_current)
+		<= Quiz_title $mol_paragraph
+			title <= quiz_title
+		<= Land_id $mol_paragraph
+			title <= land_id
+		<= Start $mol_button_major
+			title @ \Start Game!
+			click? <=> start? null
+		<= Counter $mol_paragraph
+			title <= counter_string
+		<= Players $bog_blitz_lobby_players
+	Foot null
+	sub /
+		^
+
+$bog_blitz_lobby_join $mol_page
+	Head null
+	is_synced false
+	profile_avatar_uri \
+	profile_name \
+	syncing_title @ \Syncing...
+	join_title @ \Syncing...
+	enter_title @ \Enter
+	Avatar_icon $mol_avatar
+		id <= player_id \
+	Avatar_image $mol_image
+		uri <= avatar_uri \
+	body /
+		<= Avatar_circle $mol_view
+			sub /
+				<= avatar_preview null
+		<= Avatar $mol_button_open
+			sub /
+				<= Avatar_label $mol_paragraph
+					title @ \Change photo
+				<= Avatar_native $mol_button_open_native
+					files? <=> avatar_files? /File
+					accept \image/*
+					multiple false
+		<= Player_name_input $mol_string_button
+			hint @ \Touch to change your name
+			value? <=> player_name? \
+		<= Join $mol_button_major
+			title <= join_title
+			click? <=> join? null
+
+$bog_blitz_lobby_waiting $mol_page
+	Head null
+	counter_string \
+	quiz_title \
+	body /
+		<= Quiz_title $mol_paragraph
+			title <= quiz_title
+		<= Waiting_message $mol_paragraph
+			title @ \Waiting for host to start...
+		<= Counter $mol_paragraph
+			title <= counter_string
+		<= Players $bog_blitz_lobby_players
+
+$bog_blitz_lobby_game_timer $mol_view
+	duration 0
+	round_start 0
+	paused_at 0
+	sub /
+		<= Bar $mol_view
+			style *
+				^
+				width <= bar_width \100%
+
+$bog_blitz_lobby_game_leaderboard_row $mol_view
+	rank 0
+	name \
+	score 0
+	mine false
+	rank_medal \
+	attr *
+		^
+		data-mine <= mine
+		data-medal <= rank_medal
+	sub /
+		<= Rank $mol_paragraph
+			title <= rank_text \
+		<= Name $mol_paragraph
+			title <= name
+		<= Score $mol_paragraph
+			title <= score_text \
+
+$bog_blitz_lobby_game_leaderboard $mol_view
+	players_dict null
+	my_lord_str \
+	is_host false
+	sub <= board_content /
+	My_row $mol_view
+		sub <= my_row_content /
+	Top $mol_view
+		sub /
+			<= Top_title $mol_paragraph
+				title @ \Top 10
+			<= Top_list $mol_list
+				rows <= top_rows /
+	Bottom $mol_view
+		sub /
+			<= Bottom_title $mol_paragraph
+				title @ \Bottom 10
+			<= Bottom_list $mol_list
+				rows <= bottom_rows /
+	Row*0 $bog_blitz_lobby_game_leaderboard_row
+		rank <= row_rank* 0
+		name <= row_name* \
+		score <= row_score* 0
+		mine <= row_mine* false
+
+$bog_blitz_lobby_game_reactboard $mol_view
+	players_dict null
+	sub /
+		<= Table_heart $mol_view
+			sub /
+				<= Title_heart $mol_paragraph
+					title \❤️
+				<= List_heart $mol_list
+					rows <= rows_heart /
+		<= Table_smile $mol_view
+			sub /
+				<= Title_smile $mol_paragraph
+					title \😊
+				<= List_smile $mol_list
+					rows <= rows_smile /
+		<= Table_fire $mol_view
+			sub /
+				<= Title_fire $mol_paragraph
+					title \🔥
+				<= List_fire $mol_list
+					rows <= rows_fire /
+		<= Table_clap $mol_view
+			sub /
+				<= Title_clap $mol_paragraph
+					title \👏
+				<= List_clap $mol_list
+					rows <= rows_clap /
+		<= Table_poop $mol_view
+			sub /
+				<= Title_poop $mol_paragraph
+					title \💩
+				<= List_poop $mol_list
+					rows <= rows_poop /
+	Row*0 $mol_view
+		sub /
+			<= Row_name* $mol_paragraph
+				title <= row_name* \
+			<= Row_count* $mol_paragraph
+				title <= row_count* \
+
+$bog_blitz_lobby_game_option $mol_button_major
+	correct \
+	attr *
+		^
+		data-selected <= selected \false
+		data-correct <= correct \
+	image_uri \
+	Option_image $mol_image
+		uri <= image_uri
+
+$bog_blitz_lobby_game $mol_view
+	land_id \
+	session null
+	quiz_data null
+	game_state \
+	current_question null
+	current_question_text \
+	my_player null
+	my_answers null
+	is_host false
+	paused_at 0
+	manual_mode false
+	state_reading @ \Read the question
+	state_answering @ \Time to answer!
+	state_reveal @ \Correct answer
+	state_leaderboard @ \Leaderboard
+	state_final @ \Final Results
+	state_paused @ \Paused
+	state_label \
+	option_keys /string
+	round_start 0
+	duration 0
+	total_questions 0
+	current_question_index 0
+	players_dict null
+	my_lord_str \
+	countdown_number 0
+	countdown_text \
+	Countdown_number $mol_paragraph
+		title <= countdown_text
+	sub <= game_content /
+	Pause_button $mol_button_minor
+		title <= pause_label @ \Pause
+		click? <=> pause_click?event null
+	Resume_button $mol_button_minor
+		title <= resume_label @ \Resume
+		click? <=> resume_click?event null
+	Next_button $mol_button_major
+		title <= next_label @ \Next
+		click? <=> next_click?event null
+	question_type \choice
+	question_content /
+		<= Timer $bog_blitz_lobby_game_timer
+			round_start <= round_start
+			duration <= duration
+			paused_at <= paused_at
+		<= Host_controls $mol_view
+			sub <= host_controls /
+		<= State $mol_paragraph
+			title <= state_label
+		<= Question_image $mol_image
+			uri <= question_image_uri \
+		<= Question $mol_paragraph
+			title <= current_question_text
+		<= Answer_area $mol_view
+			sub <= answer_views /
+		<= Countdown $mol_view
+			sub <= countdown_content /
+	Answer_input $mol_string
+		hint @ \Type your answer...
+		value? <=> text_draft? \
+		enabled <= text_input_enabled true
+		submit?event <=> text_submit?event null
+	leaderboard_content /
+		<= Leaderboard_timer $bog_blitz_lobby_game_timer
+			round_start <= round_start
+			duration <= duration
+			paused_at <= paused_at
+		<= Host_controls $mol_view
+			sub <= host_controls /
+		<= State $mol_paragraph
+			title <= state_label
+		<= Leaderboard $bog_blitz_lobby_game_leaderboard
+			players_dict <= players_dict
+			my_lord_str <= my_lord_str \
+			is_host <= is_host
+	final_content /
+		<= State $mol_paragraph
+			title <= state_label
+		<= Final $bog_blitz_lobby_game_leaderboard
+			players_dict <= players_dict
+			my_lord_str <= my_lord_str \
+			is_host <= is_host
+		<= Reactions_board $bog_blitz_lobby_game_reactboard
+			players_dict <= players_dict
+	reveal_correct_text \
+	Reveal_correct $mol_paragraph
+		title <= reveal_correct_text
+	Submit_answer $mol_button_major
+		title <= submit_label @ \Submit
+		click? <=> submit_answer?event null
+		enabled <= submit_enabled true
+	Option*0 $bog_blitz_lobby_game_option
+		selected <= option_selected* \false
+		correct <= option_correct* \
+		enabled <= option_enabled* true
+		title <= option_text* \
+		image_uri <= option_image_uri* \
+		click? <=> option_click*? null
+
+$bog_blitz_lobby_reactions $mol_view
+	my_answers null
+	players_dict null
+	is_host false
+	Fly $mol_view
+	sub /
+		- <= Mol_qr $mol_image
+			uri \bog/blitz/assets/mol_qr.png
+			title \$mol
+		- <= GiperBaza_qr $mol_image
+			uri \bog/blitz/assets/giper_baza_qr.png
+			title \giper baza
+		<= Spacer $mol_view
+		<= Group_heart $mol_view
+			sub /
+				<= Btn_heart $mol_button_minor
+					title \❤️
+					click? <=> react_heart?event null
+				<= Count_heart $mol_paragraph
+					title <= count_heart_text \
+		<= Group_smile $mol_view
+			sub /
+				<= Btn_smile $mol_button_minor
+					title \😊
+					click? <=> react_smile?event null
+				<= Count_smile $mol_paragraph
+					title <= count_smile_text \
+		<= Group_fire $mol_view
+			sub /
+				<= Btn_fire $mol_button_minor
+					title \🔥
+					click? <=> react_fire?event null
+				<= Count_fire $mol_paragraph
+					title <= count_fire_text \
+		<= Group_clap $mol_view
+			sub /
+				<= Btn_clap $mol_button_minor
+					title \👏
+					click? <=> react_clap?event null
+				<= Count_clap $mol_paragraph
+					title <= count_clap_text \
+		<= Group_poop $mol_view
+			sub /
+				<= Btn_poop $mol_button_minor
+					title \💩
+					click? <=> react_poop?event null
+				<= Count_poop $mol_paragraph
+					title <= count_poop_text \
+
+$bog_blitz_lobby $mol_page
+	Head null
+	players_string @ \Players
+	land_id \
+	quiz_title \
+	Host $bog_blitz_lobby_host
+		counter_string <= counter_string \
+		land_id <= land_id
+		quiz_title <= quiz_title
+		session <= session null
+		quiz_data <= quiz_data null
+		Players <= Host_players $bog_blitz_lobby_players
+			players_dict <= players_dict null
+			my_lord_str <= my_lord_str \
+	Join_screen $bog_blitz_lobby_join
+		player_name? <=> my_player_name? \
+		avatar_files? <=> my_avatar_files? /File
+		join? <=> join? null
+		is_synced <= is_synced false
+		player_id <= my_lord_str
+		profile_avatar_uri <= profile_avatar_uri \
+		profile_name <= profile_name \
+	Waiting $bog_blitz_lobby_waiting
+		counter_string <= counter_string \
+		quiz_title <= quiz_title
+		Players <= Host_players $bog_blitz_lobby_players
+			players_dict <= players_dict null
+			my_lord_str <= my_lord_str \
+	No_game $mol_view
+		sub /
+			<= No_game_text $mol_paragraph
+				title @ \No active game
+			<= Go_admin $mol_button_major
+				title @ \Go to Admin
+				click? <=> go_admin? null
+	Game_screen $bog_blitz_lobby_game
+		land_id <= land_id
+		session <= session null
+		quiz_data <= quiz_data null
+		game_state <= game_state \
+		current_question <= current_question null
+		current_question_text <= current_question_text \
+		my_player <= my_player null
+		my_answers <= my_answers null
+		is_host <= is_host false
+		paused_at <= paused_at 0
+		manual_mode <= manual_mode false
+		round_start <= round_start 0
+		duration <= duration 0
+		total_questions <= total_questions 0
+		current_question_index <= current_question_index 0
+		players_dict <= players_dict null
+		my_lord_str <= my_lord_str
+	Reactions $bog_blitz_lobby_reactions
+		my_answers <= my_answers null
+		players_dict <= players_dict null
+		is_host <= is_host false
+	body <= lobby_content /
+
+$mol_book2 $mol_scroll
+	menu_title \
+	sub /$mol_view
+		^ pages <= pages_deep /$mol_view
+		^ placeholders /$mol_view
+			<= Placeholder $mol_view
+	minimal_width 0
+	Gap* $mol_view title \
+
+$mol_embed_native $mol_scroll
+	dom_name \iframe
+	window null
+	attr *
+		^
+		src <= uri? \about:config
+	sub /
+		<= Fallback $mol_link
+			uri <= uri
+			sub /
+				<= title \
+	message *
+		hashchange? <=> uri_change? null
+
+$mol_frame $mol_embed_native
+	attr *
+		tabindex <= tabindex
+		allow <= allow \
+		src <= uri
+		srcdoc <= html null
+	fullscreen true
+	accelerometer true
+	autoplay true
+	encription true
+	gyroscope true
+	pip true
+	clipboard_read true
+	clipboard_write true
+
+$giper_web_frame $mol_frame
+	uri \https://web.giper.dev/#mol_lights={lights}/current={current}/query={query}
+	- uri \http://localhost:9080/giper/web/bar/-/test.html#mol_lights={lights}/current={current}/query={query}
+	query \
+
+$mol_icon_trash_can $mol_icon path \M9,3V4H4V6H5V19A2,2 0 0,0 7,21H17A2,2 0 0,0 19,19V6H20V4H15V3H9M9,8H11V17H9V8M13,8H15V17H13V8Z
+
+$mol_icon_trash_can_outline $mol_icon path \M9,3V4H4V6H5V19A2,2 0 0,0 7,21H17A2,2 0 0,0 19,19V6H20V4H15V3H9M7,6H17V19H7V6M9,8V17H11V8H9M13,8V17H15V8H13Z
+
+$mol_icon_script $mol_icon path \M17.8,20C17.4,21.2 16.3,22 15,22H5C3.3,22 2,20.7 2,19V18H5L14.2,18C14.6,19.2 15.7,20 17,20H17.8M19,2H8C6.3,2 5,3.3 5,5V16H16V17C16,17.6 16.4,18 17,18H18V5C18,4.4 18.4,4 19,4C19.6,4 20,4.4 20,5V6H22V5C22,3.3 20.7,2 19,2Z
+
+$mol_icon_script_text $mol_icon path \M17.8,20C17.4,21.2 16.3,22 15,22H5C3.3,22 2,20.7 2,19V18H5L14.2,18C14.6,19.2 15.7,20 17,20H17.8M19,2C20.7,2 22,3.3 22,5V6H20V5C20,4.4 19.6,4 19,4C18.4,4 18,4.4 18,5V18H17C16.4,18 16,17.6 16,17V16H5V5C5,3.3 6.3,2 8,2H19M8,6V8H15V6H8M8,10V12H14V10H8Z
+
+$mol_link_source $mol_link
+	hint @ \Source code
+	sub /
+		<= Icon $mol_icon_script_text
+
+$mol_icon_gift $mol_icon path \M9.06,1.93C7.17,1.92 5.33,3.74 6.17,6H3A2,2 0 0,0 1,8V10A1,1 0 0,0 2,11H11V8H13V11H22A1,1 0 0,0 23,10V8A2,2 0 0,0 21,6H17.83C19,2.73 14.6,0.42 12.57,3.24L12,4L11.43,3.22C10.8,2.33 9.93,1.94 9.06,1.93M9,4C9.89,4 10.34,5.08 9.71,5.71C9.08,6.34 8,5.89 8,5A1,1 0 0,1 9,4M15,4C15.89,4 16.34,5.08 15.71,5.71C15.08,6.34 14,5.89 14,5A1,1 0 0,1 15,4M2,12V20A2,2 0 0,0 4,22H20A2,2 0 0,0 22,20V12H13V20H11V12H2Z
+
+$mol_icon_gift_outline $mol_icon path \M22,12V20A2,2 0 0,1 20,22H4A2,2 0 0,1 2,20V12A1,1 0 0,1 1,11V8A2,2 0 0,1 3,6H6.17C6.06,5.69 6,5.35 6,5A3,3 0 0,1 9,2C10,2 10.88,2.5 11.43,3.24V3.23L12,4L12.57,3.23V3.24C13.12,2.5 14,2 15,2A3,3 0 0,1 18,5C18,5.35 17.94,5.69 17.83,6H21A2,2 0 0,1 23,8V11A1,1 0 0,1 22,12M4,20H11V12H4V20M20,20V12H13V20H20M9,4A1,1 0 0,0 8,5A1,1 0 0,0 9,6A1,1 0 0,0 10,5A1,1 0 0,0 9,4M15,4A1,1 0 0,0 14,5A1,1 0 0,0 15,6A1,1 0 0,0 16,5A1,1 0 0,0 15,4M3,8V10H11V8H3M13,8V10H21V8H13Z
+
+$mol_link_donate $mol_link
+	hint @ \Thank with a dollar
+	sub /
+		<= Icon $mol_icon_gift_outline
+
+$mol_icon_face $mol_icon path \M9,11.75C8.31,11.75 7.75,12.31 7.75,13C7.75,13.69 8.31,14.25 9,14.25C9.69,14.25 10.25,13.69 10.25,13C10.25,12.31 9.69,11.75 9,11.75M15,11.75C14.31,11.75 13.75,12.31 13.75,13C13.75,13.69 14.31,14.25 15,14.25C15.69,14.25 16.25,13.69 16.25,13C16.25,12.31 15.69,11.75 15,11.75M12,2C6.48,2 2,6.48 2,12C2,17.52 6.48,22 12,22C17.52,22 22,17.52 22,12C22,6.48 17.52,2 12,2M12,20C7.59,20 4,16.41 4,12C4,11.71 4,11.42 4.05,11.14C6.41,10.09 8.28,8.16 9.26,5.77C11.07,8.33 14.05,10 17.42,10C18.2,10 18.95,9.91 19.67,9.74C19.88,10.45 20,11.21 20,12C20,16.41 16.41,20 12,20Z
+
+$mol_icon_face_agent $mol_icon path \M18.72,14.76C19.07,13.91 19.26,13 19.26,12C19.26,11.28 19.15,10.59 18.96,9.95C18.31,10.1 17.63,10.18 16.92,10.18C13.86,10.18 11.15,8.67 9.5,6.34C8.61,8.5 6.91,10.26 4.77,11.22C4.73,11.47 4.73,11.74 4.73,12A7.27,7.27 0 0,0 12,19.27C13.05,19.27 14.06,19.04 14.97,18.63C15.54,19.72 15.8,20.26 15.78,20.26C14.14,20.81 12.87,21.08 12,21.08C9.58,21.08 7.27,20.13 5.57,18.42C4.53,17.38 3.76,16.11 3.33,14.73H2V10.18H3.09C3.93,6.04 7.6,2.92 12,2.92C14.4,2.92 16.71,3.87 18.42,5.58C19.69,6.84 20.54,8.45 20.89,10.18H22V14.67H22V14.69L22,14.73H21.94L18.38,18L13.08,17.4V15.73H17.91L18.72,14.76M9.27,11.77C9.57,11.77 9.86,11.89 10.07,12.11C10.28,12.32 10.4,12.61 10.4,12.91C10.4,13.21 10.28,13.5 10.07,13.71C9.86,13.92 9.57,14.04 9.27,14.04C8.64,14.04 8.13,13.54 8.13,12.91C8.13,12.28 8.64,11.77 9.27,11.77M14.72,11.77C15.35,11.77 15.85,12.28 15.85,12.91C15.85,13.54 15.35,14.04 14.72,14.04C14.09,14.04 13.58,13.54 13.58,12.91A1.14,1.14 0 0,1 14.72,11.77Z
+
+$mol_link_support $mol_link
+	hint @ \Discuss the project
+	sub /
+		<= Icon $mol_icon_face_agent
+
+$mol_status $mol_view
+	status <= title
+	minimal_height 24
+	minimal_width 0
+	sub /
+		<= message \
+
+$mol_float $mol_view
+	style *
+		^
+		minHeight \auto
+
+$mol_icon_chevron $mol_icon path \M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z
+
+$mol_check_expand $mol_check
+	Icon $mol_icon_chevron
+	level 0
+	style *
+		^
+		paddingLeft <= level_style \0px
+	checked? <=> expanded? false
+	enabled <= expandable false
+
+$mol_grid $mol_view
+	row_height 32
+	row_ids /string[]
+	row_id* null
+	col_ids /
+	records *
+	record* null
+	hierarchy null
+	hierarchy_col \
+	minimal_width 0
+	-
+	sub /
+		<= Head
+		<= Table $mol_grid_table
+			sub <= rows /$mol_view
+	Head $mol_grid_row
+		cells <= head_cells /$mol_view
+	Row* $mol_grid_row
+		minimal_height <= row_height
+		minimal_width <= minimal_width
+		cells <= cells* /$mol_view
+	-
+	Cell* $mol_view
+	cell* null
+	Cell_text* $mol_grid_cell
+		sub <= cell_content_text* <= cell_content* /$mol_view_content
+	Cell_number* $mol_grid_number
+		sub <= cell_content_number* <= cell_content* /$mol_view_content
+	Col_head* $mol_float
+		dom_name \th
+		sub <= col_head_content* /$mol_view_content
+	Cell_branch* $mol_check_expand
+		level <= cell_level* 0
+		label <= cell_content* /$mol_view_content
+		expanded? <=> cell_expanded*? false
+	Cell_content* /
+		<= Cell_dimmer* $mol_dimmer
+			needle <= needle \
+			haystack <= cell_value* \
+
+$mol_grid_table $mol_list
+	- dom_name \table
+
+$mol_grid_row $mol_view
+	- dom_name \tr
+	sub <= cells /$mol_view
+
+$mol_grid_cell $mol_view
+	- dom_name \td
+	minimal_height 40
+
+$mol_grid_number $mol_grid_cell
+
+$mol_link_iconed $mol_link
+	sub /
+		<= Icon $mol_image
+			uri <= icon \
+			title \
+	content /
+		<= title <= uri
+	host \
+
+$mol_icon_youtube $mol_icon path \M10,15L15.19,12L10,9V15M21.56,7.17C21.69,7.64 21.78,8.27 21.84,9.07C21.91,9.87 21.94,10.56 21.94,11.16L22,12C22,14.19 21.84,15.8 21.56,16.83C21.31,17.73 20.73,18.31 19.83,18.56C19.36,18.69 18.5,18.78 17.18,18.84C15.88,18.91 14.69,18.94 13.59,18.94L12,19C7.81,19 5.2,18.84 4.17,18.56C3.27,18.31 2.69,17.73 2.44,16.83C2.31,16.36 2.22,15.73 2.16,14.93C2.09,14.13 2.06,13.44 2.06,12.84L2,12C2,9.81 2.16,8.2 2.44,7.17C2.69,6.27 3.27,5.69 4.17,5.44C4.64,5.31 5.5,5.22 6.82,5.16C8.12,5.09 9.31,5.06 10.41,5.06L12,5C16.19,5 18.8,5.16 19.83,5.44C20.73,5.69 21.31,6.27 21.56,7.17Z
+
+$mol_embed_service $mol_check
+	uri \
+	video_preview \
+	video_id \
+	checked? <=> active? false
+	sub /
+		<= Image $mol_image
+			title <= title \
+			uri <= video_preview \
+		<= Hint $mol_icon_youtube
+		<= Frame $mol_frame
+			title <= title \
+			uri <= video_embed \
+
+
+$mol_embed_youtube $mol_embed_service
+
+$mol_embed_rutube $mol_embed_service
+
+$mol_embed_vklive $mol_embed_service
+
+$mol_embed_any $mol_view
+	Image $mol_image
+		title <= title \
+		uri <= uri \
+	Object $mol_embed_native
+		title <= title \
+		uri <= uri \
+	Youtube $mol_embed_youtube
+		title <= title \
+		uri <= uri \
+	Rutube $mol_embed_rutube
+		title <= title \
+		uri <= uri \
+	Vklive $mol_embed_vklive
+		title <= title \
+		uri <= uri \
+
+$mol_expander $mol_list
+	rows /
+		<= Label $mol_view
+			sub /
+				<= Trigger $mol_check_expand
+					checked? <=> expanded? false
+					expandable <= expandable true
+					label <= label /
+						<= title
+				<= Tools null
+		<= Content $mol_list
+			rows <= content /
+
+$mol_text $mol_list
+	uri_base \
+	text \
+	param \
+	flow_tokens /
+	block_text* \
+	auto /
+		<= auto_scroll null
+	- \Blocks
+	Paragraph* $mol_paragraph
+		sub <= block_content* /
+	Quote* $mol_text
+		uri_resolve* <= uri_resolve* \
+		text <= quote_text* \
+		highlight <= highlight \
+		auto_scroll null
+	List* $mol_text_list
+		uri_resolve* <= uri_resolve* \
+		type <= list_type* \-
+		text <= list_text* \
+		highlight <= highlight \
+	item_index* 0
+	Header* $mol_text_header
+		minimal_height 40
+		level <= header_level* 1
+		content <= block_content* /
+		arg <= header_arg* *
+	Pre* $mol_text_code
+		text <= pre_text* \
+		row_themes <= pre_themes* /string
+		highlight <= highlight \
+		uri_resolve* <= uri_resolve* \
+		sidebar_showed <= pre_sidebar_showed <= code_sidebar_showed true
+	Cut* $mol_view dom_name \hr
+	- \Table
+	Table* $mol_grid
+		head_cells <= table_head_cells* /
+		rows <= table_rows* /
+	Table_row* $mol_grid_row
+		cells <= table_cells* /
+	Table_cell* $mol_text
+		auto_scroll null
+		highlight <= highlight \
+		uri_resolve* <= uri_resolve* \
+		text <= table_cell_text* \
+	- \Grid
+	Grid* $mol_grid
+		rows <= grid_rows* /
+	Grid_row* $mol_grid_row
+		cells <= grid_cells* /
+	Grid_cell* $mol_text
+		auto_scroll null
+		highlight <= highlight \
+		uri_resolve* <= uri_resolve* \
+		text <= grid_cell_text* \
+	- \Lines
+	String* $mol_dimmer
+		dom_name \span
+		needle <= highlight \
+		haystack <= line_text* \
+	Span* $mol_text_span
+		dom_name \span
+		type <= line_type* \
+		sub <= line_content* /
+	Code_line* $mol_text_code_line
+		numb_showed false
+		highlight <= highlight \
+		text <= line_text* \
+		uri_resolve* <= uri_resolve* \
+		syntax <= code_syntax null
+	Link* $mol_link_iconed
+		uri <= link_uri* \
+		content <= line_content* /
+	Link_http* $mol_link_iconed
+		uri <= link_uri* \
+		content / <= link_host* \
+	Embed* $mol_embed_any
+		uri <= link_uri* \
+		title <= line_text* \
+	- \Spoilers
+	Spoiler* $mol_expander
+		label /
+			<= Spoiler_label* $mol_text
+				text <= spoiler_label* \
+		content /
+			<= Spoiler_content* $mol_text
+				text <= spoiler_content* \
+
+$mol_text_header $mol_paragraph
+	level 1
+	sub /
+		<= Link $mol_link
+			arg <= arg *
+			hint @ \Permalink to this section
+			sub <= content /
+
+$mol_text_span $mol_paragraph
+	dom_name \span
+	attr *
+		^
+		mol_text_type <= type \
+
+$mol_attach $mol_view
+	items? /string
+	sub <= content /$mol_view
+		<= Item*0 $mol_button_minor
+			click? <=> item_drop*? null
+			sub /
+				<= Image* $mol_image
+					title \
+					uri <= item_uri* \
+		<= Add $mol_button_open
+			title <= attach_title \
+			files? <=> attach_new? null
+
+$mol_icon_send $mol_icon path \M2,21L23,12L2,3V10L17,12L2,14V21Z
+
+$mol_bar $mol_view
+
+$mol_icon_chevron_left $mol_icon path \M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z
+
+$mol_icon_chevron_right $mol_icon path \M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z
+
+$mol_paginator $mol_bar
+	step 1
+	sub /
+		<= Backward $mol_button_minor
+			hint <= backward_hint @ \Backward
+			click? <=> backward? null
+			sub / <= Backward_icon $mol_icon_chevron_left
+		<= Value $mol_view sub / <= value? 0
+		<= Forward $mol_button_minor
+			hint <= forward_hint @ \Forward
+			click? <=> forward? null
+			sub / <= Forward_icon $mol_icon_chevron_right
+
+$mol_text_list $mol_text
+	auto_scroll null
+	attr *
+		^
+		mol_text_list_type <= type \
+	Paragraph* $mol_text_list_item
+		index <= item_index*
+		sub <= block_content*
+
+$mol_text_list_item $mol_paragraph
+	attr *
+		^
+		mol_text_list_item_index <= index 0
+
+$giper_bot $mol_book2
+	Model? $mol_github_model
+		params * temperature 0
+		rules <= context <= rules \
+			\Ты - Гипер Бот, универсальный интеллектуальный ассистент, помогающий пользователю редактировать текстовый документ.
+			\Пользователь присылает тебе запрос в виде JSON строки.
+			\Ответ должен быть представлен в виде JSON объекта, соответствующего следующей схеме:
+			\	type Response = {
+			\		message: string // ответ на вопрос пользователя в свободной форме
+			\		files: string[] // ссылки на файлы для скачивания
+			\		document: string | null // финальный текст, null если обновление не требуется
+			\		confidence: number // степень уверенности в ответе от 0 до 1
+			\		digest: string // краткий пересказ всего диалога от начала до конца
+			\		title: string // ёмкий лаконичное название всего диалога
+			\	}
+			\Если пользователь попросил что-то написать или изменить, то это должно быть отражено в document, а не должно дублироваться в message. 
+			\Если пользователь что-то спросил, то в message должен быть максимально точный и лаконичный ответ без лишней информации, о которой пользователь не просил.
+			\Говоря о пользователе в пересказе (и только в нём) используй эмодзи 🙂 вместо слова "пользователь", а вместо "Гипер Бота" - используй эмозди 🤖.
+			\Отвечай всегда на языке с кодом {lang}, если пользователь не попросил иное.
+		state <= state /string
+			\Далее идёт состояние документа, на который сейчас смотрит пользователь, и к которому относится его последний запрос:
+			<= result
+	plugins /
+		<= Theme $mol_theme_auto
+	quote? \
+	pages /
+		<= Space $giper_web_frame
+		<= Dialog $mol_page
+			title <= dialog_title? @ \🤖 Giper Bot
+			tools /
+				<= Reset $mol_button_minor
+					hint @ \Reset
+					click? <=> reset? null
+					sub /
+						<= Reset_icon $mol_icon_trash_can_outline
+				<= Sources $mol_link_source
+					uri \https://github.com/giper-dev/bot/
+				<= Donate $mol_link_donate
+					uri \https://boosty.to/hyoo
+				<= Support $mol_link_support
+					uri \https://t.me/giper_web/276
+				<= Lights $mol_lights_toggle
+			body_content /
+				<= Status $mol_status
+					status <= communication null
+				<= Messages $mol_list
+					rows <= messages /
+						<= Message*0 $mol_view sub /
+							<= Message_text* $mol_text text <= message_text* \
+			foot /
+				<= Attach $mol_attach
+					items? <=> attach? /string
+				<= Prompt_text $mol_textarea
+					event *
+						^
+						pointerdown? <=> quote_start? null
+						pointerup? <=> quote_end? null
+					hint @ \Ask something...
+					value? <=> prompt_text? \
+					submit? <=> prompt_submit? null
+				<= Prompt_submit $mol_button_minor
+					hint @ \Send
+					click? <=> prompt_submit? 
+					sub /
+						<= Prompt_submit_icon $mol_icon_send
+		<= Result_page*0 $mol_page
+			title <= result_title? @ \Result
+			tools /
+				<= Version $mol_paginator
+					value? <=> version? 0
+			body /
+				<= Result $mol_textarea
+					sidebar_showed true
+					value? <=> result? \
+	placeholders /
+		<= Context $mol_page
+			title @ \Summary
+			body /
+				- <= Digest_block $mol_labeler
+					title @ \Digest
+					Content
+				<= Digest $mol_text
+					text <= digest? \
+				- <= Rules_block $mol_labeler
+					title @ \Rules
+					Content <= Rules $mol_text
+						text <=
+
+$bog_blitz_admin_bot $giper_bot
+	Space null
+	dialog_title? @ \Quiz Generator
+	on_quiz? null
+
+$mol_icon_arrow_left $mol_icon path \M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z
+
+$mol_icon_share $mol_icon path \M21,12L14,5V9C7,10 4,15 3,20C5.5,16.5 9,14.9 14,14.9V19L21,12Z
+
+$bog_blitz_admin_quiz $mol_row
+	is_shared false
+	sub /
+		<= Shared_badge $mol_view
+			sub /
+				<= Shared_icon $mol_icon_share
+		<= Title_input $mol_string_button
+			hint @ \Quiz name
+			value? <=> quiz_title? \
+		<= Share $mol_button_minor
+			title @ \Share
+			click? <=> share? null
+		<= Duplicate $mol_button_minor
+			title @ \Duplicate
+			click? <=> duplicate? null
+		<= Edit $mol_button_minor
+			title @ \Edit
+			click? <=> edit? null
+		<= Start $mol_button_major
+			title @ \Play
+			click? <=> start? null
+		<= Delete $mol_button_minor
+			title @ \Delete
+			click? <=> delete? null
+
+$mol_icon_tick $mol_icon path \M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z
+
+$mol_check_box $mol_check
+	Icon $mol_icon_tick
+
+$mol_labeler $mol_list
+	rows /
+		<= Label $mol_view
+			minimal_height 32
+			sub <= label /$mol_view_content
+				<= title
+		<= Content $mol_view
+			minimal_height 24
+			sub <= content /
+
+$mol_number $mol_view
+	precision_view <= precision 1
+	precision_change <= precision 1
+	boost 10
+	value_min -Infinity
+	value_max +Infinity
+	value? +NaN
+	enabled true
+	plugins /
+		<= Hotkey $mol_hotkey
+			key *
+				down? <=> event_dec? null
+				up? <=> event_inc? null
+				pageDown? <=> event_dec_boost? null
+				pageUp? <=> event_inc_boost? null
+	sub /
+		<= Dec $mol_button_minor
+			event_click? <=> event_dec? null
+			enabled <= dec_enabled <= enabled
+			sub / <= dec_icon $mol_icon_chevron_left
+		<= String $mol_string
+			- \ we don't want native number controls in mobile devices
+			- \ https://stackoverflow.com/questions/3790935/can-i-hide-the-html5-number-input-s-spin-box
+			type <= type \text
+			keyboard \decimal
+			value? <=> value_string? \
+			hint <= hint \ 
+			enabled <= string_enabled <= enabled
+			submit? <=> submit? null
+		<= Inc $mol_button_minor
+			event_click? <=> event_inc? null
+			enabled <= inc_enabled <= enabled
+			sub / <= inc_icon $mol_icon_chevron_right
+
+$bog_blitz_admin_question $mol_list
+	question null
+	number 0
+	rows <= question_rows /
+		<= Text_input $mol_string_button
+			hint @ \Question...
+			value? <=> question_text? \
+		<= Header $mol_row
+			sub /
+				<= Number $mol_paragraph
+					title <= number_title \
+				<= Type_select $mol_select
+					value? <=> question_type? \choice
+					dictionary *
+						choice @ \Choice
+						text_input @ \Text Input
+				<= Delete $mol_button_minor
+					title @ \Delete
+					click? <=> delete? null
+		<= Options_section $mol_list
+			rows <= option_rows /
+		<= Add_option $mol_button_minor
+			title @ \Add Option
+			click? <=> add_option? null
+		<= Correct_text_input $mol_string_button
+			hint @ \Correct answer...
+			value? <=> correct_text? \
+	Image_section $mol_row
+		sub <= image_section_content /
+	Image_upload $mol_button_open
+		title @ \Add Image
+		files? <=> question_image_files? /
+	Image_preview $mol_image
+		uri <= question_image_uri \
+	Image_remove $mol_button_minor
+		title @ \Remove Image
+		click? <=> remove_image? null
+
+$bog_blitz_admin_option $mol_list
+	rows <= option_content /
+	Image_section $mol_row
+		sub <= image_section_content /
+	Image_preview $mol_image
+		uri <= option_image_uri \
+	Image_upload $mol_button_open
+		title @ \Image
+		files? <=> option_image_files? /
+	Image_remove $mol_button_minor
+		title @ \Remove Image
+		click? <=> remove_image? null
+	Controls $mol_row
+		sub /
+			<= Text $mol_string_button
+				hint @ \Write your option
+				value? <=> option_text? \
+			<= Checkbox $mol_check_box
+				title @ \Is it correct ?
+				checked? <=> is_correct? false
+			<= Delete $mol_button_minor
+				title @ \Delete
+				click? <=> delete? null
+
+$bog_blitz_admin_editor $mol_list
+	quiz_land null
+	rows <= editor_rows /
+	Title_input $mol_string_button
+		hint @ \Quiz title
+		value? <=> quiz_title? \
+	Settings $mol_list
+		rows /
+			<= Manual_mode_row $mol_labeler
+				title @ \Manual mode (host controls transitions)
+				content / <= Manual_mode $mol_check_box
+					checked? <=> manual_mode? false
+			<= Time_read_row $mol_labeler
+				title @ \Read time (sec)
+				content / <= Time_read $mol_number
+					value? <=> time_read? 5
+			<= Time_answer_row $mol_labeler
+				title @ \Answer time (sec)
+				content / <= Time_answer $mol_number
+					value? <=> time_answer? 10
+			<= Time_reveal_row $mol_labeler
+				title @ \Reveal time (sec)
+				content / <= Time_reveal $mol_number
+					value? <=> time_reveal? 5
+			<= Time_leaderboard_row $mol_labeler
+				title @ \Leaderboard time (sec)
+				content / <= Time_leaderboard $mol_number
+					value? <=> time_leaderboard? 10
+			<= Points_base_row $mol_labeler
+				title @ \Points per answer
+				content / <= Points_base $mol_number
+					value? <=> points_base? 100
+			<= Time_multiplier_row $mol_labeler
+				title @ \Score multiplier for reaction
+				content / <= Time_multiplier $mol_number
+					value? <=> time_multiplier? 1.5
+	Add_question $mol_button_major
+		title @ \Add Question
+		click? <=> add_question? null
+	Question*0 $bog_blitz_admin_question
+		number <= question_number*0 0
+		question_text? <=> question_text*? \
+		question_type? <=> question_type*? \choice
+		delete? <=> delete_question*? null
+		option_rows <= option_rows* /
+		add_option? <=> add_option*? null
+		correct_text? <=> correct_text*? \
+		question_image_files? <=> question_image_files*? /
+		question_image_uri <= question_image_uri* \
+		remove_image? <=> remove_question_image*? null
+	Option*0 $bog_blitz_admin_option
+		option_text? <=> option_text*? \
+		is_correct? <=> is_correct*? false
+		delete? <=> delete_option*? null
+		option_image_files? <=> option_image_files*? /
+		option_image_uri <= option_image_uri* \
+		remove_image? <=> remove_option_image*? null
+
+$bog_blitz_admin $mol_page
+	Head null
+	body <= admin_body /
+	Quiz_card*0 $bog_blitz_admin_quiz
+		quiz_title? <=> quiz_title*? \
+		is_shared <= quiz_is_shared* false
+		edit? <=> edit_quiz*? null
+		delete? <=> delete_quiz*? null
+		start? <=> start_quiz*? null
+		duplicate? <=> duplicate_quiz*? null
+		share? <=> share_quiz*? null
+	Quizzes_list $mol_list
+		rows <= quiz_rows /
+	Create_button $mol_button_major
+		title @ \Create Quiz
+		click? <=> create_quiz? null
+	Bot_expander $mol_expander
+		title @ \AI Generate Quiz
+		content /
+			<= Bot $bog_blitz_admin_bot
+				on_quiz? <=> import_bot_quiz? null
+	Import_expander $mol_expander
+		title @ \Import from JSON
+		content /
+			<= Import_hint $mol_paragraph
+				title @ \Edit JSON below or import as a preset
+			<= Import_area $mol_textarea
+				value? <=> import_json_text? \
+			<= Import_button $mol_button_major
+				title @ \Import
+				click? <=> import_json? null
+	Back_button $mol_button_minor
+		sub /
+			<= Back_icon $mol_icon_arrow_left
+			<= Back_label @ \Back to Quizzes
+		click? <=> back_to_list? null
+	Game_land_warning $mol_status
+		sub /
+			<= Game_land_warning_text $mol_paragraph
+				title @ \This is a game session, not a quiz. Editing is not available.
+	Editor $bog_blitz_admin_editor
+		quiz_land <= current_quiz_land null
+	Question*0 $bog_blitz_admin_question
+		question <= question_obj*0 null
+		number <= question_number*0 0
+		question_text? <=> question_text*? \
+		question_type? <=> question_type*? \choice
+		delete? <=> delete_question*? null
+		option_rows <= option_rows* /
+		add_option? <=> add_option*? null
+
+$mol_icon_menu $mol_icon path \M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z
+
+$mol_icon_cog $mol_icon path \M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z
+
+$bog_theme_auto $mol_plugin
+	themes <= themes_default /
+	theme_light \$mol_theme_light
+	theme_dark \$mol_theme_dark
+	mode? \system
+	mode_next? null
+	theme_next? null
+	theme_prev? null
+	theme_set? null
+	is_light_now false
+	attr * mol_theme <= theme \
+
+$bog_theme_picker_row $mol_button_minor
+	theme_name \
+	title <= theme_name
+	attr *
+		^
+		bog_theme_picker_row_focused <= focused_str \
+	event *
+		^
+		pointerenter?event <=> hover?event null
+
+$bog_theme_picker $mol_scroll
+	theme_auto $bog_theme_auto
+	close? null
+	query?val \
+	focused_index?val -1
+	Theme_row* $bog_theme_picker_row
+		theme_name <= theme_name* \
+		focused <= theme_focused* false
+		click?event <=> theme_select*?event null
+		hover?event <=> theme_hover*?event null
+	sub /
+		<= Content $mol_list rows /
+			<= Search $mol_string
+				value?val <=> query?val
+				hint @ \Just start typing
+			<= Theme_list $mol_list
+				rows <= theme_rows /
+	event *
+		^
+		keydown?event <=> key_down?event null
+
+$mol_icon_white_balance_sunny $mol_icon path \M3.55 19.09L4.96 20.5L6.76 18.71L5.34 17.29M12 6C8.69 6 6 8.69 6 12S8.69 18 12 18 18 15.31 18 12C18 8.68 15.31 6 12 6M20 13H23V11H20M17.24 18.71L19.04 20.5L20.45 19.09L18.66 17.29M20.45 5L19.04 3.6L17.24 5.39L18.66 6.81M13 1H11V4H13M6.76 5.39L4.96 3.6L3.55 5L5.34 6.81L6.76 5.39M1 13H4V11H1M13 20H11V23H13
+
+$mol_icon_weather_night $mol_icon path \M17.75,4.09L15.22,6.03L16.13,9.09L13.5,7.28L10.87,9.09L11.78,6.03L9.25,4.09L12.44,4L13.5,1L14.56,4L17.75,4.09M21.25,11L19.61,12.25L20.2,14.23L18.5,13.06L16.8,14.23L17.39,12.25L15.75,11L17.81,10.95L18.5,9L19.19,10.95L21.25,11M18.97,15.95C19.8,15.87 20.69,17.05 20.16,17.8C19.84,18.25 19.5,18.67 19.08,19.07C15.17,23 8.84,23 4.94,19.07C1.03,15.17 1.03,8.83 4.94,4.93C5.34,4.53 5.76,4.17 6.21,3.85C6.96,3.32 8.14,4.21 8.06,5.04C7.79,7.9 8.75,10.87 10.95,13.06C13.14,15.26 16.1,16.22 18.97,15.95M17.33,17.97C14.5,17.81 11.7,16.64 9.53,14.5C7.36,12.31 6.2,9.5 6.04,6.68C3.23,9.82 3.34,14.64 6.35,17.66C9.37,20.67 14.19,20.78 17.33,17.97Z
+
+$mol_icon_monitor $mol_icon path \M21,16H3V4H21M21,2H3C1.89,2 1,2.89 1,4V16A2,2 0 0,0 3,18H10V20H8V22H16V20H14V18H21A2,2 0 0,0 23,16V4C23,2.89 22.1,2 21,2Z
+
+$bog_theme_toggle $mol_pop
+	theme_auto $bog_theme_auto
+	showed?val false
+	align \bottom_right
+	Anchor $mol_button_minor
+		sub /
+			<= Icon $mol_view
+		hint <= anchor_hint \Переключить тему
+		click?event <=> clicked?event null
+		event *
+			^
+			pointerdown?event <=> press_start?event null
+			pointermove?event <=> press_move?event null
+			pointerup?event <=> press_end?event null
+			pointercancel?event <=> press_cancel?event null
+			lostpointercapture?event <=> press_lost?event null
+	Icon_light $mol_icon_white_balance_sunny
+	Icon_dark $mol_icon_weather_night
+	Icon_system $mol_icon_monitor
+	bubble_content /
+		<= Backdrop $mol_view
+			event *
+				click?event <=> backdrop_click?event null
+		<= Picker $bog_theme_picker
+			theme_auto <= theme_auto
+			close? <=> picker_close? null
+
+$mol_icon_music $mol_icon path \M21,3V15.5A3.5,3.5 0 0,1 17.5,19A3.5,3.5 0 0,1 14,15.5A3.5,3.5 0 0,1 17.5,12C18.04,12 18.55,12.12 19,12.34V6.47L9,8.6V17.5A3.5,3.5 0 0,1 5.5,21A3.5,3.5 0 0,1 2,17.5A3.5,3.5 0 0,1 5.5,14C6.04,14 6.55,14.12 7,14.34V6L21,3Z
+
+$bog_blitz_radio $mol_pop
+	showed? <=> menu_showed? false
+	Anchor <= Toggle $mol_check
+		checked? <=> menu_showed? false
+		sub /
+			<= Icon $mol_icon_music
+	bubble_content /
+		<= Menu $mol_view
+			sub <= menu_content /
+				<= Volume_row $mol_view
+					sub /
+						<= Volume_label $mol_string_button
+							value? <=> volume_input? \
+						<= Volume_up $mol_button_minor
+							title \+
+							click? <=> volume_up?event null
+						<= Volume_down $mol_button_minor
+							title \-
+							click? <=> volume_down?event null
+				<= Stop_button $mol_button_minor
+					title @ \Stop
+					click? <=> stop_click?event null
+				<= Station*0 $mol_button_minor
+					title <= station_title* \
+					click? <=> station_click*?event null
+
+$mol_check_list $mol_view
+	dictionary *
+	Option* $mol_check
+		checked? <=> option_checked*? false
+		label <= option_label* /
+			<= option_title* \
+		enabled <= option_enabled* <= enabled true
+		hint <= option_hint* \
+		minimal_height 24
+	options *
+	keys /string
+	sub <= items /$mol_check
+
+$mol_switch $mol_check_list
+	value? \
+
+$bog_blitz $mol_page
+	title @ \Blitz Quiz
+	pages *
+		lobby <= Lobby $bog_blitz_lobby
+		admin <= Admin $bog_blitz_admin
+		profile <= Profile $bog_blitz_profile_page
+		- feedback <= Feedback $bog_feedback2_form
+			feedback_id \blitz
+	nav_options *
+		lobby \Лобби
+		admin \Админ
+		profile \Профиль
+	Navbar $mol_switch
+		value? <=> screen? \lobby
+		options <= nav_options
+	Mobile_nav $mol_switch
+		value? <=> screen? \lobby
+		options <= nav_options
+	Mobile_menu $mol_pop
+		showed? <=> mobile_menu_showed? false
+		Anchor <= Mobile_menu_trigger $mol_check
+			checked? <=> mobile_menu_showed? false
+			sub /
+				<= Mobile_menu_icon $mol_icon_menu
+		bubble_content /
+			<= Mobile_nav 
+	tools /
+		- <= Feedback_link $mol_link
+			arg *
+				screen \feedback
+			sub /
+				<= Feedback_icon $mol_icon_message_draw
+		<= Settings $mol_pick
+			hint \Настройки
+			trigger_content /
+				<= Settings_icon $mol_icon_cog
+			bubble_content /
+				<= Settings_content $mol_row sub /
+					<= Status $giper_baza_status
+					<= Theme_toggle $bog_theme_toggle theme_auto <= Theme
+					<= Sources $mol_link_source uri \https://github.com/b-on-g/blitz
+				<= Powered $mol_text text \
+					\Пишите нам в [Telegram](https://t.me/@Dev_Cmyser)
+					\*Создано на [$mol](https://mol.hyoo.ru/#!section=docs/=4kd8nv_evh111) и [Giper Baza](https://t.me/mol_news/226)*
+		<= Radio $bog_blitz_radio
+	head /
+		<= Title
+		<= Navbar
+		<= Tools
+		<= Mobile_menu
+	plugins /
+		- <= Metrics $bog_metrics
+			app \blitz
+		<= Theme $bog_theme_auto
+			theme_light \$mol_theme_calm_light
+			theme_dark \$mol_theme_calm_dark
+			themes /
+				\$mol_theme_calm_light
+				\$mol_theme_calm_dark
+	body <= screen_body /
+
+$bog_blitz_profile_page $mol_page
+	Head null
+	body /
+		<= Card $mol_view
+			sub /
+				<= Avatar_circle $mol_view
+					sub /
+						<= avatar_preview null
+				<= Avatar $mol_button_open
+					sub /
+						<= Avatar_label $mol_paragraph
+							title @ \Change photo
+						<= Avatar_native $mol_button_open_native
+							files? <=> avatar_files? /File
+							accept \image/*
+							multiple false
+				<= Name_row $mol_view
+					sub /
+						<= Name_input $mol_string_button
+							hint @ \Your name
+							value? <=> profile_name? \
+				<= Stats $mol_view
+					sub <= stat_rows /
+				<= Fun_card $mol_view
+					sub /
+						<= Fun_title $mol_paragraph
+							title @ \Your Quiz Persona
+						<= Fun_text $mol_paragraph
+							title <= persona_text \
+		<= Games_section $mol_view
+			sub /
+				<= Games_title $mol_paragraph
+					title \История игр
+				<= Games_search $mol_search
+					query? <=> games_query? \
+				<= Games_list $mol_list
+					rows <= game_rows /
+				<= Games_empty $mol_paragraph
+					title <= games_empty_text \
+	Avatar_image $mol_image
+		uri <= avatar_uri \
+	Avatar_icon $mol_avatar
+		id <= player_id \
+	Stat_row* $mol_view
+		sub /
+			<= Stat_label* $mol_paragraph
+				title <= stat_label* \
+			<= Stat_value* $mol_paragraph
+				title <= stat_value* \
+	Game_row* $mol_link
+		arg <= game_arg* *
+		sub /
+			<= Game_info* $mol_view
+				sub /
+					<= Game_title* $mol_paragraph
+						title <= game_title* \
+					<= Game_details* $mol_paragraph
+						title <= game_details* \
+			<= Game_score* $mol_paragraph
+				title <= game_score* \
+
+$bog_wysiwyg_comment $mol_pop
+	showed? <=> panel_open? false
+	align \left_center
+	attr *
+		^
+		bog_wysiwyg_comment_has_comments <= has_comments false
+	Anchor <= Comment_button $mol_button_minor
+		sub /
+			<= Comment_icon $mol_icon_comment_outline
+			<= Comment_count $mol_view
+				sub /
+					<= comment_count_text \
+		click?event <=> toggle?event null
+	bubble_content /
+		<= Panel $mol_view
+			sub /
+				<= Panel_head $mol_view
+					sub /
+						<= Panel_title $mol_paragraph
+							title @ \Comments
+						<= Close $mol_button_minor
+							sub /
+								<= Close_icon $mol_icon_close
+							click?event <=> close?event null
+				<= Thread $bog_wysiwyg_comment_thread
+					comment_land_link <= comment_land_link \
+
+$bog_wysiwyg_links $mol_list
+	page_id \
+	all_pages /
+	rows /
+		<= Header $mol_view
+			sub /
+				<= header_text \Backlinks
+		<= Links $mol_list
+			rows <= link_views /
+	Link*id $mol_link
+		arg *
+			page <= link_page_id* \
+		sub /
+			<= link_title* \
+
+$bog_wysiwyg_menu $mol_view
+	showed? false
+	picked?val \
+	index? 0
+	pos_y? 0
+	pos_x? 0
+	commands /
+	Option* $mol_button_minor
+		title <= option_title* \
+		click?event <=> option_click*?event null
+		attr *
+			^
+			bog_wysiwyg_menu_option_active <= option_active* false
+	sub <= option_rows /
+	attr *
+		^
+		bog_wysiwyg_menu_showed <= showed?
+	style *
+		^
+		top <= pos_y_str \0px
+		left <= pos_x_str \0px
+
+$bog_wysiwyg_ai $mol_view
+	showed? false
+	context \
+	loading? false
+	on_result?text null
+	picked?val \
+	index? 0
+	pos_y? 0
+	pos_x? 0
+	Model $mol_github_model
+		rules \You are a writing assistant. Respond in JSON: {"text": "your result"}. Return only the result text, no explanations.
+	commands /
+	Option* $mol_button_minor
+		title <= option_title* \
+		click?event <=> option_click*?event null
+		attr *
+			^
+			bog_wysiwyg_ai_option_active <= option_active* false
+	sub <= option_rows /
+	attr *
+		^
+		bog_wysiwyg_ai_showed <= showed?
+		bog_wysiwyg_ai_loading <= loading?
+	style *
+		^
+		top <= pos_y_str \0px
+		left <= pos_x_str \0px
+
+$bog_wysiwyg_history $mol_view
+	page_land_link \
+	showed? false
+	Version* $bog_wysiwyg_history_version
+		title <= version_title* \
+		click?event <=> version_click*?event null
+		active <= version_active* false
+	sub /
+		<= Save_button $mol_button_minor
+			title @ \Save version
+			click?event <=> save_version?event null
+		<= Version_list $mol_list
+			rows <= version_rows /
+	attr *
+		^
+		bog_wysiwyg_history_showed <= showed?
+
+$bog_wysiwyg_history_version $mol_button_minor
+	active false
+	attr *
+		^
+		bog_wysiwyg_history_version_active <= active
+
+$bog_wysiwyg $mol_view
+	page_land_link \
+	readonly false
+	block_ids? /
+	Block* $bog_wysiwyg_block
+		html? <=> block_html*? \
+		type? <=> block_type*? \paragraph
+		level? <=> block_level*? 1
+		readonly <= readonly
+		menu_open <= menu_showed? false
+		ai_open <= ai_showed? false
+		on_enter?event <=> block_enter*?event null
+		on_remove?event <=> block_remove*?event null
+		on_split?parts <=> block_split*?parts null
+		on_merge_prev?event <=> block_merge_prev*?event null
+		on_merge_next?event <=> block_merge_next*?event null
+		on_nav?nav <=> block_nav*?nav null
+		on_input?event <=> block_input*?event null
+		on_slash?event <=> block_slash*?event null
+		on_menu_key?event <=> block_menu_key*?event null
+		on_image?src <=> block_image*?src null
+		on_ai?event <=> block_ai*?event null
+		on_ai_key?event <=> block_ai_key*?event null
+		on_paste_blocks?val <=> block_paste_blocks*?val null
+	Block_row* $mol_view
+		attr *
+			bog_wysiwyg_drag_over <= row_is_drag_over* false
+			bog_wysiwyg_drag_pos <= row_drag_position* \
+			bog_wysiwyg_dragging <= row_is_dragging* false
+		event *
+			dragover?event <=> row_dragover*?event null
+			drop?event <=> row_drop*?event null
+			dragend?event <=> row_dragend*?event null
+		sub <= block_row_sub* /
+			<= Drag_handle* $mol_view
+				attr *
+					draggable \true
+				event *
+					dragstart?event <=> handle_dragstart*?event null
+				sub /
+					\⠿
+			<= Block*
+			<= Block_comment* $bog_wysiwyg_comment
+				comment_land_link <= block_comment_land_link* \
+				panel_open? <=> block_comment_open*? false
+	drag_source_id? \
+	drag_over_id? \
+	drag_over_position? \after
+	all_pages /
+	event *
+		^
+		keydown?event <=> editor_keydown?event null
+		copy?event <=> editor_copy?event null
+	sub /
+		<= Status $giper_baza_status
+		<= Block_list $mol_list
+			rows <= block_row_views /
+		<= Backlinks $bog_wysiwyg_links
+			page_id <= page_land_link
+			all_pages <= all_pages
+		<= Menu $bog_wysiwyg_menu
+			showed? <=> menu_showed? false
+			picked?val <=> menu_picked?val \
+			index? <=> menu_index? 0
+			pos_y <= menu_pos_y? 0
+			pos_x <= menu_pos_x? 0
+		<= Ai $bog_wysiwyg_ai
+			showed? <=> ai_showed? false
+			context <= ai_context? \
+			loading? <=> ai_loading? false
+			on_result?text <=> ai_result?text null
+			picked?val <=> ai_picked?val \
+			index? <=> ai_index? 0
+			pos_y <= ai_pos_y? 0
+			pos_x <= ai_pos_x? 0
+		<= History $bog_wysiwyg_history
+			page_land_link <= page_land_link
+			showed? <=> history_showed? false
+
+$bog_wysiwyg_block $mol_view
+	html? \
+	type? \paragraph
+	level? 1
+	readonly false
+	menu_open false
+	placeholder \
+	on_enter?event null
+	on_remove?event null
+	on_split?parts null
+	on_merge_prev?event null
+	on_merge_next?event null
+	on_nav?nav null
+	on_input?event null
+	on_slash?event null
+	on_menu_key?event null
+	on_image?src null
+	ai_open false
+	on_ai?event null
+	on_ai_key?event null
+	on_paste_blocks?val null
+	bold_exec?event null
+	italic_exec?event null
+	underline_exec?event null
+	strike_exec?event null
+	link_exec?event null
+	attr *
+		^
+		contenteditable <= content_editable \true
+		bog_wysiwyg_block_type <= type?
+		bog_wysiwyg_block_level <= level?
+		bog_wysiwyg_block_empty <= is_empty false
+		bog_wysiwyg_block_placeholder <= placeholder
+	plugins /
+		<= Hotkey_format $mol_hotkey
+			mod_ctrl true
+			key *
+				B?event <=> bold_exec?event
+				I?event <=> italic_exec?event
+				U?event <=> underline_exec?event
+		<= Hotkey_strike $mol_hotkey
+			mod_ctrl true
+			mod_shift true
+			key *
+				S?event <=> strike_exec?event
+	event *
+		^
+		input?event <=> input_event?event null
+		keydown?event <=> keydown_event?event null
+		paste?event <=> paste_event?event null
+		drop?event <=> drop_event?event null
+		dragover?event <=> dragover_event?event null
+	sub /
+
+$bog_journal_post_html $mol_view
+	html \
+	dom_name \p
+	sub /
+
+$bog_journal_post_page $mol_view
+	dom_name \article
+	post_link \
+	author_fallback @ \Unnamed author
+	sub /
+		<= Head $mol_view
+			dom_name \header
+			sub <= head_content /
+		<= Body $mol_view
+			sub <= body_rows /
+	Cover $mol_image
+		uri <= cover_uri \
+		title <= cover_alt \
+		loading \eager
+	Title $mol_view
+		dom_name \h1
+		sub / <= post_title \
+	Summary $mol_view
+		sub / <= post_summary \
+	Byline $mol_view
+		sub <= byline_content /
+	Published $mol_view
+		dom_name \time
+		attr *
+			^
+			datetime <= published_iso \
+		sub / <= published_label \
+	Draft $mol_view
+		sub / <= draft_label @ \Draft
+	Author_link $mol_link
+		arg <= author_arg *
+		hint <= author_label \
+		sub <= author_content /
+	Author_avatar $mol_image
+		uri <= author_avatar_uri \
+		title <= author_label
+	Author_name $mol_view
+		sub / <= author_label
+	Tags $mol_view
+		sub <= tag_chips /
+	Tag* $mol_view
+		sub / <= tag* \
+	Heading* $bog_journal_post_html
+		dom_name <= heading_name* \h2
+		html <= row_html* \
+	Paragraph* $bog_journal_post_html
+		dom_name \p
+		html <= row_html*
+	Quote* $bog_journal_post_html
+		dom_name \blockquote
+		html <= row_html*
+	List* $mol_view
+		dom_name \ul
+		sub <= list_items* /
+	Item* $bog_journal_post_html
+		dom_name \li
+		html <= item_html* \
+	Code* $mol_view
+		dom_name \pre
+		attr *
+			^
+			bog_journal_post_lang <= code_lang* null
+		sub / <= code_text* \
+	Divider* $mol_view
+		dom_name \hr
+	Picture* $mol_image
+		uri <= picture_src* \
+		title <= picture_alt* \
+
+- Reader's timeline: every journal of one feed merged into a single
+- chronological strip, freshest first. Drafts never show up here.
+-
+- Everything that navigates is a real $mol_link, so the rendered html carries an
+- <a href> a crawler can follow. A click handler on a $mol_view would move the
+- reader just fine and leave the post unindexed.
+$bog_journal_feed_page $mol_view
+	feed_link \
+	title_fallback @ \Feed
+	subscribe_hint @ \Journal link
+	subscribe_add @ \Follow
+	subscribe_bad @ \That does not look like a journal link.
+	subscribe_dup @ \This journal is already in the feed.
+	source_wait @ \loading
+	source_fail @ \unavailable
+	empty_none @ \No journals yet. Paste a link to one above and its posts will show up here.
+	empty_quiet @ \Nothing published yet.
+	empty_nofeed @ \No feed opened.
+	author_unnamed @ \Unnamed author
+	post_untitled @ \Untitled post
+	sub /
+		<= Head $mol_view
+			sub <= head_content /
+				<= Title $mol_paragraph
+					title <= title_shown \
+				<= Subscribe $mol_view
+					sub /
+						<= Subscribe_input $mol_string
+							hint <= subscribe_hint
+							value? <=> subscribe_draft? \
+							submit?event <=> subscribe?event null
+						<= Subscribe_button $mol_button_major
+							title <= subscribe_add
+							click?event <=> subscribe?event null
+				<= Subscribe_error $mol_paragraph
+					title <= subscribe_error? \
+		<= Sources $mol_view
+			sub <= source_rows /
+		<= Posts $mol_view
+			sub <= card_rows /
+		<= Empty $mol_paragraph
+			title <= empty_text \
+	Source* $bog_journal_feed_source
+		author_arg <= source_arg* *
+		title <= source_name* \
+		status <= source_status* \
+		drop?event <=> source_drop*?event null
+	Card* $bog_journal_feed_card
+		post_arg <= post_arg* *
+		author_arg <= author_arg* *
+		title <= post_title* \
+		summary <= post_summary* \
+		author_name <= post_author_name* \
+		avatar_file <= post_avatar_file* \
+		avatar_seed <= post_author* \
+		moment <= post_moment* \
+		cover_uri <= post_cover_uri* \
+		has_cover <= post_has_cover* false
+		tags <= post_tags* /
+
+- One post in the timeline. Cover, title and author are three separate anchors
+- rather than one card-sized link: an <a> nested in an <a> is invalid html and
+- the parser tears such markup apart.
+$bog_journal_feed_card $mol_view
+	dom_name \article
+	post_arg *
+	author_arg *
+	title \
+	summary \
+	author_name \
+	avatar_file \
+	avatar_seed \
+	moment \
+	cover_uri \
+	has_cover false
+	tags /
+	sub <= card_content /
+		<= Cover_link $mol_link
+			arg <= post_arg
+			hint <= title
+			sub /
+				<= Cover $mol_image
+					uri <= cover_uri
+					title <= title
+		<= Body $mol_view
+			sub /
+				<= Title_link $mol_link
+					arg <= post_arg
+					title <= title
+				<= Summary $mol_paragraph
+					title <= summary
+				<= Tags $mol_view
+					sub <= tag_rows /
+				<= Foot $mol_view
+					sub /
+						<= Author_link $mol_link
+							arg <= author_arg
+							hint <= author_name
+							sub /
+								<= Avatar $bog_journal_feed_avatar
+									file_link <= avatar_file
+									seed <= avatar_seed
+									hint <= author_name
+								<= Author_name $mol_paragraph
+									title <= author_name
+						<= Moment $mol_paragraph
+							title <= moment
+	Tag* $mol_view
+		sub /
+			<= tag_text* \
+
+- Author's picture. A view of its own so a cover-sized blob still loading
+- suspends just this circle instead of the card around it.
+$bog_journal_feed_avatar $mol_view
+	file_link \
+	seed \
+	hint \
+	sub <= face /
+	Picture $mol_image
+		uri <= uri \
+		title <= hint
+	Fallback $mol_avatar
+		id <= seed
+
+- One subscription: where it leads, whether it arrived, and a way out of it.
+$bog_journal_feed_source $mol_view
+	author_arg *
+	title \
+	status \
+	drop?event null
+	sub /
+		<= Open $mol_link
+			arg <= author_arg
+			title <= title
+		<= Status $mol_paragraph
+			title <= status
+		<= Drop $mol_button_minor
+			hint @ \Unfollow
+			click?event <=> drop?event null
+			sub /
+				<= Drop_icon $mol_icon_close
+
+- Post workshop: metadata that lives in the journal Land on top, the body
+- underneath. The body is $bog_wysiwyg as shipped — this page never reaches
+- inside it, it only hands over the link of the Land the article text lives in.
+$bog_journal_edit_page $mol_view
+	post_link \
+	author_link \
+	can_edit false
+	cover_uri \
+	body_land_link \
+	body_readonly true
+	published_label \
+	post_new_title @ \Untitled post
+	published_never @ \Not published
+	sub <= page_content /
+		<= Denied $mol_paragraph
+			title @ \This journal belongs to somebody else. You can read it, but not edit it.
+		<= Meta $mol_view
+			sub /
+				<= Title_field $mol_string
+					hint @ \Post title
+					value? <=> post_title? \
+				<= Slug_row $mol_view
+					sub /
+						<= Slug_field $mol_string
+							hint @ \url-name
+							value? <=> post_slug? \
+						<= Slug_reset $mol_button_minor
+							hint @ \Rebuild the slug from the title
+							title @ \From title
+							click?event <=> slug_reset?event null
+				<= Summary_field $bog_journal_edit_text
+					hint @ \Short teaser for lists, feeds and social cards
+					value? <=> post_summary? \
+				<= Cover $mol_view
+					sub <= cover_content /
+						<= cover_preview null
+						<= Cover_open $mol_button_open
+							sub /
+								<= Cover_label $mol_paragraph
+									title @ \Cover image
+								<= Cover_native $mol_button_open_native
+									files? <=> cover_files? /File
+									accept \image/*
+									multiple false
+						<= cover_clear null
+				<= Tags $mol_view
+					sub /
+						<= Tag_list $mol_list
+							rows <= tag_rows /
+						<= Tag_form $mol_view
+							sub /
+								<= Tag_draft $mol_string
+									hint @ \Add a tag
+									value? <=> tag_draft? \
+									submit?event <=> tag_add?event null
+								<= Tag_add $mol_button_minor
+									title @ \Add
+									click?event <=> tag_add?event null
+				<= Publish $mol_view
+					sub /
+						<= Publish_row $mol_view
+							sub /
+								<= Publish_check $mol_check_box
+									title @ \Published
+									checked? <=> published? false
+								<= Published_at $mol_paragraph
+									title <= published_label
+						<= Publish_note $mol_paragraph
+							title @ \A draft is hidden from the lists, not from the network: the journal is a publicly readable Land, so anyone holding this link can already read it.
+		<= Body $bog_wysiwyg
+			page_land_link <= body_land_link
+			readonly <= body_readonly
+	Cover_image $mol_image
+		uri <= cover_uri
+		title <= post_title
+	Cover_clear $mol_button_minor
+		title @ \Remove cover
+		click?event <=> cover_remove?event null
+	Tag_row* $bog_journal_edit_chip
+		title <= tag_title* \
+		drop?event <=> tag_drop*?event null
+
+- Plain multiline field, same reason as the one on the profile page: the stock
+- mol textarea pulls a syntax highlighter in. Do not name it here, mam scans
+- comments for dependencies.
+$bog_journal_edit_text $mol_string
+	dom_name \textarea
+	minimal_height 72
+
+$bog_journal_edit_chip $mol_view
+	title \
+	drop?event null
+	sub /
+		<= Label $mol_paragraph
+			title <= title
+		<= Drop $mol_button_minor
+			hint @ \Remove tag
+			click?event <=> drop?event null
+			sub /
+				<= Drop_icon $mol_icon_close
+
+$bog_journal_app $mol_page
+	title <= screen_title \
+	author_link \
+	post_link \
+	feed_link \
+	edit_link \
+	own_feed_link \
+	title_journal @ \Journal
+	title_feed @ \Feed
+	title_post @ \Post
+	title_edit @ \Editing
+	plugins /
+		<= Theme $mol_theme_auto
+	tools <= tool_bar /
+		<= Nav_feed $bog_journal_app_nav
+			arg <= feed_arg *
+			title @ \Feed
+		<= Feed_make $mol_button_minor
+			title @ \Feed
+			hint @ \Start a reading feed
+			click?event <=> feed_create?event null
+		<= Nav_profile $bog_journal_app_nav
+			arg <= profile_arg *
+			title @ \Journal
+		<= Nav_read $bog_journal_app_nav
+			arg <= read_arg *
+			title @ \View
+		<= Nav_edit $bog_journal_app_nav
+			arg <= edit_arg *
+			title @ \Edit
+		<= Post_new $mol_button_minor
+			title @ \New post
+			click?event <=> post_create?event null
+		<= Status $giper_baza_status
+		<= Lights $mol_lights_toggle
+	body <= app_content /
+		<= Profile $bog_journal_profile
+			author_link <= author_link
+		<= Post $bog_journal_post_page
+			post_link <= post_link
+		<= Feed $bog_journal_feed_page
+			feed_link <= feed_link
+		<= Edit $bog_journal_edit_page
+			post_link <= edit_link
+			author_link <= author_link
+		<= Start $mol_view
+			sub /
+				<= Start_title $mol_paragraph
+					title @ \No journal here yet
+				<= Start_hint $mol_paragraph
+					title @ \Create your own journal to start publishing posts.
+				<= Start_button $mol_button_major
+					title @ \Create journal
+					click?event <=> journal_create?event null
+
+- Navigation link that never toggles itself off.
+-
+- $mol_link declares itself "current" as soon as every non-null key of its arg
+- already matches the route, and a click on a current link goes to uri_off,
+- which nulls every key the arg mentions. A nav link spells out the keys it
+- wants cleared, so that inversion wipes the whole route and drops the app on
+- the start screen. Pinning uri_off to uri makes a repeat click a no-op while
+- keeping the mol_link_current attribute available for styling.
+$bog_journal_app_nav $mol_link
+	uri_off <= uri
+
+$bog_builderui_div $mol_view
+
+$bog_builderui_card $bog_builderui_div
+
+$bog_builderui_field $mol_string
+	minimal_height 36
+
+$mol_gallery $mol_view
+	sub <= items /$mol_view
+	Side* $mol_gallery
+		style *
+			flexGrow <= side_size* \1
+		items <= side_items* /$mol_view
+
+$mol_chart_legend $mol_scroll
+	graphs /$mol_plot_graph
+	graphs_front /$mol_plot_graph
+	sub /
+		<= Gallery $mol_gallery items <= graph_legends /$mol_view
+	-
+	Graph_legend* $mol_view
+		sub /
+			<= Graph_sample_box* $mol_view
+				sub /
+					<= Graph_sample* null
+			<= Graph_title* $mol_view
+				sub /
+					<= graph_title* \
+
+$mol_svg_group $mol_svg
+	dom_name \g
+
+$mol_svg_title $mol_svg
+	dom_name \title
+	sub /
+		<= title
+
+$mol_plot_graph $mol_svg_group
+	series_x /number
+	series_y /number
+	-
+	attr *
+		^
+		mol_plot_graph_type <= type \solid
+	-
+	style *
+		^
+		color <= color \
+	-
+	viewport $mol_vector_2d<$mol_vector_range<number>> /
+		<= viewport_x $mol_vector_range<number> /
+			Infinity
+			-Infinity
+		<= viewport_y $mol_vector_range<number> /
+			Infinity
+			-Infinity
+	shift /number
+		0
+		0
+	scale /number
+		1
+		1
+	cursor_position $mol_vector_2d<number> /
+		NaN
+		NaN
+	dimensions_pane $mol_vector_2d<$mol_vector_range<number>> /
+		<= dimensions_pane_x $mol_vector_range<number> /
+			Infinity
+			-Infinity
+		<= dimensions_pane_y $mol_vector_range<number> /
+			Infinity
+			-Infinity
+	dimensions $mol_vector_2d<$mol_vector_range<number>> /
+		<= dimensions_x $mol_vector_range<number> /
+			Infinity
+			-Infinity
+		<= dimensions_y $mol_vector_range<number> /
+			Infinity
+			-Infinity
+	size_real $mol_vector_2d<number> /
+		0
+		0
+	gap $mol_vector_2d<$mol_vector_range<number>> /
+		<= gap_x $mol_vector_range<number> /
+			0
+			0
+		<= gap_y $mol_vector_range<number> /
+			0
+			0
+	repos_x* 0
+	repos_y* 0
+	indexes /number
+	points /readonly(number)[]
+	front /$mol_svg
+	back /$mol_svg
+	Hint $mol_svg_title
+		title <= hint <= title \
+	hue? +NaN
+	Sample null
+
+$mol_plot_graph_sample $mol_view
+	attr *
+		^
+		mol_plot_graph_type <= type \solid
+	style *
+		^
+		color <= color \black
+
+$mol_touch $mol_plugin
+	start_zoom? 0
+	start_distance? 0
+	zoom? 1
+	allow_draw true
+	allow_pan true
+	allow_zoom true
+	action_type? \
+	action_point? $mol_vector_2d<number> /
+		NaN
+		NaN
+	-
+	start_pan? /
+		0
+		0
+	pan? $mol_vector_2d<number> /
+		0
+		0
+	pointer_center $mol_vector_2d<number> /
+		NaN
+		NaN
+	-
+	start_pos? null
+	swipe_precision 16
+	-
+	swipe_right? null
+	swipe_bottom? null
+	swipe_left? null
+	swipe_top? null
+	-
+	swipe_from_right? null
+	swipe_from_bottom? null
+	swipe_from_left? null
+	swipe_from_top? null
+	-
+	swipe_to_right? null
+	swipe_to_bottom? null
+	swipe_to_left? null
+	swipe_to_top? null
+	-
+	draw_start?event null
+	draw?event null
+	draw_end?event null
+	-
+	style *
+		^
+		touch-action \none
+		overscroll-behavior \none
+	-
+	event *
+		^
+		pointerdown?event <=> event_start?event null
+		pointermove?event <=> event_move?event null
+		pointerup?event <=> event_end?event null
+		pointerleave?event <=> event_leave?event null
+		wheel?event <=> event_wheel?event null
+
+$mol_plot_pane $mol_svg_root
+	aspect \none
+	-
+	hue_base? +NaN
+	hue_shift? 111
+	-
+	gap_hor 48
+	gap_vert 24
+	gap_left <= gap_hor
+	gap_right <= gap_hor
+	gap_top <= gap_vert
+	gap_bottom <= gap_vert
+	gap $mol_vector_2d<$mol_vector_range<number>> /
+		<= gap_x $mol_vector_range<number> /
+			<= gap_left
+			<= gap_right
+		<= gap_y $mol_vector_range<number> /
+			<= gap_bottom
+			<= gap_top
+	-
+	shift_limit $mol_vector_2d<$mol_vector_range<number>> /
+		<= shift_limit_x $mol_vector_range<number> /
+			0
+			0
+		<= shift_limit_y $mol_vector_range<number> /
+			0
+			0
+	shift_default $mol_vector_2d<number> /
+		0
+		0
+	shift? $mol_vector_2d<number> /
+		0
+		0
+	scale_limit $mol_vector_2d<$mol_vector_range<number>> /
+		<= scale_limit_x $mol_vector_range<number> /
+			0
+			Infinity
+		<= scale_limit_y $mol_vector_range<number> /
+			0
+			-Infinity
+	scale_default $mol_vector_2d<number> /
+		0
+		0
+	scale? $mol_vector_2d<number> /
+		1
+		-1
+	scale_x? 1
+	scale_y? -1
+	size $mol_vector_2d<number> /
+		0
+		0
+	size_real $mol_vector_2d<number> /
+		1
+		1
+	dimensions $mol_vector_2d<$mol_vector_range<number>> /
+		<= dimensions_x $mol_vector_range<number> /
+			Infinity
+			-Infinity
+		<= dimensions_y $mol_vector_range<number> /
+			Infinity
+			-Infinity
+	dimensions_viewport $mol_vector_2d<$mol_vector_range<number>> /
+		<= dimensions_viewport_x $mol_vector_range<number> /
+			Infinity
+			-Infinity
+		<= dimensions_viewport_y $mol_vector_range<number> /
+			Infinity
+			-Infinity
+	-
+	sub <= graphs_sorted /$mol_svg
+	graphs_colored <= graphs_visible <= graphs_positioned <= graphs /$mol_plot_graph
+	-
+	plugins /
+		^
+		<= Touch $mol_touch
+			zoom? <=> zoom? 1
+			pan? <=> shift?
+			pointer_center => cursor_position
+			allow_draw <= allow_draw true
+			allow_pan <= allow_pan true
+			allow_zoom <= allow_zoom true
+			action_type => action_type
+			action_point => action_point
+			draw_start?event <=> draw_start?event null
+			draw?event <=> draw?event null
+			draw_end?event <=> draw_end?event null
+	- event *
+		^
+		dblclick?event <=> reset?event null
+
+$mol_chart $mol_view
+	gap_hor 48
+	gap_vert 24
+	gap_left <= gap_hor
+	gap_right <= gap_hor
+	gap_bottom <= gap_vert
+	gap_top <= gap_vert
+	graphs /$mol_plot_graph
+	sub /
+		<= Legend $mol_chart_legend
+			graphs <= graphs_colored
+		<= Plot $mol_plot_pane
+			scale_x? => zoom?
+			zoom? <=> zoom?
+			gap_left <= gap_left
+			gap_right <= gap_right
+			gap_bottom <= gap_bottom
+			gap_top <= gap_top
+			graphs <= graphs
+			graphs_colored => graphs_colored
+			hue_base <= hue_base 210
+			hue_shift <= hue_shift 163
+
+$bog_builderui_chart $mol_chart
+
+$bog_builderui_select $mol_select
+
+$mol_pop_over $mol_pop
+	showed <= hovered? false
+	attr *
+		^
+		tabindex 0
+	event *
+		^
+		mouseenter? <=> event_show? null
+		mouseleave? <=> event_hide? null
+
+$bog_builderui_tooltip $mol_pop_over
