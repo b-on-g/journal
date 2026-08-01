@@ -62175,20 +62175,20 @@ declare namespace $ {
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_link__arg_bog_journal_post_page_15 = $mol_type_enforce<
+	type $bog_journal_post_page_link__arg_bog_journal_post_page_15 = $mol_type_enforce<
 		ReturnType< $bog_journal_post_page['author_arg'] >
 		,
-		ReturnType< $mol_link['arg'] >
+		ReturnType< $bog_journal_post_page_link['arg'] >
 	>
-	type $mol_link__hint_bog_journal_post_page_16 = $mol_type_enforce<
+	type $bog_journal_post_page_link__hint_bog_journal_post_page_16 = $mol_type_enforce<
 		ReturnType< $bog_journal_post_page['author_label'] >
 		,
-		ReturnType< $mol_link['hint'] >
+		ReturnType< $bog_journal_post_page_link['hint'] >
 	>
-	type $mol_link__sub_bog_journal_post_page_17 = $mol_type_enforce<
+	type $bog_journal_post_page_link__sub_bog_journal_post_page_17 = $mol_type_enforce<
 		ReturnType< $bog_journal_post_page['author_content'] >
 		,
-		ReturnType< $mol_link['sub'] >
+		ReturnType< $bog_journal_post_page_link['sub'] >
 	>
 	type $mol_image__uri_bog_journal_post_page_18 = $mol_type_enforce<
 		ReturnType< $bog_journal_post_page['author_avatar_uri'] >
@@ -62334,7 +62334,7 @@ declare namespace $ {
 		Byline( ): $mol_view
 		Published( ): $mol_view
 		Draft( ): $mol_view
-		Author_link( ): $mol_link
+		Author_link( ): $bog_journal_post_page_link
 		Author_avatar( ): $mol_image
 		Author_name( ): $mol_view
 		Tags( ): $mol_view
@@ -62347,6 +62347,10 @@ declare namespace $ {
 		Code( id: any): $mol_view
 		Divider( id: any): $mol_view
 		Picture( id: any): $mol_image
+	}
+	
+	export class $bog_journal_post_page_link extends $mol_link {
+		uri_off( ): ReturnType< $bog_journal_post_page_link['uri'] >
 	}
 	
 }

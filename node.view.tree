@@ -2478,7 +2478,7 @@ $bog_journal_post_page $mol_view
 		sub / <= published_label \
 	Draft $mol_view
 		sub / <= draft_label @ \Draft
-	Author_link $mol_link
+	Author_link $bog_journal_post_page_link
 		arg <= author_arg *
 		hint <= author_label \
 		sub <= author_content /
@@ -2517,6 +2517,16 @@ $bog_journal_post_page $mol_view
 	Picture* $mol_image
 		uri <= picture_src* \
 		title <= picture_alt* \
+
+- Ссылка, которая не выключает сама себя.
+-
+- $mol_link объявляет себя current'ом, как только все непустые ключи его arg
+- уже стоят в адресе, а клик по current-ссылке уходит в uri_off и зануляет их.
+- На странице поста author= в адресе стоит всегда, поэтому ссылка на автора
+- вела в корень журнала вместо страницы автора. Прибитый к uri uri_off делает
+- повторный клик пустой операцией и оставляет атрибут current для стилей.
+$bog_journal_post_page_link $mol_link
+	uri_off <= uri
 
 - Reader's timeline: every journal of one feed merged into a single
 - chronological strip, freshest first. Drafts never show up here.

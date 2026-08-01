@@ -39648,7 +39648,7 @@ var $;
 			return obj;
 		}
 		Author_link(){
-			const obj = new this.$.$mol_link();
+			const obj = new this.$.$bog_journal_post_page_link();
 			(obj.arg) = () => ((this.author_arg()));
 			(obj.hint) = () => ((this.author_label()));
 			(obj.sub) = () => ((this.author_content()));
@@ -39745,6 +39745,11 @@ var $;
 	($mol_mem_key(($.$bog_journal_post_page.prototype), "Code"));
 	($mol_mem_key(($.$bog_journal_post_page.prototype), "Divider"));
 	($mol_mem_key(($.$bog_journal_post_page.prototype), "Picture"));
+	($.$bog_journal_post_page_link) = class $bog_journal_post_page_link extends ($.$mol_link) {
+		uri_off(){
+			return (this.uri());
+		}
+	};
 
 
 ;
