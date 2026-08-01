@@ -1,0 +1,20 @@
+{
+	"name": "bog-journal-seo",
+	"private": true,
+	"comment": [
+		"Список повторяет dependencies из сгенерированного bog/seo/-/package.json,",
+		"минус autoinstall: $node_autoinstall в контейнере не нужен и вреден —",
+		"он доустанавливает пакеты через npm в рантайме, а образ должен быть",
+		"самодостаточным. Версии закреплены по мажорам ровно теми, что стоят",
+		"в MAM-воркспейсе, где бандл собирается и проверяется."
+	],
+	"dependencies": {
+		"express": "^5",
+		"body-parser": "^2",
+		"compression": "^1",
+		"cors": "^2",
+		"serve-index": "^1",
+		"ws": "^8",
+		"puppeteer": "^25"
+	}
+}
