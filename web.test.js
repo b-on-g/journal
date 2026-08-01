@@ -6932,6 +6932,269 @@ var $;
 "use strict";
 var $;
 (function ($) {
+    /** Google Docs: wrapper b with normal weight, styled spans, c1 c2 classes, docs-internal-guid. */
+    const paste_fixture_gdocs = `<meta charset="utf-8"><b style="font-weight:normal;" id="docs-internal-guid-9f1e2b3c-7fff-aaaa-bbbb-ccccdddd"><h1 dir="ltr" style="line-height:1.38;margin-top:20pt;margin-bottom:6pt;"><span style="font-size:20pt;font-family:Arial;color:#000000;background-color:transparent;font-weight:400;font-style:normal;text-decoration:none;vertical-align:baseline;white-space:pre-wrap;">Планы на квартал</span></h1><p dir="ltr" style="line-height:1.38;"><span class="c1 c5" style="font-size:11pt;font-family:Arial;font-weight:700;text-decoration:none;white-space:pre-wrap;">Важно</span><span class="c1" style="font-size:11pt;font-weight:400;text-decoration:none;white-space:pre-wrap;">:&nbsp;успеть до </span><span class="c3" style="font-size:11pt;font-style:italic;white-space:pre-wrap;">пятницы</span></p><p dir="ltr"><span style="text-decoration:underline;-webkit-text-decoration-skip:none;text-decoration-skip-ink:none;"><a class="c9" href="https://example.com/plan">план</a></span></p><ul style="margin-top:0;padding-inline-start:48px;"><li dir="ltr" style="list-style-type:disc;font-size:11pt;" aria-level="1"><p dir="ltr" style="line-height:1.38;" role="presentation"><span style="font-weight:400;white-space:pre-wrap;">Первый пункт</span></p></li><li dir="ltr" style="list-style-type:disc;" aria-level="1"><p dir="ltr" role="presentation"><span style="font-weight:400;">Второй пункт</span></p></li></ul></b>`;
+    /** Word: o:p and w:sdt tags, mso-* styles, MsoListParagraph items, conditional comments. */
+    const paste_fixture_word = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta name=Generator content="Microsoft Word 15"><style><!-- p.MsoNormal {margin:0cm;font-size:11.0pt;} --></style></head><body lang=RU><p class=MsoNormal><span style='font-size:12.0pt;mso-fareast-language:EN-US'>Обычный абзац с <b style='mso-bidi-font-weight:normal'>жирным</b> словом<o:p></o:p></span></p><p class=MsoListParagraphCxSpFirst style='margin-left:36.0pt;text-indent:-18.0pt;mso-list:l0 level1 lfo1'><![if !supportLists]><span style='font-family:Symbol;mso-list:Ignore'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><![endif]><span style='mso-fareast-language:EN-US'>Пункт один<o:p></o:p></span></p><p class=MsoListParagraphCxSpLast style='mso-list:l0 level1 lfo1'><![if !supportLists]><span style='mso-list:Ignore'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp; </span></span><![endif]><span>Пункт два<o:p></o:p></span></p><w:sdt><p class=MsoNormal>Служебное<o:p></o:p></p></w:sdt></body></html>`;
+    /** Notion: block ids, data-token-index, nested list, pre code with language, figure with img. */
+    const paste_fixture_notion = `<meta charset='utf-8'><span data-token-index="0" style="caret-color: rgb(55, 53, 47); font-family: ui-sans-serif;"></span><h2 id="1a2b3c4d-0000-8000-8000-000000000001" data-block-id="1a2b" class="notion-heading">Как это работает</h2><p id="1a2b3c4d-0000-8000-8000-000000000002" class="notion-text-block">Просто <strong>берём</strong> и <em>делаем</em>, смотри <a href="https://notion.so/doc">доку</a>.</p><ul class="bulleted-list"><li style="list-style-type:disc">раз<ul class="bulleted-list"><li style="list-style-type:circle">раз-раз</li></ul></li><li style="list-style-type:disc">два</li></ul><pre class="code" style="background:rgb(247,246,243);"><code class="language-TypeScript">const a: number = 1
+console.log( a &lt; 2 )</code></pre><figure><img src="https://notion.so/image/pic.png" alt="скрин" width="700"></figure>`;
+    /** Ordinary web page: article markup, blockquote, hr, table, script, hidden div, unsafe link. */
+    const paste_fixture_web = `<article><h1 class="post-title">Заголовок статьи</h1><p>Текст с <strong>жирным</strong>, <em>курсивом</em>, <s>зачёркнутым</s> и <code>inline_code()</code>.</p><blockquote><p>Первая строка цитаты.</p><p>Вторая строка.</p></blockquote><hr><h4>Мелкий заголовок</h4><ol><li>Раз</li><li>Два</li></ol><pre><code class="language-js">let x = 1 &amp;&amp; 2</code></pre><p><img src="/img/photo.jpg" alt="фото"></p><p><a href="javascript:alert(1)">не ссылка</a> и <a href="https://ok.example/a?b=1&amp;c=2">ссылка</a></p><table><tr><th>Ключ</th><th>Значение</th></tr><tr><td>a</td><td>1</td></tr></table><script>alert(2)</script><div style="display:none">скрытое</div><!-- комментарий --></article>`;
+    const paste_fixture_md = [
+        '# Заголовок',
+        '',
+        'Абзац с **жирным**, *курсивом*, ~~зачёркнутым~~, `кодом` и [ссылкой](https://example.com/a?b=1&c=2).',
+        '',
+        '## Подзаголовок',
+        '',
+        '- раз',
+        '- два',
+        '  - вложенный',
+        '',
+        '1. один',
+        '2. два',
+        '',
+        '> Цитата первая',
+        '> Цитата вторая',
+        '',
+        '```ts',
+        'const a = 1 < 2',
+        '```',
+        '',
+        '---',
+        '',
+        '![картинка](https://example.com/pic.png)',
+        '',
+        '| Ключ | Значение |',
+        '| --- | --- |',
+        '| a | 1 |',
+    ].join('\n');
+    /** Anything an editor leaves behind that must never reach a block. */
+    const paste_dirt = /style=|data-[a-z]|aria-|<span|<div|<o:p|<w:|docs-internal-guid|&nbsp;|\u00A0|<!--|role=/;
+    function paste_dirty(drafts) {
+        return drafts.filter(draft => paste_dirt.test(draft.content)).map(draft => draft.content);
+    }
+    /** class= is junk everywhere except the language marker of a code block. */
+    function paste_classy(drafts) {
+        return drafts.filter(draft => draft.type !== 'code' && draft.content.includes('class=')).map(draft => draft.content);
+    }
+    function paste_types(drafts) {
+        return drafts.map(draft => draft.type);
+    }
+    function paste_clipboard(html, text) {
+        return { getData: (type) => type === 'text/html' ? html : text };
+    }
+    $mol_test({
+        'detect: rich html wins over plain text'() {
+            const kind = $bog_wysiwyg_paste.detect(paste_clipboard(paste_fixture_gdocs, 'Планы на квартал'));
+            $mol_assert_equal(kind, 'html');
+        },
+        'detect: code editor html is only colored spans, so markdown from plain text'() {
+            const html = '<div style="color:#d4d4d4;background:#1e1e1e"><div><span style="color:#569cd6"># Привет</span></div></div>';
+            const kind = $bog_wysiwyg_paste.detect(paste_clipboard(html, '# Привет\n\n- раз\n- два'));
+            $mol_assert_equal(kind, 'markdown');
+        },
+        'detect: markdown from plain text when html is absent'() {
+            $mol_assert_equal($bog_wysiwyg_paste.detect(paste_clipboard('', '# Привет')), 'markdown');
+            $mol_assert_equal($bog_wysiwyg_paste.detect(paste_clipboard('', '- раз\n- два')), 'markdown');
+            $mol_assert_equal($bog_wysiwyg_paste.detect(paste_clipboard('', 'см. [доку](https://x.dev)')), 'markdown');
+            $mol_assert_equal($bog_wysiwyg_paste.detect(paste_clipboard('', '```\ncode\n```')), 'markdown');
+            $mol_assert_equal($bog_wysiwyg_paste.detect(paste_clipboard('', '> цитата')), 'markdown');
+        },
+        'detect: prose without markup is plain text'() {
+            const text = 'Просто две строки обычного текста.\nБез всякой разметки.';
+            $mol_assert_equal($bog_wysiwyg_paste.detect(paste_clipboard('', text)), 'text');
+            $mol_assert_equal($bog_wysiwyg_paste.detect(paste_clipboard('<span style="color:red">' + text + '</span>', text)), 'text');
+        },
+        'detect: bold span in html counts as rich'() {
+            const html = '<span style="font-weight:700">важно</span>';
+            $mol_assert_equal($bog_wysiwyg_paste.detect(paste_clipboard(html, 'важно')), 'html');
+        },
+        'from_html: google docs keeps structure and drops wrappers'() {
+            const drafts = $bog_wysiwyg_paste.from_html(paste_fixture_gdocs);
+            $mol_assert_equal(paste_types(drafts), ['heading', 'paragraph', 'paragraph', 'list', 'list']);
+            $mol_assert_equal(drafts[0], { type: 'heading', level: 1, content: 'Планы на квартал' });
+            $mol_assert_equal(drafts[1].content, '<b>Важно</b>: успеть до <i>пятницы</i>');
+            $mol_assert_equal(drafts[2].content, '<a href="https://example.com/plan">план</a>');
+            $mol_assert_equal(drafts[3].content, 'Первый пункт');
+            $mol_assert_equal(drafts[4].content, 'Второй пункт');
+            $mol_assert_equal(paste_dirty(drafts), []);
+            $mol_assert_equal(paste_classy(drafts), []);
+        },
+        'from_html: word keeps bold and list items, drops office tags'() {
+            const drafts = $bog_wysiwyg_paste.from_html(paste_fixture_word);
+            $mol_assert_equal(paste_types(drafts), ['paragraph', 'list', 'list', 'paragraph']);
+            $mol_assert_equal(drafts[0].content, 'Обычный абзац с <b>жирным</b> словом');
+            $mol_assert_equal(drafts[1].content, 'Пункт один');
+            $mol_assert_equal(drafts[2].content, 'Пункт два');
+            $mol_assert_equal(drafts[3].content, 'Служебное');
+            $mol_assert_equal(paste_dirty(drafts), []);
+            $mol_assert_equal(paste_classy(drafts), []);
+        },
+        'from_html: notion flattens nested list and keeps code language'() {
+            const drafts = $bog_wysiwyg_paste.from_html(paste_fixture_notion);
+            $mol_assert_equal(paste_types(drafts), ['heading', 'paragraph', 'list', 'list', 'list', 'code', 'image']);
+            $mol_assert_equal(drafts[0], { type: 'heading', level: 2, content: 'Как это работает' });
+            $mol_assert_equal(drafts[1].content, 'Просто <b>берём</b> и <i>делаем</i>, смотри <a href="https://notion.so/doc">доку</a>.');
+            $mol_assert_equal([drafts[2].content, drafts[3].content, drafts[4].content], ['раз', 'раз-раз', 'два']);
+            $mol_assert_equal(drafts[5].content, '<code class="language-typescript">const a: number = 1\nconsole.log( a &lt; 2 )</code>');
+            $mol_assert_equal(drafts[6].content, '<img src="https://notion.so/image/pic.png" alt="скрин">');
+            $mol_assert_equal(paste_dirty(drafts), []);
+            $mol_assert_equal(paste_classy(drafts), []);
+        },
+        'from_html: web page keeps every supported block type'() {
+            const drafts = $bog_wysiwyg_paste.from_html(paste_fixture_web);
+            $mol_assert_equal(paste_types(drafts), [
+                'heading', 'paragraph', 'quote', 'divider', 'heading',
+                'list', 'list', 'code', 'image', 'paragraph', 'paragraph', 'paragraph',
+            ]);
+            $mol_assert_equal(drafts[1].content, 'Текст с <b>жирным</b>, <i>курсивом</i>, <s>зачёркнутым</s> и <code>inline_code()</code>.');
+            $mol_assert_equal(drafts[2].content, 'Первая строка цитаты.<br>Вторая строка.');
+            $mol_assert_equal(drafts[4], { type: 'heading', level: 3, content: 'Мелкий заголовок' });
+            $mol_assert_equal(drafts[7].content, '<code class="language-js">let x = 1 &amp;&amp; 2</code>');
+            $mol_assert_equal(drafts[8].content, '<img src="/img/photo.jpg" alt="фото">');
+            $mol_assert_equal(drafts[10].content, 'Ключ | Значение');
+            $mol_assert_equal(drafts[11].content, 'a | 1');
+            $mol_assert_equal(paste_dirty(drafts), []);
+            $mol_assert_equal(paste_classy(drafts), []);
+        },
+        'from_html: unsafe hrefs are unwrapped to plain text'() {
+            const drafts = $bog_wysiwyg_paste.from_html(paste_fixture_web);
+            $mol_assert_equal(drafts[9].content, 'не ссылка и <a href="https://ok.example/a?b=1&amp;c=2">ссылка</a>');
+            $mol_assert_equal(drafts[9].content.includes('javascript:'), false);
+        },
+        'from_html: script and hidden content never reach a block'() {
+            const drafts = $bog_wysiwyg_paste.from_html(paste_fixture_web);
+            const all = drafts.map(draft => draft.content).join(' ');
+            $mol_assert_equal(all.includes('alert'), false);
+            $mol_assert_equal(all.includes('скрытое'), false);
+            $mol_assert_equal(all.includes('комментарий'), false);
+        },
+        'from_html: empty and junk only clipboard gives nothing'() {
+            $mol_assert_equal($bog_wysiwyg_paste.from_html(''), []);
+            $mol_assert_equal($bog_wysiwyg_paste.from_html('   '), []);
+            $mol_assert_equal($bog_wysiwyg_paste.from_html('<meta charset="utf-8"><span style="color:red"></span>'), []);
+            $mol_assert_equal($bog_wysiwyg_paste.from_html('<div><span> </span></div>'), []);
+        },
+        'from_html: nbsp becomes an ordinary space'() {
+            const drafts = $bog_wysiwyg_paste.from_html('<p>раз&nbsp;два&nbsp;&nbsp;три</p>');
+            $mol_assert_equal(drafts[0].content, 'раз два три');
+        },
+        'from_html: data uri image is passed through untouched'() {
+            const src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUg==';
+            const drafts = $bog_wysiwyg_paste.from_html('<p><img src="' + src + '"></p>');
+            $mol_assert_equal(drafts, [{ type: 'image', content: '<img src="' + src + '">' }]);
+        },
+        'from_html: image inside a paragraph splits it into blocks in order'() {
+            const drafts = $bog_wysiwyg_paste.from_html('<p>до<img src="a.png">после</p>');
+            $mol_assert_equal(drafts, [
+                { type: 'paragraph', content: 'до' },
+                { type: 'image', content: '<img src="a.png">' },
+                { type: 'paragraph', content: 'после' },
+            ]);
+        },
+        'from_html: text in a styled span keeps the spaces around neighbours'() {
+            const html = '<p><span style="color:#111">жирный</span><span> </span><span style="font-weight:700">текст</span></p>';
+            $mol_assert_equal($bog_wysiwyg_paste.from_html(html)[0].content, 'жирный <b>текст</b>');
+        },
+        'from_html: angle brackets in text are escaped'() {
+            const drafts = $bog_wysiwyg_paste.from_html('<p>&lt;b&gt;не жирный&lt;/b&gt; &amp; всё</p>');
+            $mol_assert_equal(drafts[0].content, '&lt;b&gt;не жирный&lt;/b&gt; &amp; всё');
+        },
+        'from_markdown: every block kind is recognised'() {
+            const drafts = $bog_wysiwyg_paste.from_markdown(paste_fixture_md);
+            $mol_assert_equal(paste_types(drafts), [
+                'heading', 'paragraph', 'heading', 'list', 'list', 'list', 'list', 'list',
+                'quote', 'code', 'divider', 'image', 'paragraph', 'paragraph',
+            ]);
+            $mol_assert_equal(drafts[0], { type: 'heading', level: 1, content: 'Заголовок' });
+            $mol_assert_equal(drafts[1].content, 'Абзац с <b>жирным</b>, <i>курсивом</i>, <s>зачёркнутым</s>, <code>кодом</code>'
+                + ' и <a href="https://example.com/a?b=1&amp;c=2">ссылкой</a>.');
+            $mol_assert_equal(drafts[2], { type: 'heading', level: 2, content: 'Подзаголовок' });
+            $mol_assert_equal(drafts.slice(3, 8).map(draft => draft.content), ['раз', 'два', 'вложенный', 'один', 'два']);
+            $mol_assert_equal(drafts[8].content, 'Цитата первая<br>Цитата вторая');
+            $mol_assert_equal(drafts[9].content, '<code class="language-ts">const a = 1 &lt; 2</code>');
+            $mol_assert_equal(drafts[10], { type: 'divider', content: '' });
+            $mol_assert_equal(drafts[11].content, '<img src="https://example.com/pic.png" alt="картинка">');
+            $mol_assert_equal([drafts[12].content, drafts[13].content], ['Ключ | Значение', 'a | 1']);
+            $mol_assert_equal(paste_dirty(drafts), []);
+            $mol_assert_equal(paste_classy(drafts), []);
+        },
+        'from_markdown: heading deeper than three is clamped'() {
+            const drafts = $bog_wysiwyg_paste.from_markdown('#### Четвёртый\n\n###### Шестой');
+            $mol_assert_equal(drafts.map(draft => draft.level), [3, 3]);
+        },
+        'from_markdown: fence without language stays plain code'() {
+            const drafts = $bog_wysiwyg_paste.from_markdown('```\nplain & <code>\n```');
+            $mol_assert_equal(drafts, [{ type: 'code', content: 'plain &amp; &lt;code&gt;' }]);
+        },
+        'from_markdown: tilde fence works too'() {
+            const drafts = $bog_wysiwyg_paste.from_markdown('~~~python\nx = 1\n~~~');
+            $mol_assert_equal(drafts, [{ type: 'code', content: '<code class="language-python">x = 1</code>' }]);
+        },
+        'from_markdown: raw html in the source is escaped, not executed'() {
+            const drafts = $bog_wysiwyg_paste.from_markdown('опасно <script>alert(1)</script> тут');
+            $mol_assert_equal(drafts[0].content, 'опасно &lt;script&gt;alert(1)&lt;/script&gt; тут');
+        },
+        'from_markdown: unsafe link becomes plain label'() {
+            const drafts = $bog_wysiwyg_paste.from_markdown('[клик](javascript:alert(1))');
+            $mol_assert_equal(drafts, [{ type: 'paragraph', content: 'клик' }]);
+        },
+        'from_markdown: soft line breaks inside a paragraph become br'() {
+            const drafts = $bog_wysiwyg_paste.from_markdown('первая\nвторая\n\nтретья');
+            $mol_assert_equal(drafts, [
+                { type: 'paragraph', content: 'первая<br>вторая' },
+                { type: 'paragraph', content: 'третья' },
+            ]);
+        },
+        'from_markdown: dashes are a divider, not a list'() {
+            $mol_assert_equal($bog_wysiwyg_paste.from_markdown('---'), [{ type: 'divider', content: '' }]);
+            $mol_assert_equal($bog_wysiwyg_paste.from_markdown('***'), [{ type: 'divider', content: '' }]);
+            $mol_assert_equal($bog_wysiwyg_paste.from_markdown('- пункт'), [{ type: 'list', content: 'пункт' }]);
+        },
+        'from_markdown: emphasis inside a word is left alone'() {
+            const drafts = $bog_wysiwyg_paste.from_markdown('snake_case_name и 2*3*4');
+            $mol_assert_equal(drafts[0].content, 'snake_case_name и 2*3*4');
+        },
+        'from_markdown: parens inside a link url survive'() {
+            const drafts = $bog_wysiwyg_paste.from_markdown('см. [вики](https://ru.wikipedia.org/wiki/Мол_(язык))');
+            $mol_assert_equal(drafts[0].content, 'см. <a href="https://ru.wikipedia.org/wiki/Мол_(язык)">вики</a>');
+        },
+        'from_markdown: image with a title keeps only the source'() {
+            const drafts = $bog_wysiwyg_paste.from_markdown('![схема](https://x.dev/a.png "подпись")');
+            $mol_assert_equal(drafts, [{ type: 'image', content: '<img src="https://x.dev/a.png" alt="схема">' }]);
+        },
+        'from_html: underline survives when it is not a link decoration'() {
+            const drafts = $bog_wysiwyg_paste.from_html('<p>вот <u>это</u> и <span style="text-decoration:underline">то</span></p>');
+            $mol_assert_equal(drafts[0].content, 'вот <u>это</u> и <u>то</u>');
+        },
+        'from_markdown: nothing from empty source'() {
+            $mol_assert_equal($bog_wysiwyg_paste.from_markdown(''), []);
+            $mol_assert_equal($bog_wysiwyg_paste.from_markdown('\n\n   \n'), []);
+        },
+        'from_text: blank lines split paragraphs, single breaks stay'() {
+            const drafts = $bog_wysiwyg_paste.from_text('один\nдва\n\nтри & <четыре>');
+            $mol_assert_equal(drafts, [
+                { type: 'paragraph', content: 'один<br>два' },
+                { type: 'paragraph', content: 'три &amp; &lt;четыре&gt;' },
+            ]);
+        },
+        'from_data: routes to the parser matching the clipboard'() {
+            const from_html = $bog_wysiwyg_paste.from_data(paste_clipboard('<h2>Тема</h2>', 'Тема'));
+            $mol_assert_equal(from_html, [{ type: 'heading', level: 2, content: 'Тема' }]);
+            const from_md = $bog_wysiwyg_paste.from_data(paste_clipboard('', '## Тема'));
+            $mol_assert_equal(from_md, [{ type: 'heading', level: 2, content: 'Тема' }]);
+            const from_text = $bog_wysiwyg_paste.from_data(paste_clipboard('', 'просто тема'));
+            $mol_assert_equal(from_text, [{ type: 'paragraph', content: 'просто тема' }]);
+        },
+    });
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
     var $$;
     (function ($$) {
         /** Helper: create a contenteditable div with text, place cursor at end, run try_markdown */
@@ -6995,7 +7258,7 @@ var $;
             block.dom_node = () => node;
             block.html = (next) => next ?? node.innerHTML;
             const calls = [];
-            for (const name of ['on_enter', 'on_remove', 'on_split', 'on_merge_prev', 'on_merge_next', 'on_nav', 'on_input', 'on_slash']) {
+            for (const name of ['on_enter', 'on_remove', 'on_split', 'on_merge_prev', 'on_merge_next', 'on_nav', 'on_input', 'on_slash', 'on_paste_blocks', 'on_image']) {
                 block[name] = (arg) => {
                     calls.push({ name, arg });
                     return arg ?? null;
@@ -7026,6 +7289,12 @@ var $;
         }
         function key(name, mods = {}) {
             return new KeyboardEvent('keydown', { key: name, cancelable: true, ...mods });
+        }
+        /** Bare clipboard: `paste_data` needs nothing but `getData` */
+        function clipboard(parts) {
+            return {
+                getData: (type) => (type === 'text/html' ? parts.html : parts.text) ?? '',
+            };
         }
         $mol_test({
             // === Text offsets ===
@@ -7435,6 +7704,158 @@ var $;
                     drop();
                 }
             },
+            // === Clipboard ===
+            'a single unbroken line is pasted into the text, not into a block'() {
+                const { block, node, calls, drop } = make_block('hello world');
+                try {
+                    set_caret(node, 6);
+                    block.paste_data(clipboard({ text: 'dear' }));
+                    const paste = calls[0];
+                    $mol_assert_equal(paste.name, 'on_paste_blocks');
+                    $mol_assert_equal(paste.arg, {
+                        drafts: [{ type: 'paragraph', content: 'dear' }],
+                        head: 'hello ',
+                        tail: 'world',
+                        inline: true,
+                    });
+                }
+                finally {
+                    drop();
+                }
+            },
+            'spaces around a fragment copied mid sentence survive'() {
+                const { block, node, calls, drop } = make_block('словоконец');
+                try {
+                    set_caret(node, 5);
+                    block.paste_data(clipboard({ text: ' и ещё ' }));
+                    const arg = calls[0].arg;
+                    $mol_assert_equal(arg.drafts[0].content, ' и ещё ');
+                }
+                finally {
+                    drop();
+                }
+            },
+            'inline markdown in a single line still goes inline'() {
+                const { block, node, calls, drop } = make_block('a');
+                try {
+                    set_caret(node, 1);
+                    block.paste_data(clipboard({ text: 'очень **важно**' }));
+                    const arg = calls[0].arg;
+                    $mol_assert_equal(arg.inline, true);
+                    $mol_assert_equal(arg.drafts[0].content, 'очень <b>важно</b>');
+                }
+                finally {
+                    drop();
+                }
+            },
+            'several markdown paragraphs become several drafts'() {
+                const { block, node, calls, drop } = make_block('');
+                try {
+                    set_caret(node, 0);
+                    block.paste_data(clipboard({ text: '# Заголовок\n\nАбзац\n\n- пункт' }));
+                    const arg = calls[0].arg;
+                    $mol_assert_equal(arg.inline, false);
+                    $mol_assert_equal(arg.drafts.map(draft => draft.type), ['heading', 'paragraph', 'list']);
+                }
+                finally {
+                    drop();
+                }
+            },
+            'rich html wins over plain text'() {
+                const { block, node, calls, drop } = make_block('');
+                try {
+                    set_caret(node, 0);
+                    block.paste_data(clipboard({
+                        html: '<h2>Тема</h2><p>Тело</p>',
+                        text: 'Тема\nТело',
+                    }));
+                    const arg = calls[0].arg;
+                    $mol_assert_equal(arg.drafts, [
+                        { type: 'heading', level: 2, content: 'Тема' },
+                        { type: 'paragraph', content: 'Тело' },
+                    ]);
+                }
+                finally {
+                    drop();
+                }
+            },
+            'a paste in the middle carries both halves of the block'() {
+                const { block, node, calls, drop } = make_block('ab<b>cd</b>ef');
+                try {
+                    set_caret(node, 3);
+                    block.paste_data(clipboard({ text: 'раз\n\nдва' }));
+                    const arg = calls[0].arg;
+                    $mol_assert_equal(arg.inline, false);
+                    $mol_assert_equal(arg.head, 'ab<b>c</b>');
+                    $mol_assert_equal(arg.tail, '<b>d</b>ef');
+                }
+                finally {
+                    drop();
+                }
+            },
+            'a paste over a selection replaces exactly that range'() {
+                const { block, node, calls, drop } = make_block('hello world');
+                try {
+                    set_range(node, 6, 11);
+                    block.paste_data(clipboard({ text: 'there' }));
+                    const arg = calls[0].arg;
+                    $mol_assert_equal(arg.head, 'hello ');
+                    $mol_assert_equal(arg.tail, '');
+                }
+                finally {
+                    drop();
+                }
+            },
+            'a code block takes the clipboard as plain text'() {
+                const { block, node, calls, drop } = make_block('');
+                try {
+                    block.type = () => 'code';
+                    set_caret(node, 0);
+                    block.paste_data(clipboard({ html: '<h1>x</h1>', text: '<div>\n\tif( a && b ) c\n</div>' }));
+                    const arg = calls[0].arg;
+                    $mol_assert_equal(arg.inline, true);
+                    $mol_assert_equal(arg.drafts, [
+                        { type: 'code', content: '&lt;div&gt;\n\tif( a &amp;&amp; b ) c\n&lt;/div&gt;' },
+                    ]);
+                }
+                finally {
+                    drop();
+                }
+            },
+            'an empty clipboard pastes nothing'() {
+                const { block, node, calls, drop } = make_block('text');
+                try {
+                    set_caret(node, 0);
+                    block.paste_data(clipboard({}));
+                    $mol_assert_equal(calls.length, 0);
+                }
+                finally {
+                    drop();
+                }
+            },
+            'a clipboard of markup junk pastes nothing'() {
+                const { block, node, calls, drop } = make_block('text');
+                try {
+                    set_caret(node, 0);
+                    block.paste_data(clipboard({ html: '<meta charset="utf-8"><span style="color:red"></span>', text: '' }));
+                    $mol_assert_equal(calls.length, 0);
+                }
+                finally {
+                    drop();
+                }
+            },
+            'a readonly block refuses the clipboard'() {
+                const { block, drop } = make_block('text');
+                try {
+                    block.readonly = () => true;
+                    const event = new ClipboardEvent('paste', { cancelable: true });
+                    block.paste_event(event);
+                    $mol_assert_equal(event.defaultPrevented, true);
+                }
+                finally {
+                    drop();
+                }
+            },
             // === Input notification ===
             'input_event notifies the page'() {
                 const { block, node, calls, drop } = make_block('hi');
@@ -7637,18 +8058,25 @@ var $;
                 $mol_assert_ok(result);
                 $mol_assert_ok(prevented);
             },
-            'paste_event without image does not prevent default'() {
+            'paste_event takes over plain text too, so no editor junk lands in the DOM'() {
                 if (typeof document === 'undefined')
                     return;
-                const block = new $bog_wysiwyg_block();
-                const dt = new DataTransfer();
-                dt.items.add('hello', 'text/plain');
-                const event = new ClipboardEvent('paste', { clipboardData: dt });
-                let prevented = false;
-                Object.defineProperty(event, 'preventDefault', { value: () => { prevented = true; } });
-                const result = block.paste_event(event);
-                $mol_assert_ok(result);
-                $mol_assert_equal(prevented, false);
+                const { block, node, calls, drop } = make_block('');
+                try {
+                    set_caret(node, 0);
+                    const dt = new DataTransfer();
+                    dt.items.add('hello', 'text/plain');
+                    const event = new ClipboardEvent('paste', { clipboardData: dt });
+                    let prevented = false;
+                    Object.defineProperty(event, 'preventDefault', { value: () => { prevented = true; } });
+                    const result = block.paste_event(event);
+                    $mol_assert_ok(result);
+                    $mol_assert_equal(prevented, true);
+                    $mol_assert_equal(calls[0].name, 'on_paste_blocks');
+                }
+                finally {
+                    drop();
+                }
             },
             'drop_event without event returns null'() {
                 const block = new $bog_wysiwyg_block();
@@ -8678,6 +9106,14 @@ var $;
                 root.appendChild(node);
                 view.dom_node = () => node;
                 view.html = (next) => editor.block_html(id, next);
+                view.type = (next) => editor.block_type(id, next);
+                view.level = (next) => editor.block_level(id, next);
+                // The same wiring view.tree does for the keyed Block
+                view.on_paste_blocks = (val) => editor.block_paste_blocks(id, val);
+                view.on_split = (parts) => editor.block_split(id, parts);
+                view.on_merge_prev = (event) => editor.block_merge_prev(id, event);
+                view.on_merge_next = (event) => editor.block_merge_next(id, event);
+                view.on_nav = (nav) => editor.block_nav(id, nav);
                 views.set(id, view);
                 return view;
             };
@@ -9960,48 +10396,225 @@ var $;
                 $mol_assert_equal($bog_wysiwyg_html_to_md('just text'), 'just text');
             },
             // === block_paste_blocks ===
-            'block_paste_blocks replaces current and inserts new blocks'() {
-                const editor = new $bog_wysiwyg();
-                editor.block_ids(['a', 'b']);
-                editor.focus_block = () => { };
-                editor.block_paste_blocks('a', [
-                    { type: 'heading', content: 'Title', level: 1 },
-                    { type: 'paragraph', content: 'text' },
-                    { type: 'code', content: 'x = 1' },
+            'block_paste_blocks fills an untouched block and adds the rest after it'() {
+                const { editor, drop } = make_editor([
+                    { id: 'a', html: '' },
+                    { id: 'b', html: 'next' },
                 ]);
-                const ids = editor.block_ids();
-                $mol_assert_equal(ids.length, 4);
-                $mol_assert_equal(ids[0], 'a');
-                $mol_assert_equal(ids[3], 'b');
-                $mol_assert_equal(editor.block_type('a'), 'heading');
-                $mol_assert_equal(editor.block_html('a'), 'Title');
-                $mol_assert_equal(editor.block_level('a'), 1);
-                $mol_assert_equal(editor.block_type(ids[1]), 'paragraph');
-                $mol_assert_equal(editor.block_html(ids[1]), 'text');
-                $mol_assert_equal(editor.block_type(ids[2]), 'code');
-                $mol_assert_equal(editor.block_html(ids[2]), 'x = 1');
+                try {
+                    editor.block_paste_blocks('a', { drafts: [
+                            { type: 'heading', content: 'Title', level: 1 },
+                            { type: 'paragraph', content: 'text' },
+                            { type: 'code', content: 'x = 1' },
+                        ] });
+                    const ids = editor.block_ids();
+                    $mol_assert_equal(ids.length, 4);
+                    $mol_assert_equal(ids[0], 'a');
+                    $mol_assert_equal(ids[3], 'b');
+                    $mol_assert_equal(editor.block_type('a'), 'heading');
+                    $mol_assert_equal(editor.block_html('a'), 'Title');
+                    $mol_assert_equal(editor.block_level('a'), 1);
+                    $mol_assert_equal(editor.block_type(ids[1]), 'paragraph');
+                    $mol_assert_equal(editor.block_html(ids[1]), 'text');
+                    $mol_assert_equal(editor.block_type(ids[2]), 'code');
+                    $mol_assert_equal(editor.block_html(ids[2]), 'x = 1');
+                }
+                finally {
+                    drop();
+                }
             },
-            'block_paste_blocks with single block replaces current only'() {
-                const editor = new $bog_wysiwyg();
-                editor.block_ids(['a', 'b']);
-                editor.focus_block = () => { };
-                editor.block_paste_blocks('a', [
-                    { type: 'quote', content: 'quoted' },
+            'block_paste_blocks with a single draft keeps the block count'() {
+                const { editor, drop } = make_editor([
+                    { id: 'a', html: '' },
+                    { id: 'b', html: 'next' },
                 ]);
-                $mol_assert_equal(editor.block_ids().length, 2);
-                $mol_assert_equal(editor.block_type('a'), 'quote');
-                $mol_assert_equal(editor.block_html('a'), 'quoted');
+                try {
+                    editor.block_paste_blocks('a', { drafts: [{ type: 'quote', content: 'quoted' }] });
+                    $mol_assert_equal(editor.block_ids().length, 2);
+                    $mol_assert_equal(editor.block_type('a'), 'quote');
+                    $mol_assert_equal(editor.block_html('a'), 'quoted');
+                }
+                finally {
+                    drop();
+                }
             },
-            'block_paste_blocks with empty array returns null'() {
-                const editor = new $bog_wysiwyg();
-                editor.block_ids(['a']);
-                $mol_assert_equal(editor.block_paste_blocks('a', []), null);
-                $mol_assert_equal(editor.block_ids().length, 1);
+            'block_paste_blocks splits the block around the caret'() {
+                const { editor, focused, drop } = make_editor([{ id: 'a', html: 'headtail' }]);
+                try {
+                    editor.block_paste_blocks('a', {
+                        drafts: [
+                            { type: 'paragraph', content: 'one' },
+                            { type: 'paragraph', content: 'two' },
+                        ],
+                        head: 'head',
+                        tail: 'tail',
+                    });
+                    const ids = editor.block_ids();
+                    $mol_assert_equal(ids.length, 2);
+                    $mol_assert_equal(editor.block_html('a'), 'headone');
+                    $mol_assert_equal(editor.block_html(ids[1]), 'twotail');
+                    // caret lands after the pasted text, in front of the old tail
+                    $mol_assert_equal(focused.at(-1), { id: ids[1], offset: 3 });
+                }
+                finally {
+                    drop();
+                }
             },
-            'block_paste_blocks without val returns null'() {
-                const editor = new $bog_wysiwyg();
-                editor.block_ids(['a']);
-                $mol_assert_equal(editor.block_paste_blocks('a'), null);
+            'block_paste_blocks keeps the kind of the block it was pasted into'() {
+                const { editor, drop } = make_editor([{ id: 'a', html: 'ab', type: 'quote' }]);
+                try {
+                    editor.block_paste_blocks('a', {
+                        drafts: [{ type: 'heading', content: 'H', level: 1 }],
+                        head: 'a',
+                        tail: 'b',
+                    });
+                    $mol_assert_equal(editor.block_type('a'), 'quote');
+                    $mol_assert_equal(editor.block_html('a'), 'aHb');
+                }
+                finally {
+                    drop();
+                }
+            },
+            'block_paste_blocks gives the tail its own block after a picture'() {
+                const { editor, focused, drop } = make_editor([{ id: 'a', html: 'headtail' }]);
+                try {
+                    editor.block_paste_blocks('a', {
+                        drafts: [{ type: 'image', content: '<img src="x.png">' }],
+                        head: 'head',
+                        tail: 'tail',
+                    });
+                    const ids = editor.block_ids();
+                    $mol_assert_equal(ids.length, 3);
+                    $mol_assert_equal(editor.block_html('a'), 'head');
+                    $mol_assert_equal(editor.block_type(ids[1]), 'image');
+                    $mol_assert_equal(editor.block_html(ids[2]), 'tail');
+                    $mol_assert_equal(focused.at(-1), { id: ids[2], offset: 0 });
+                }
+                finally {
+                    drop();
+                }
+            },
+            'block_paste_blocks inline puts the draft straight into the text'() {
+                const { editor, focused, drop } = make_editor([{ id: 'a', html: 'ab' }]);
+                try {
+                    editor.block_paste_blocks('a', {
+                        drafts: [{ type: 'paragraph', content: '<b>X</b>' }],
+                        head: 'a',
+                        tail: 'b',
+                        inline: true,
+                    });
+                    $mol_assert_equal(editor.block_ids(), ['a']);
+                    $mol_assert_equal(editor.block_html('a'), 'a<b>X</b>b');
+                    $mol_assert_equal(focused.at(-1), { id: 'a', offset: 2 });
+                }
+                finally {
+                    drop();
+                }
+            },
+            'a whole paste is undone in one step'() {
+                const { editor, drop } = make_editor([{ id: 'a', html: 'headtail' }]);
+                try {
+                    editor.block_paste_blocks('a', {
+                        drafts: [
+                            { type: 'paragraph', content: 'one' },
+                            { type: 'paragraph', content: 'two' },
+                            { type: 'paragraph', content: 'three' },
+                        ],
+                        head: 'head',
+                        tail: 'tail',
+                    });
+                    $mol_assert_equal(editor.block_ids().length, 3);
+                    $mol_assert_equal(editor.history_undo(), true);
+                    $mol_assert_equal(editor.block_ids(), ['a']);
+                    $mol_assert_equal(editor.block_html('a'), 'headtail');
+                }
+                finally {
+                    drop();
+                }
+            },
+            'block_paste_blocks with no drafts returns null'() {
+                const { editor, drop } = make_editor([{ id: 'a', html: 'text' }]);
+                try {
+                    $mol_assert_equal(editor.block_paste_blocks('a', { drafts: [] }), null);
+                    $mol_assert_equal(editor.block_paste_blocks('a'), null);
+                    $mol_assert_equal(editor.block_ids().length, 1);
+                }
+                finally {
+                    drop();
+                }
+            },
+            // === Clipboard end to end ===
+            'pasting markdown in the middle of a block splits the article'() {
+                const helper = make_editor([
+                    { id: 'a', html: 'началоконец' },
+                    { id: 'b', html: 'следом' },
+                ]);
+                try {
+                    const { editor } = helper;
+                    const block = editor.block_view('a');
+                    select_across(helper.node('a'), 6, helper.node('a'), 6);
+                    block.paste_data({
+                        getData: (type) => type === 'text/html' ? '' : '## Тема\n\nАбзац\n\n- пункт',
+                    });
+                    const ids = editor.block_ids();
+                    $mol_assert_equal(ids.length, 4);
+                    $mol_assert_equal(ids[0], 'a');
+                    $mol_assert_equal(ids[3], 'b');
+                    // the head keeps the kind of the block it was pasted into, the tail rides the last draft
+                    $mol_assert_equal(editor.block_html('a'), 'началоТема');
+                    $mol_assert_equal(editor.block_type('a'), 'paragraph');
+                    $mol_assert_equal(editor.block_html(ids[1]), 'Абзац');
+                    $mol_assert_equal(editor.block_type(ids[2]), 'list');
+                    $mol_assert_equal(editor.block_html(ids[2]), 'пунктконец');
+                }
+                finally {
+                    helper.drop();
+                }
+            },
+            'pasting a plain line does not add blocks'() {
+                const helper = make_editor([{ id: 'a', html: 'началоконец' }]);
+                try {
+                    const { editor } = helper;
+                    select_across(helper.node('a'), 6, helper.node('a'), 6);
+                    editor.block_view('a').paste_data({
+                        getData: (type) => type === 'text/html' ? '' : 'вставка',
+                    });
+                    $mol_assert_equal(editor.block_ids(), ['a']);
+                    $mol_assert_equal(editor.block_html('a'), 'началовставкаконец');
+                }
+                finally {
+                    helper.drop();
+                }
+            },
+            'a pasted article is undone by a single step'() {
+                const helper = make_editor([{ id: 'a', html: '' }]);
+                try {
+                    const { editor } = helper;
+                    select_across(helper.node('a'), 0, helper.node('a'), 0);
+                    editor.block_view('a').paste_data({
+                        getData: (type) => type === 'text/html' ? '' : '# Раз\n\nДва\n\nТри\n\nЧетыре',
+                    });
+                    $mol_assert_equal(editor.block_ids().length, 4);
+                    $mol_assert_equal(editor.history_undo(), true);
+                    $mol_assert_equal(editor.block_ids(), ['a']);
+                    $mol_assert_equal(editor.block_html('a'), '');
+                    $mol_assert_equal(editor.history_redo(), true);
+                    $mol_assert_equal(editor.block_ids().length, 4);
+                }
+                finally {
+                    helper.drop();
+                }
+            },
+            'block_paste_blocks is refused in readonly mode'() {
+                const { editor, drop } = make_editor([{ id: 'a', html: 'text' }]);
+                try {
+                    editor.readonly = () => true;
+                    $mol_assert_equal(editor.block_paste_blocks('a', { drafts: [{ type: 'paragraph', content: 'x' }] }), null);
+                    $mol_assert_equal(editor.block_html('a'), 'text');
+                }
+                finally {
+                    drop();
+                }
             },
         });
     })($$ = $.$$ || ($.$$ = {}));
@@ -10471,6 +11084,254 @@ var $;
             $mol_assert_equal($bog_journal_feed_link_parse('AAAA'), '');
             $mol_assert_equal($bog_journal_feed_link_parse('AAAAAAAA_BBBB'), '');
             $mol_assert_equal($bog_journal_feed_link_parse('https://b-on-g.dev/journal/'), '');
+        },
+    });
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    const base = 'https://baza.test/';
+    const md = (blocks, config) => $bog_wysiwyg_export_markdown(blocks, config);
+    $mol_test({
+        // === Block types ===
+        'paragraph keeps inline formatting'() {
+            $mol_assert_equal(md([{ type: 'paragraph', content: 'Hello <b>bold</b> and <i>italic</i>' }]), 'Hello **bold** and *italic*');
+        },
+        'paragraph turns br into a hard line break'() {
+            $mol_assert_equal(md([{ type: 'paragraph', content: 'one<br>two' }]), 'one  \ntwo');
+        },
+        'paragraph turns div soup into lines'() {
+            $mol_assert_equal(md([{ type: 'paragraph', content: '<div>one</div><div>two</div>' }]), 'one  \ntwo');
+        },
+        'heading levels 1 to 3'() {
+            $mol_assert_equal(md([{ type: 'heading', level: 1, content: 'One' }]), '# One');
+            $mol_assert_equal(md([{ type: 'heading', level: 2, content: 'Two' }]), '## Two');
+            $mol_assert_equal(md([{ type: 'heading', level: 3, content: 'Three' }]), '### Three');
+        },
+        'heading without a level falls back to the first one'() {
+            $mol_assert_equal(md([{ type: 'heading', content: 'One' }]), '# One');
+        },
+        'code block is fenced and unescaped'() {
+            $mol_assert_equal(md([{ type: 'code', content: 'if( a &lt; b ) {\n\treturn 1\n}' }]), '```\nif( a < b ) {\n\treturn 1\n}\n```');
+        },
+        'code block with its own fence gets a longer one'() {
+            $mol_assert_equal(md([{ type: 'code', content: '```\nnested\n```' }]), '````\n```\nnested\n```\n````');
+        },
+        'quote prefixes every line'() {
+            $mol_assert_equal(md([{ type: 'quote', content: 'Wise<br>words' }]), '> Wise  \n> words');
+        },
+        'neighbour list blocks make one list'() {
+            $mol_assert_equal(md([
+                { type: 'list', content: 'one' },
+                { type: 'list', content: 'two' },
+                { type: 'paragraph', content: 'tail' },
+            ]), '- one\n- two\n\ntail');
+        },
+        'list block with its own markup keeps nesting'() {
+            $mol_assert_equal(md([{ type: 'list', content: '<ul><li>a</li><li>b<ul><li>c</li></ul></li></ul>' }]), '- a\n- b\n  - c');
+        },
+        'ordered list is numbered'() {
+            $mol_assert_equal(md([{ type: 'list', content: '<ol><li>a</li><li>b</li></ol>' }]), '1. a\n2. b');
+        },
+        'divider'() {
+            $mol_assert_equal(md([{ type: 'divider', content: '' }]), '---');
+        },
+        'unknown block type is rendered as a paragraph'() {
+            $mol_assert_equal(md([{ type: 'callout', content: 'Beware of <b>dogs</b>' }]), 'Beware of **dogs**');
+        },
+        'empty blocks are dropped'() {
+            $mol_assert_equal(md([
+                { type: 'paragraph', content: '' },
+                { type: 'paragraph', content: '<br>' },
+                { type: 'paragraph', content: 'alone' },
+                { type: 'heading', level: 1, content: '   ' },
+            ]), 'alone');
+        },
+        'no blocks means no markdown'() {
+            $mol_assert_equal(md([]), '');
+        },
+        // === Inline ===
+        'link'() {
+            $mol_assert_equal(md([{ type: 'paragraph', content: 'see <a href="https://mol.hyoo.ru/">mol</a>' }]), 'see [mol](https://mol.hyoo.ru/)');
+        },
+        'link with parens in the address is percent encoded'() {
+            $mol_assert_equal(md([{ type: 'paragraph', content: '<a href="https://x.dev/a(b)">l</a>' }]), '[l](https://x.dev/a%28b%29)');
+        },
+        'wiki link stays an anchor'() {
+            $mol_assert_equal(md([{ type: 'paragraph', content: '<a data-wiki-link="page_1" href="#page_1">page_1</a>' }], { base }), '[page\\_1](#page_1)');
+        },
+        'inline code with a backtick gets a double fence'() {
+            $mol_assert_equal(md([{ type: 'paragraph', content: '<code>a`b</code>' }]), '``a`b``');
+        },
+        'strike'() {
+            $mol_assert_equal(md([{ type: 'paragraph', content: '<s>gone</s> <del>too</del>' }]), '~~gone~~ ~~too~~');
+        },
+        'html entities are decoded'() {
+            $mol_assert_equal(md([{ type: 'paragraph', content: 'a &amp; b &nbsp; &mdash; &#65;&#x42;' }]), 'a & b — AB');
+        },
+        'unbalanced markup still closes'() {
+            $mol_assert_equal(md([{ type: 'paragraph', content: 'a <b>bold' }]), 'a **bold**');
+        },
+        // === Escaping ===
+        'markdown punctuation in plain text is escaped'() {
+            $mol_assert_equal(md([{ type: 'paragraph', content: 'a * b _ c [d] ~e~ \\f' }]), 'a \\* b \\_ c \\[d\\] \\~e\\~ \\\\f');
+        },
+        'line openers are escaped only at the line start'() {
+            $mol_assert_equal(md([{ type: 'paragraph', content: '# not a heading' }]), '\\# not a heading');
+            $mol_assert_equal(md([{ type: 'paragraph', content: '> not a quote' }]), '\\> not a quote');
+            $mol_assert_equal(md([{ type: 'paragraph', content: '- not a list' }]), '\\- not a list');
+            $mol_assert_equal(md([{ type: 'paragraph', content: '1. not a list' }]), '1\\. not a list');
+            $mol_assert_equal(md([{ type: 'paragraph', content: 'and 1. not a list' }]), 'and 1. not a list');
+        },
+        'telegram never escapes, because clients show the backslashes'() {
+            $mol_assert_equal(md([{ type: 'paragraph', content: 'a * b _ c [d] # e' }], { dialect: 'telegram' }), 'a * b _ c [d] # e');
+        },
+        // === Habr ===
+        'habr shifts headings down, the article title already owns h1'() {
+            $mol_assert_equal(md([{ type: 'heading', level: 1, content: 'One' }], { dialect: 'habr' }), '## One');
+            $mol_assert_equal(md([{ type: 'heading', level: 3, content: 'Three' }], { dialect: 'habr' }), '#### Three');
+        },
+        'habr drops underline, there is no markdown for it'() {
+            $mol_assert_equal(md([{ type: 'paragraph', content: 'a <u>b</u> c' }], { dialect: 'habr' }), 'a b c');
+            $mol_assert_equal(md([{ type: 'paragraph', content: 'a <u>b</u> c' }]), 'a <u>b</u> c');
+        },
+        'habr renders a table as a nested list'() {
+            $mol_assert_equal(md([{
+                    type: 'table',
+                    content: '<table><tr><th>Name</th><th>Age</th></tr><tr><td>Ann</td><td>3</td></tr><tr><td>Bob</td><td>4</td></tr></table>',
+                }], { dialect: 'habr' }), '- **Ann**\n  - Age: 3\n- **Bob**\n  - Age: 4');
+        },
+        'habr flattens a headless table into one bullet per row'() {
+            $mol_assert_equal(md([{
+                    type: 'table',
+                    content: '<table><tr><td>a</td><td>b</td></tr><tr><td>c</td><td>d</td></tr></table>',
+                }], { dialect: 'habr' }), '- a — b\n- c — d');
+        },
+        'a table pasted as markdown text is reformatted too'() {
+            $mol_assert_equal(md([{ type: 'table', content: '| a | b |<br>| --- | --- |<br>| 1 | 2 |' }], { dialect: 'habr' }), '- **1**\n  - b: 2');
+        },
+        // === Common and dev.to tables ===
+        'gfm table for dialects that render tables'() {
+            const table = {
+                type: 'table',
+                content: '<table><tr><th>Name</th><th>Age</th></tr><tr><td>Ann</td><td>3</td></tr></table>',
+            };
+            $mol_assert_equal(md([table]), '| Name | Age |\n| --- | --- |\n| Ann | 3 |');
+            $mol_assert_equal(md([table], { dialect: 'devto' }).split('---\n\n')[1], '| Name | Age |\n| --- | --- |\n| Ann | 3 |');
+        },
+        'pipes inside cells are escaped'() {
+            $mol_assert_equal(md([{ type: 'table', content: '<table><tr><td>a|b</td><td>c</td></tr></table>' }]), '| a\\|b | c |\n| --- | --- |');
+        },
+        // === dev.to ===
+        'devto prepends a front matter'() {
+            $mol_assert_equal(md([{ type: 'paragraph', content: 'Body' }], {
+                dialect: 'devto',
+                title: 'My post',
+                tags: ['mol', 'javascript'],
+                published: true,
+            }), '---\ntitle: "My post"\npublished: true\ntags: mol, javascript\n---\n\nBody');
+        },
+        'devto tags are sanitized down to four'() {
+            $mol_assert_equal(md([], { dialect: 'devto', tags: ['Java Script', '#ts', '', 'a', 'b', 'c'] }), '---\ntitle: ""\npublished: false\ntags: javascript, ts, a, b\n---');
+        },
+        'devto quotes the title and absolutizes the cover'() {
+            $mol_assert_equal(md([], {
+                dialect: 'devto',
+                title: 'A "quoted": title',
+                cover: '?BAZA:file=cov;name=c.png',
+                base,
+            }), '---\ntitle: "A \\"quoted\\": title"\npublished: false\ntags: \ncover_image: "https://baza.test/?BAZA:file=cov;name=c.png"\n---');
+        },
+        // === Telegram ===
+        'telegram turns headings into bold lines'() {
+            $mol_assert_equal(md([{ type: 'heading', level: 2, content: 'Sub' }], { dialect: 'telegram' }), '**Sub**');
+        },
+        'telegram uses its own italic, bullet and divider'() {
+            $mol_assert_equal(md([
+                { type: 'paragraph', content: '<i>slanted</i>' },
+                { type: 'list', content: 'item' },
+                { type: 'divider', content: '' },
+            ], { dialect: 'telegram' }), '__slanted__\n\n• item\n\n————————');
+        },
+        'telegram cannot embed images, so a bare address is left'() {
+            $mol_assert_equal(md([{ type: 'image', content: '<img src="?BAZA:file=abc;name=pic.png" alt="Pic">' }], {
+                dialect: 'telegram',
+                base,
+            }), 'https://baza.test/?BAZA:file=abc;name=pic.png');
+        },
+        'telegram has a message limit'() {
+            $mol_assert_equal($bog_wysiwyg_export_limit('telegram'), 4096);
+            $mol_assert_equal($bog_wysiwyg_export_limit('common'), Infinity);
+            $mol_assert_equal($bog_wysiwyg_export_limit('habr'), Infinity);
+            $mol_assert_equal($bog_wysiwyg_export_limit('devto'), Infinity);
+        },
+        // === Splitting ===
+        'short text is a single message'() {
+            $mol_assert_equal($bog_wysiwyg_export_split('hello', 4096).length, 1);
+            $mol_assert_equal($bog_wysiwyg_export_split('', 4096).length, 0);
+        },
+        'split prefers block boundaries'() {
+            const parts = $bog_wysiwyg_export_split('aaaa\n\nbbbb\n\ncccc', 10);
+            $mol_assert_equal(parts.length, 2);
+            $mol_assert_equal(parts[0], 'aaaa\n\nbbbb');
+            $mol_assert_equal(parts[1], 'cccc');
+        },
+        'split falls back to lines and then to hard cuts'() {
+            $mol_assert_equal($bog_wysiwyg_export_split('aa\nbb\ncc', 5), ['aa\nbb', 'cc']);
+            $mol_assert_equal($bog_wysiwyg_export_split('abcdefgh', 3), ['abc', 'def', 'gh']);
+        },
+        'every telegram message fits the limit'() {
+            const blocks = Array.from({ length: 60 }, (_, i) => ({
+                type: 'paragraph',
+                content: 'Paragraph number ' + i + ' ' + 'x'.repeat(100),
+            }));
+            const text = md(blocks, { dialect: 'telegram' });
+            const parts = $bog_wysiwyg_export_split(text, $bog_wysiwyg_export_limit('telegram'));
+            $mol_assert_ok(parts.length > 1);
+            for (const part of parts)
+                $mol_assert_ok(part.length <= 4096);
+        },
+        // === Images ===
+        'baza file address is resolved against the master node'() {
+            $mol_assert_equal(md([{ type: 'image', content: '<img src="?BAZA:file=abc;name=pic.png" alt="Pic">' }], { base }), '![Pic](https://baza.test/?BAZA:file=abc;name=pic.png)');
+        },
+        'image without an alt'() {
+            $mol_assert_equal(md([{ type: 'image', content: '<img src="https://x.dev/p.png">' }]), '![](https://x.dev/p.png)');
+        },
+        'absolute and data addresses are left alone'() {
+            $mol_assert_equal($bog_wysiwyg_export_uri('https://a/b.png', base), 'https://a/b.png');
+            $mol_assert_equal($bog_wysiwyg_export_uri('data:image/png;base64,AAA', base), 'data:image/png;base64,AAA');
+            $mol_assert_equal($bog_wysiwyg_export_uri('//a/b.png', base), '//a/b.png');
+            $mol_assert_equal($bog_wysiwyg_export_uri('#anchor', base), '#anchor');
+            $mol_assert_equal($bog_wysiwyg_export_uri('/x.png', base), 'https://baza.test/x.png');
+            $mol_assert_equal($bog_wysiwyg_export_uri('?BAZA:file=x;name=y', base), 'https://baza.test/?BAZA:file=x;name=y');
+            $mol_assert_equal($bog_wysiwyg_export_uri('?BAZA:file=x', 'https://baza.test'), 'https://baza.test/?BAZA:file=x');
+            $mol_assert_equal($bog_wysiwyg_export_uri('?BAZA:file=x', ''), '?BAZA:file=x');
+            $mol_assert_equal($bog_wysiwyg_export_uri('', base), '');
+        },
+        'images apart are numbered in place and listed at the end'() {
+            $mol_assert_equal(md([
+                { type: 'paragraph', content: 'before <img src="https://x.dev/a.png" alt="A"> after' },
+                { type: 'image', content: '<img src="?BAZA:file=b;name=b.png">' },
+            ], {
+                base,
+                images_apart: true,
+                labels: { image: 'Picture', images: 'Pictures' },
+            }), 'before [Picture 1] after\n\n[Picture 2]'
+                + '\n\n## Pictures\n\n1. A — https://x.dev/a.png\n2. https://baza.test/?BAZA:file=b;name=b.png');
+        },
+        'telegram lists images under a bold title'() {
+            $mol_assert_equal(md([{ type: 'image', content: '<img src="https://x.dev/a.png">' }], {
+                dialect: 'telegram',
+                images_apart: true,
+                labels: { image: 'Pic', images: 'Pics' },
+            }), '[Pic 1]\n\n**Pics**\n\n1. https://x.dev/a.png');
+        },
+        // === Plain text helper ===
+        'plain strips tags and decodes entities'() {
+            $mol_assert_equal($bog_wysiwyg_export_plain('<p>a<br>b &lt;c&gt;</p>'), 'a\nb <c>');
         },
     });
 })($ || ($ = {}));

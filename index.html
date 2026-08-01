@@ -4522,6 +4522,51 @@ h6[mol_text_header] {
 	opacity: 1;
 }
 }
+</style><style id="$mol_style_attach:$bog_wysiwyg_export">[bog_wysiwyg_export_bubble] {
+	flex-direction: column;
+	gap: var(--mol_gap_block);
+	padding: var(--mol_gap_block);
+	min-width: 16rem;
+	max-width: 48rem;
+}
+[bog_wysiwyg_export_head] {
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--mol_gap_text);
+	min-width: 0;
+}
+[bog_wysiwyg_export_dialect] {
+	flex-grow: 1;
+	min-width: 10rem;
+}
+[bog_wysiwyg_export_note] {
+	color: var(--mol_theme_shade);
+	font-size: 0.75rem;
+	padding-left: var(--mol_gap_text);
+	padding-right: var(--mol_gap_text);
+}
+[bog_wysiwyg_export_body] {
+	background-color: var(--mol_theme_card);
+	border-radius: 0.5rem;
+	min-width: 0;
+	min-height: 6rem;
+	max-height: 50vh;
+}
+[bog_wysiwyg_export_output] {
+	min-width: 0;
+	padding: var(--mol_gap_text);
+	font-size: 0.8125rem;
+}
+@media (max-width: 640px) {
+[bog_wysiwyg_export_bubble] {
+	min-width: 0;
+	gap: var(--mol_gap_text);
+	padding: var(--mol_gap_text);
+}
+[bog_wysiwyg_export_dialect] {
+	min-width: 0;
+}
+}
 </style><style id="$mol_style_attach:$bog_journal_edit_page">[bog_journal_edit_page] {
 	flex-direction: column;
 	gap: 1.5rem;
@@ -5522,5 +5567,5 @@ h6[mol_text_header] {
 [bog_journal_app_start_button] {
 	margin-top: 0.5rem;
 }
-</style></head>
-<body mol_view_root="$bog_journal_app" id="$bog_journal_app.Root(0)" bog_journal_app="" mol_page="" mol_view="" tabindex="-1" bog_journal_app_theme="" mol_theme_auto="" mol_plugin="" mol_theme="$mol_theme_light"><header id="$bog_journal_app.Root(0).Head()" bog_journal_app_head="" mol_page_head="" mol_view=""><h1 id="$bog_journal_app.Root(0).Title()" bog_journal_app_title="" mol_page_title="" mol_view="">Journal</h1><mol_view id="$bog_journal_app.Root(0).Tools()" bog_journal_app_tools="" mol_page_tools="" mol_view=""><mol_button_minor id="$bog_journal_app.Root(0).Feed_make()" bog_journal_app_feed_make="" mol_button_minor="" mol_button_typed="" mol_button="" mol_view="" role="button" tabindex="0" title="Start a reading feed">Feed</mol_button_minor><giper_baza_status id="$bog_journal_app.Root(0).Status()" bog_journal_app_status="" giper_baza_status="" mol_select="" mol_pick="" mol_pop="" mol_view="" giper_baza_status_nav="" mol_select_nav="" bog_journal_app_status_nav="" mol_nav="" mol_plugin=""><mol_check id="$bog_journal_app.Root(0).Status().Trigger()" giper_baza_status_trigger="" mol_select_trigger="" mol_pick_trigger="" bog_journal_app_status_trigger="" mol_check="" mol_button_minor="" mol_button_typed="" mol_button="" mol_view="" role="checkbox" tabindex="0" title="Sync status" aria-checked="false"><a id="$bog_journal_app.Root(0).Status().Link()" giper_baza_status_link="" bog_journal_app_status_link="" mol_link="" mol_view="" href="https://baza.87.120.36.150.ip.giper.dev/" title="Sync status" target="_blank" rel=""><svg id="$bog_journal_app.Root(0).Status().Well()" giper_baza_status_well="" bog_journal_app_status_well="" mol_avatar="" mol_icon="" mol_svg_root="" mol_svg="" mol_view="" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid"><path id="$bog_journal_app.Root(0).Status().Well().Path()" mol_avatar_path="" mol_icon_path="" giper_baza_status_well_path="" bog_journal_app_status_well_path="" mol_svg_path="" mol_svg="" mol_view="" d="M 3 3 l 0 0 M 21 3 l 0 0 M 3 5 l 0 0 M 21 5 l 0 0 M 3 13 l 0 0 M 21 13 l 0 0 M 3 19 l 0 0 M 21 19 l 0 0 M 3 22 l 0 0 M 21 22 l 0 0 M 5 3 l 0 0 M 19 3 l 0 0 M 5 5 l 0 0 M 19 5 l 0 0 M 5 11 l 0 0 M 19 11 l 0 0 M 5 16 l 0 0 M 19 16 l 0 0 M 5 19 l 0 0 M 19 19 l 0 0 M 8 5 l 0 0 M 16 5 l 0 0 M 11 5 l 0 0 M 13 5 l 0 0 M 11 8 l 0 0 M 13 8 l 0 0 M 11 11 l 0 0 M 13 11 l 0 0 M 11 22 l 0 0 M 13 22 l 0 0 "></path></svg></a></mol_check></giper_baza_status><mol_lights_toggle id="$bog_journal_app.Root(0).Lights()" bog_journal_app_lights="" mol_lights_toggle="" mol_check_icon="" mol_check="" mol_button_minor="" mol_button_typed="" mol_button="" mol_view="" role="checkbox" tabindex="0" title="Toggle lights" mol_check_checked="true" aria-checked="true"><svg id="$bog_journal_app.Root(0).Lights().Lights_icon()" mol_lights_toggle_lights_icon="" bog_journal_app_lights_lights_icon="" mol_icon_brightness_4="" mol_icon="" mol_svg_root="" mol_svg="" mol_view="" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid"><path id="$bog_journal_app.Root(0).Lights().Lights_icon().Path()" mol_icon_brightness_4_path="" mol_icon_path="" mol_lights_toggle_lights_icon_path="" bog_journal_app_lights_lights_icon_path="" mol_svg_path="" mol_svg="" mol_view="" d="M12,18C11.11,18 10.26,17.8 9.5,17.45C11.56,16.5 13,14.42 13,12C13,9.58 11.56,7.5 9.5,6.55C10.26,6.2 11.11,6 12,6A6,6 0 0,1 18,12A6,6 0 0,1 12,18M20,8.69V4H15.31L12,0.69L8.69,4H4V8.69L0.69,12L4,15.31V20H8.69L12,23.31L15.31,20H20V15.31L23.31,12L20,8.69Z"></path></svg></mol_lights_toggle></mol_view></header><mol_scroll id="$bog_journal_app.Root(0).Body()" bog_journal_app_body="" mol_page_body="" mol_scroll="" mol_view="" tabindex="-1"><mol_view id="$bog_journal_app.Root(0).Body_content()" bog_journal_app_body_content="" mol_page_body_content="" mol_view=""><mol_view id="$bog_journal_app.Root(0).Start()" bog_journal_app_start="" mol_view=""><mol_paragraph id="$bog_journal_app.Root(0).Start_title()" bog_journal_app_start_title="" mol_paragraph="" mol_view="">No journal here yet</mol_paragraph><mol_paragraph id="$bog_journal_app.Root(0).Start_hint()" bog_journal_app_start_hint="" mol_paragraph="" mol_view="">Create your own journal to start publishing posts.</mol_paragraph><mol_button_major id="$bog_journal_app.Root(0).Start_button()" bog_journal_app_start_button="" mol_button_major="" mol_button_minor="" mol_button_typed="" mol_button="" mol_view="" mol_theme="$mol_theme_base" role="button" tabindex="0" title="">Create journal</mol_button_major></mol_view></mol_view></mol_scroll><footer id="$bog_journal_app.Root(0).Foot()" bog_journal_app_foot="" mol_page_foot="" mol_view=""></footer></body></html>
+</style><meta name="description" content="A journal of your own: posts live in a Land you control and reach readers by sync."><link rel="canonical" href="https://b-on-g.github.io/journal/"><meta property="og:title" content="Journal"><meta property="og:description" content="A journal of your own: posts live in a Land you control and reach readers by sync."><meta property="og:type" content="website"><meta property="og:url" content="https://b-on-g.github.io/journal/"></head>
+<body mol_view_root="$bog_journal_app" id="$bog_journal_app.Root(0)" bog_journal_app="" mol_page="" mol_view="" bog_journal_app_theme="" mol_theme_auto="" mol_plugin="" mol_theme="$mol_theme_light" tabindex="-1" data-bog-meta="{&quot;title&quot;:&quot;Journal&quot;,&quot;description&quot;:&quot;A journal of your own: posts live in a Land you control and reach readers by sync.&quot;,&quot;canonical&quot;:&quot;http://localhost:9222/journal/&quot;,&quot;og_title&quot;:&quot;Journal&quot;,&quot;og_description&quot;:&quot;A journal of your own: posts live in a Land you control and reach readers by sync.&quot;,&quot;og_type&quot;:&quot;website&quot;}"><header id="$bog_journal_app.Root(0).Head()" bog_journal_app_head="" mol_page_head="" mol_view=""><h1 id="$bog_journal_app.Root(0).Title()" bog_journal_app_title="" mol_page_title="" mol_view="">Journal</h1><mol_view id="$bog_journal_app.Root(0).Tools()" bog_journal_app_tools="" mol_page_tools="" mol_view=""><mol_button_minor id="$bog_journal_app.Root(0).Feed_make()" bog_journal_app_feed_make="" mol_button_minor="" mol_button_typed="" mol_button="" mol_view="" role="button" tabindex="0" title="Start a reading feed">Feed</mol_button_minor><giper_baza_status id="$bog_journal_app.Root(0).Status()" bog_journal_app_status="" giper_baza_status="" mol_select="" mol_pick="" mol_pop="" mol_view="" giper_baza_status_nav="" mol_select_nav="" bog_journal_app_status_nav="" mol_nav="" mol_plugin=""><mol_check id="$bog_journal_app.Root(0).Status().Trigger()" giper_baza_status_trigger="" mol_select_trigger="" mol_pick_trigger="" bog_journal_app_status_trigger="" mol_check="" mol_button_minor="" mol_button_typed="" mol_button="" mol_view="" role="checkbox" tabindex="0" title="Sync status" aria-checked="false"><a id="$bog_journal_app.Root(0).Status().Link()" giper_baza_status_link="" bog_journal_app_status_link="" mol_link="" mol_view="" href="https://baza.87.120.36.150.ip.giper.dev/" title="Sync status" target="_blank" rel=""><svg id="$bog_journal_app.Root(0).Status().Well()" giper_baza_status_well="" bog_journal_app_status_well="" mol_avatar="" mol_icon="" mol_svg_root="" mol_svg="" mol_view="" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid"><path id="$bog_journal_app.Root(0).Status().Well().Path()" mol_avatar_path="" mol_icon_path="" giper_baza_status_well_path="" bog_journal_app_status_well_path="" mol_svg_path="" mol_svg="" mol_view="" d="M 3 3 l 0 0 M 21 3 l 0 0 M 3 5 l 0 0 M 21 5 l 0 0 M 3 13 l 0 0 M 21 13 l 0 0 M 3 19 l 0 0 M 21 19 l 0 0 M 3 22 l 0 0 M 21 22 l 0 0 M 5 3 l 0 0 M 19 3 l 0 0 M 5 5 l 0 0 M 19 5 l 0 0 M 5 11 l 0 0 M 19 11 l 0 0 M 5 16 l 0 0 M 19 16 l 0 0 M 5 19 l 0 0 M 19 19 l 0 0 M 8 5 l 0 0 M 16 5 l 0 0 M 11 5 l 0 0 M 13 5 l 0 0 M 11 8 l 0 0 M 13 8 l 0 0 M 11 11 l 0 0 M 13 11 l 0 0 M 11 22 l 0 0 M 13 22 l 0 0 "></path></svg></a></mol_check></giper_baza_status><mol_lights_toggle id="$bog_journal_app.Root(0).Lights()" bog_journal_app_lights="" mol_lights_toggle="" mol_check_icon="" mol_check="" mol_button_minor="" mol_button_typed="" mol_button="" mol_view="" role="checkbox" tabindex="0" title="Toggle lights" mol_check_checked="true" aria-checked="true"><svg id="$bog_journal_app.Root(0).Lights().Lights_icon()" mol_lights_toggle_lights_icon="" bog_journal_app_lights_lights_icon="" mol_icon_brightness_4="" mol_icon="" mol_svg_root="" mol_svg="" mol_view="" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid"><path id="$bog_journal_app.Root(0).Lights().Lights_icon().Path()" mol_icon_brightness_4_path="" mol_icon_path="" mol_lights_toggle_lights_icon_path="" bog_journal_app_lights_lights_icon_path="" mol_svg_path="" mol_svg="" mol_view="" d="M12,18C11.11,18 10.26,17.8 9.5,17.45C11.56,16.5 13,14.42 13,12C13,9.58 11.56,7.5 9.5,6.55C10.26,6.2 11.11,6 12,6A6,6 0 0,1 18,12A6,6 0 0,1 12,18M20,8.69V4H15.31L12,0.69L8.69,4H4V8.69L0.69,12L4,15.31V20H8.69L12,23.31L15.31,20H20V15.31L23.31,12L20,8.69Z"></path></svg></mol_lights_toggle></mol_view></header><mol_scroll id="$bog_journal_app.Root(0).Body()" bog_journal_app_body="" mol_page_body="" mol_scroll="" mol_view="" tabindex="-1"><mol_view id="$bog_journal_app.Root(0).Body_content()" bog_journal_app_body_content="" mol_page_body_content="" mol_view=""><mol_view id="$bog_journal_app.Root(0).Start()" bog_journal_app_start="" mol_view=""><mol_paragraph id="$bog_journal_app.Root(0).Start_title()" bog_journal_app_start_title="" mol_paragraph="" mol_view="">No journal here yet</mol_paragraph><mol_paragraph id="$bog_journal_app.Root(0).Start_hint()" bog_journal_app_start_hint="" mol_paragraph="" mol_view="">Create your own journal to start publishing posts.</mol_paragraph><mol_button_major id="$bog_journal_app.Root(0).Start_button()" bog_journal_app_start_button="" mol_button_major="" mol_button_minor="" mol_button_typed="" mol_button="" mol_view="" mol_theme="$mol_theme_base" role="button" tabindex="0" title="">Create journal</mol_button_major></mol_view></mol_view></mol_scroll><footer id="$bog_journal_app.Root(0).Foot()" bog_journal_app_foot="" mol_page_foot="" mol_view=""></footer></body></html>

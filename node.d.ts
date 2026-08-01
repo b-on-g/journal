@@ -56204,7 +56204,8 @@ declare namespace $.$$ {
         active_block_id(next?: string): string;
         /** Block view with its caret API */
         block_view(id: string): $bog_wysiwyg_block;
-        /** Blocks that hold no editable text and can not be glued with neighbours */
+        /** Kinds of block that hold no editable text and can not be glued with neighbours */
+        type_is_static(type: string): boolean;
         block_is_static(id: string): boolean;
         /** Allocate an id for a new block, creating the Baza pawn when connected */
         make_block_id(): string;
@@ -56247,15 +56248,32 @@ declare namespace $.$$ {
         block_menu_key(id: string, event?: KeyboardEvent): KeyboardEvent | null;
         apply_menu_command(cmd: string): void;
         apply_menu_command_run(cmd: string, id: string): void;
+        /** Plain text length of an html fragment */
+        html_text_length(html: string): number;
+        /**
+         * Clipboard drafts into the page around the caret. The whole paste is one
+         * undo step: the head of the target block keeps the pasted content, the
+         * tail moves behind everything that was pasted.
+         */
         block_paste_blocks(id: string, val?: {
-            type: string;
-            content: string;
-            level?: number;
-        }[]): {
-            type: string;
-            content: string;
-            level?: number;
-        }[] | null;
+            drafts: readonly {
+                type: string;
+                content: string;
+                level?: number;
+            }[];
+            head?: string;
+            tail?: string;
+            inline?: boolean;
+        }): {
+            drafts: readonly {
+                type: string;
+                content: string;
+                level?: number;
+            }[];
+            head?: string;
+            tail?: string;
+            inline?: boolean;
+        } | null | undefined;
         block_image(id: string, src?: string): string | null;
         menu_picked(next?: string): string;
         block_ai(id: string, event?: Event): Event | null;
@@ -56393,6 +56411,39 @@ declare namespace $ {
 }
 
 declare namespace $ {
+}
+
+declare namespace $ {
+    /**
+     * Draft of a block produced from clipboard content.
+     * Fields map one to one onto $bog_wysiwyg_model_block: Type, Level, Content.
+     */
+    type $bog_wysiwyg_paste_draft = {
+        type: string;
+        level?: number;
+        content: string;
+    };
+    /** Minimal clipboard surface needed to sniff the format. A real DataTransfer satisfies it. */
+    type $bog_wysiwyg_paste_data = Pick<DataTransfer, 'getData'>;
+    /** What the clipboard holds. */
+    type $bog_wysiwyg_paste_kind = 'html' | 'markdown' | 'text';
+    /**
+     * Clipboard to blocks. Pure functions, no DOM editor and no storage.
+     * Inline markup in `content` is limited to what the block renderer understands:
+     * b, i, u, s, code, a[href], br, img[src].
+     */
+    class $bog_wysiwyg_paste {
+        /** Sniffs the clipboard format. Markdown is guessed from plain text when html is missing or has no semantics. */
+        static detect(data: $bog_wysiwyg_paste_data): $bog_wysiwyg_paste_kind;
+        /** Sniffs the format and parses with the matching parser. */
+        static from_data(data: $bog_wysiwyg_paste_data): $bog_wysiwyg_paste_draft[];
+        /** Parses clipboard html into block drafts, dropping editor junk. */
+        static from_html(html: string): $bog_wysiwyg_paste_draft[];
+        /** Parses markdown source into block drafts. */
+        static from_markdown(md: string): $bog_wysiwyg_paste_draft[];
+        /** Splits plain text into paragraphs by blank lines, keeping line breaks. */
+        static from_text(text: string): $bog_wysiwyg_paste_draft[];
+    }
 }
 
 declare namespace $ {
@@ -56554,6 +56605,13 @@ declare namespace $.$$ {
         strike_exec(event?: KeyboardEvent): KeyboardEvent | null;
         link_exec(event?: KeyboardEvent): KeyboardEvent | null;
         paste_event(event?: ClipboardEvent): ClipboardEvent | null;
+        /**
+         * Clipboard content to editor content. Split off `paste_event` so it can be
+         * driven with a bare `getData` and without a DataTransfer.
+         */
+        paste_data(data: $bog_wysiwyg_paste_data): void;
+        /** Hands the drafts to the page together with the two halves of the block around the caret */
+        paste_at_caret(drafts: readonly $bog_wysiwyg_paste_draft[], inline: boolean): void;
         drop_event(event?: DragEvent): DragEvent | null;
         dragover_event(event?: DragEvent): DragEvent | null;
         insert_image_file(file: File): void;
@@ -61475,6 +61533,32 @@ declare namespace $.$$ {
 }
 
 declare namespace $ {
+    interface $bog_meta_alternate {
+        /** BCP-47-ish language code, or 'x-default'. */
+        lang: string;
+        /** Absolute URL of the localized page. */
+        href: string;
+    }
+    interface $bog_meta_data {
+        title?: string;
+        description?: string;
+        canonical?: string;
+        og_title?: string;
+        og_description?: string;
+        og_image?: string;
+        og_type?: string;
+        /** hreflang alternates, emitted as <link rel="alternate" hreflang=…>. */
+        alternates?: $bog_meta_alternate[];
+    }
+    const $bog_meta_attr_name = "data-bog-meta";
+    function $bog_meta_compact(data: $bog_meta_data | undefined): $bog_meta_data | null;
+    function $bog_meta_attr(view: {
+        meta?(): $bog_meta_data;
+    }): Record<string, any>;
+    function $bog_meta_merge(base: $bog_meta_data, override: $bog_meta_data): $bog_meta_data;
+}
+
+declare namespace $ {
 
 	type $mol_view__sub_bog_journal_profile_1 = $mol_type_enforce<
 		readonly(any)[]
@@ -61892,6 +61976,31 @@ declare namespace $.$$ {
             post: string | null;
         };
         posts_empty_text(): string;
+        /**
+         * Absolute url of this page. Under path routing the location already is
+         * the canonical url; a host that mounts the page elsewhere overrides this.
+         * Same helper as the post page, so both agree on what canonical means.
+         */
+        canonical(): string;
+        /**
+         * Origin of a node that serves Giper Baza files over plain http — the
+         * master this app already syncs through. Needed for `og:image`: a social
+         * crawler fetches that url itself, so neither an object url nor a bare
+         * `?BAZA:file=…` (which wants a service worker the crawler never runs) can
+         * work there. Empty means no `og:image` at all, which beats a dead one.
+         */
+        file_base(): string;
+        /** Avatar as an absolute url a crawler can fetch, or empty. */
+        avatar_share_uri(): string;
+        /**
+         * Read by `$bog_meta_attr` into `data-bog-meta` on this element, which the
+         * prerenderer turns into <title>/<meta>/<link> in <head>. While the Land is
+         * still syncing these reads throw a promise, the view retries, and the
+         * attribute lands only once the real values are known — so a snapshot never
+         * captures a half-filled card.
+         */
+        meta(): $bog_meta_data;
+        attr(): {};
     }
     class $bog_journal_profile_link extends $.$bog_journal_profile_link {
         link_content(): ($mol_button_minor | $.$mol_link)[];
@@ -61971,32 +62080,6 @@ declare namespace $ {
      * list, and an image block is reduced to its source and caption.
      */
     function $bog_journal_post_rows(blocks: readonly $bog_journal_post_block[]): $bog_journal_post_row[];
-}
-
-declare namespace $ {
-    interface $bog_meta_alternate {
-        /** BCP-47-ish language code, or 'x-default'. */
-        lang: string;
-        /** Absolute URL of the localized page. */
-        href: string;
-    }
-    interface $bog_meta_data {
-        title?: string;
-        description?: string;
-        canonical?: string;
-        og_title?: string;
-        og_description?: string;
-        og_image?: string;
-        og_type?: string;
-        /** hreflang alternates, emitted as <link rel="alternate" hreflang=…>. */
-        alternates?: $bog_meta_alternate[];
-    }
-    const $bog_meta_attr_name = "data-bog-meta";
-    function $bog_meta_compact(data: $bog_meta_data | undefined): $bog_meta_data | null;
-    function $bog_meta_attr(view: {
-        meta?(): $bog_meta_data;
-    }): Record<string, any>;
-    function $bog_meta_merge(base: $bog_meta_data, override: $bog_meta_data): $bog_meta_data;
 }
 
 declare namespace $ {
@@ -62298,11 +62381,25 @@ declare namespace $.$$ {
          * the app already syncs through. Needed for `og:image`: a social crawler
          * fetches that url itself, so neither an object url nor a bare
          * `?BAZA:file=…` (which wants a service worker the crawler never runs) can
-         * work there. Empty means no `og:image` at all, which beats a dead one.
+         * work there. Empty falls back to the generated card.
          */
         file_base(): string;
         /** Cover as an absolute url a crawler can fetch, or empty. */
         cover_share_uri(): string;
+        /**
+         * Generated preview card, drawn by `assets/og_cards.mjs` right next to the
+         * static snapshot of this very page — hence the url is the page url plus
+         * `/og.png`, with no id scheme to keep in sync on either side.
+         *
+         * Only a route-shaped path has a snapshot directory to hold a card, so on
+         * the dev server (hash routing, a `.html` path) this stays empty and
+         * `$bog_meta_compact` drops `og:image` instead of pointing at nothing.
+         *
+         * The origin is whatever the page is rendered from, which during prerender
+         * is localhost — `deploy/routes/verify.mjs` rewrites the whole head to the
+         * production origin afterwards, the same way it already fixes canonical.
+         */
+        card_uri(): string;
         /** Milliseconds since epoch. Zero means the post is still a draft. */
         published_ms(): number;
         published_moment(): $mol_time_moment | null;
@@ -63660,6 +63757,223 @@ declare namespace $.$$ {
 }
 
 declare namespace $ {
+
+	export class $mol_icon_export extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=export.view.tree.d.ts.map
+declare namespace $ {
+    /**
+     * Plain block data for markdown export.
+     * Deliberately free of Giper Baza objects: the serializer stays a pure function
+     * and can be tested without a land.
+     */
+    type $bog_wysiwyg_export_block = {
+        readonly type: string;
+        readonly level?: number;
+        readonly content: string;
+    };
+    /** Target platform of the exported markdown. */
+    type $bog_wysiwyg_export_dialect = 'common' | 'habr' | 'devto' | 'telegram';
+    /** Human readable words injected into generated text, so the core stays locale agnostic. */
+    type $bog_wysiwyg_export_labels = {
+        readonly image?: string;
+        readonly images?: string;
+    };
+    type $bog_wysiwyg_export_config = {
+        readonly dialect?: $bog_wysiwyg_export_dialect;
+        /** Article title, used by the dev.to front matter */
+        readonly title?: string;
+        /** dev.to tags, sanitized down to 4 alphanumeric ones */
+        readonly tags?: readonly string[];
+        /** dev.to cover image, resolved against `base` like any other image */
+        readonly cover?: string;
+        readonly published?: boolean;
+        /** Origin of the Giper Baza master node, used to absolutize `?BAZA:file=...` uris */
+        readonly base?: string;
+        /** Pull every image out of the text into a trailing list */
+        readonly images_apart?: boolean;
+        readonly labels?: $bog_wysiwyg_export_labels;
+    };
+    /** Telegram refuses messages longer than this. */
+    const $bog_wysiwyg_export_telegram_limit = 4096;
+    /** Message length the dialect can carry, `Infinity` when unlimited. */
+    function $bog_wysiwyg_export_limit(dialect: $bog_wysiwyg_export_dialect): number;
+    /**
+     * Absolute address of a file for an outside platform.
+     * Giper Baza serves files at a relative `?BAZA:file=<link>;name=<name>` uri,
+     * which only resolves against the master node origin.
+     */
+    function $bog_wysiwyg_export_uri(src: string, base?: string): string;
+    /** Tags stripped, entities decoded, `<br>` and block ends turned into newlines. */
+    function $bog_wysiwyg_export_plain(html: string): string;
+    /**
+     * Pure serializer: plain blocks in, markdown string out.
+     * Knows nothing about Giper Baza, the DOM or $mol.
+     */
+    function $bog_wysiwyg_export_markdown(blocks: readonly $bog_wysiwyg_export_block[], config?: $bog_wysiwyg_export_config): string;
+    /**
+     * Cuts markdown into messages no longer than `limit`, preferring block boundaries.
+     * Telegram needs it, everybody else gets a single chunk.
+     */
+    function $bog_wysiwyg_export_split(text: string, limit?: number): readonly string[];
+}
+
+declare namespace $ {
+
+	type $mol_select__value_bog_wysiwyg_export_1 = $mol_type_enforce<
+		ReturnType< $bog_wysiwyg_export['dialect'] >
+		,
+		ReturnType< $mol_select['value'] >
+	>
+	type $mol_select__hint_bog_wysiwyg_export_2 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_select['hint'] >
+	>
+	type $mol_select__dictionary_bog_wysiwyg_export_3 = $mol_type_enforce<
+		ReturnType< $bog_wysiwyg_export['dialect_options'] >
+		,
+		ReturnType< $mol_select['dictionary'] >
+	>
+	type $mol_check_box__title_bog_wysiwyg_export_4 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_check_box['title'] >
+	>
+	type $mol_check_box__hint_bog_wysiwyg_export_5 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_check_box['hint'] >
+	>
+	type $mol_check_box__checked_bog_wysiwyg_export_6 = $mol_type_enforce<
+		ReturnType< $bog_wysiwyg_export['images_apart'] >
+		,
+		ReturnType< $mol_check_box['checked'] >
+	>
+	type $mol_button_copy__title_bog_wysiwyg_export_7 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_button_copy['title'] >
+	>
+	type $mol_button_copy__hint_bog_wysiwyg_export_8 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_button_copy['hint'] >
+	>
+	type $mol_button_copy__text_bog_wysiwyg_export_9 = $mol_type_enforce<
+		ReturnType< $bog_wysiwyg_export['markdown_shown'] >
+		,
+		ReturnType< $mol_button_copy['text'] >
+	>
+	type $mol_view__sub_bog_wysiwyg_export_10 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_paragraph__title_bog_wysiwyg_export_11 = $mol_type_enforce<
+		ReturnType< $bog_wysiwyg_export['note'] >
+		,
+		ReturnType< $mol_paragraph['title'] >
+	>
+	type $mol_select__value_bog_wysiwyg_export_12 = $mol_type_enforce<
+		ReturnType< $bog_wysiwyg_export['part_current'] >
+		,
+		ReturnType< $mol_select['value'] >
+	>
+	type $mol_select__hint_bog_wysiwyg_export_13 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_select['hint'] >
+	>
+	type $mol_select__dictionary_bog_wysiwyg_export_14 = $mol_type_enforce<
+		ReturnType< $bog_wysiwyg_export['part_options'] >
+		,
+		ReturnType< $mol_select['dictionary'] >
+	>
+	type $mol_text_code__text_bog_wysiwyg_export_15 = $mol_type_enforce<
+		ReturnType< $bog_wysiwyg_export['markdown_shown'] >
+		,
+		ReturnType< $mol_text_code['text'] >
+	>
+	type $mol_text_code__sidebar_showed_bog_wysiwyg_export_16 = $mol_type_enforce<
+		boolean
+		,
+		ReturnType< $mol_text_code['sidebar_showed'] >
+	>
+	type $mol_scroll__sub_bog_wysiwyg_export_17 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_scroll['sub'] >
+	>
+	export class $bog_wysiwyg_export extends $mol_pick {
+		Trigger_icon( ): $mol_icon_export
+		dialect_options( ): ({ 
+			'common': string,
+			'habr': string,
+			'devto': string,
+			'telegram': string,
+		}) 
+		Dialect( ): $mol_select
+		Images_apart( ): $mol_check_box
+		Copy( ): $mol_button_copy
+		Head( ): $mol_view
+		Note( ): $mol_paragraph
+		part_options( ): Record<string, any>
+		Parts( ): $mol_select
+		Output( ): $mol_text_code
+		Body( ): $mol_scroll
+		blocks( ): readonly($bog_wysiwyg_export_block)[]
+		page_title( ): string
+		tags( ): readonly(string)[]
+		cover( ): string
+		base_uri( ): string
+		dialect( next?: string ): string
+		images_apart( next?: boolean ): boolean
+		part( next?: string ): string
+		part_current( next?: string ): string
+		markdown( ): string
+		markdown_shown( ): string
+		note( ): string
+		label_image( ): string
+		label_images( ): string
+		note_length( ): string
+		note_parts( ): string
+		hint( ): string
+		trigger_content( ): readonly(any)[]
+		bubble_content( ): readonly(any)[]
+	}
+	
+}
+
+//# sourceMappingURL=export.view.tree.d.ts.map
+declare namespace $.$$ {
+    /**
+     * Exports a page as markdown for an outside platform.
+     * All the serialization lives in the pure `$bog_wysiwyg_export_markdown`,
+     * this component only unwraps Giper Baza data into plain blocks and shows the result.
+     */
+    class $bog_wysiwyg_export extends $.$bog_wysiwyg_export {
+        dialect_current(): $bog_wysiwyg_export_dialect;
+        limit(): number;
+        markdown(): string;
+        parts(): readonly string[];
+        /** Index of the shown message, clamped to the currently available parts */
+        part_current(next?: string): string;
+        part_options(): Record<string, string>;
+        markdown_shown(): string;
+        note(): string;
+        bubble_content(): readonly $mol_view_content[];
+    }
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
     /**
      * URL-friendly name derived from a post title.
      *
@@ -63815,62 +64129,92 @@ declare namespace $ {
 		,
 		ReturnType< $mol_paragraph['title'] >
 	>
-	type $mol_view__sub_bog_journal_edit_page_29 = $mol_type_enforce<
+	type $bog_journal_edit_export__blocks_bog_journal_edit_page_29 = $mol_type_enforce<
+		ReturnType< $bog_journal_edit_page['body_blocks'] >
+		,
+		ReturnType< $bog_journal_edit_export['blocks'] >
+	>
+	type $bog_journal_edit_export__page_title_bog_journal_edit_page_30 = $mol_type_enforce<
+		ReturnType< $bog_journal_edit_page['post_title'] >
+		,
+		ReturnType< $bog_journal_edit_export['page_title'] >
+	>
+	type $bog_journal_edit_export__summary_bog_journal_edit_page_31 = $mol_type_enforce<
+		ReturnType< $bog_journal_edit_page['post_summary'] >
+		,
+		ReturnType< $bog_journal_edit_export['summary'] >
+	>
+	type $bog_journal_edit_export__tags_bog_journal_edit_page_32 = $mol_type_enforce<
+		ReturnType< $bog_journal_edit_page['tags'] >
+		,
+		ReturnType< $bog_journal_edit_export['tags'] >
+	>
+	type $bog_journal_edit_export__cover_bog_journal_edit_page_33 = $mol_type_enforce<
+		ReturnType< $bog_journal_edit_page['cover_share_uri'] >
+		,
+		ReturnType< $bog_journal_edit_export['cover'] >
+	>
+	type $bog_journal_edit_export__base_uri_bog_journal_edit_page_34 = $mol_type_enforce<
+		ReturnType< $bog_journal_edit_page['file_base'] >
+		,
+		ReturnType< $bog_journal_edit_export['base_uri'] >
+	>
+	type $mol_view__sub_bog_journal_edit_page_35 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_paragraph__title_bog_journal_edit_page_30 = $mol_type_enforce<
+	type $mol_paragraph__title_bog_journal_edit_page_36 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_paragraph['title'] >
 	>
-	type $mol_view__sub_bog_journal_edit_page_31 = $mol_type_enforce<
+	type $mol_view__sub_bog_journal_edit_page_37 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_view__sub_bog_journal_edit_page_32 = $mol_type_enforce<
+	type $mol_view__sub_bog_journal_edit_page_38 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $bog_wysiwyg__page_land_link_bog_journal_edit_page_33 = $mol_type_enforce<
+	type $bog_wysiwyg__page_land_link_bog_journal_edit_page_39 = $mol_type_enforce<
 		ReturnType< $bog_journal_edit_page['body_land_link'] >
 		,
 		ReturnType< $bog_wysiwyg['page_land_link'] >
 	>
-	type $bog_wysiwyg__readonly_bog_journal_edit_page_34 = $mol_type_enforce<
+	type $bog_wysiwyg__readonly_bog_journal_edit_page_40 = $mol_type_enforce<
 		ReturnType< $bog_journal_edit_page['body_readonly'] >
 		,
 		ReturnType< $bog_wysiwyg['readonly'] >
 	>
-	type $mol_image__uri_bog_journal_edit_page_35 = $mol_type_enforce<
+	type $mol_image__uri_bog_journal_edit_page_41 = $mol_type_enforce<
 		ReturnType< $bog_journal_edit_page['cover_uri'] >
 		,
 		ReturnType< $mol_image['uri'] >
 	>
-	type $mol_image__title_bog_journal_edit_page_36 = $mol_type_enforce<
+	type $mol_image__title_bog_journal_edit_page_42 = $mol_type_enforce<
 		ReturnType< $bog_journal_edit_page['post_title'] >
 		,
 		ReturnType< $mol_image['title'] >
 	>
-	type $mol_button_minor__title_bog_journal_edit_page_37 = $mol_type_enforce<
+	type $mol_button_minor__title_bog_journal_edit_page_43 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['title'] >
 	>
-	type $mol_button_minor__click_bog_journal_edit_page_38 = $mol_type_enforce<
+	type $mol_button_minor__click_bog_journal_edit_page_44 = $mol_type_enforce<
 		ReturnType< $bog_journal_edit_page['cover_remove'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $bog_journal_edit_chip__title_bog_journal_edit_page_39 = $mol_type_enforce<
+	type $bog_journal_edit_chip__title_bog_journal_edit_page_45 = $mol_type_enforce<
 		ReturnType< $bog_journal_edit_page['tag_title'] >
 		,
 		ReturnType< $bog_journal_edit_chip['title'] >
 	>
-	type $bog_journal_edit_chip__drop_bog_journal_edit_page_40 = $mol_type_enforce<
+	type $bog_journal_edit_chip__drop_bog_journal_edit_page_46 = $mol_type_enforce<
 		ReturnType< $bog_journal_edit_page['tag_drop'] >
 		,
 		ReturnType< $bog_journal_edit_chip['drop'] >
@@ -63905,6 +64249,11 @@ declare namespace $ {
 		published( next?: boolean ): boolean
 		Publish_check( ): $mol_check_box
 		Published_at( ): $mol_paragraph
+		body_blocks( ): readonly($bog_wysiwyg_export_block)[]
+		tags( ): readonly(string)[]
+		cover_share_uri( ): string
+		file_base( ): string
+		Export( ): $bog_journal_edit_export
 		Publish_row( ): $mol_view
 		Publish_note( ): $mol_paragraph
 		Publish( ): $mol_view
@@ -63963,6 +64312,10 @@ declare namespace $ {
 		sub( ): readonly(any)[]
 	}
 	
+	export class $bog_journal_edit_export extends $bog_wysiwyg_export {
+		summary( ): string
+	}
+	
 }
 
 //# sourceMappingURL=edit.view.tree.d.ts.map
@@ -64018,6 +64371,25 @@ declare namespace $.$$ {
         body_land_link(): string;
         body_readonly(): boolean;
         /**
+         * Article body flattened into plain records for the markdown serializer.
+         * It is a pure function and stays that way: no Giper Baza object crosses
+         * into it, the Land is unwrapped here.
+         */
+        body_blocks(): readonly $bog_wysiwyg_export_block[];
+        /**
+         * Origin of a node that serves Giper Baza files over plain http — the
+         * master this app already syncs through. Exported markdown is pasted onto
+         * Habr or dev.to, where an object url or a bare `?BAZA:file=…` (which needs
+         * a service worker nobody there runs) would be a dead image.
+         */
+        file_base(): string;
+        /**
+         * Cover in the form the serializer resolves against `base_uri`. The raw
+         * `?BAZA:file=…` is handed over rather than an absolute url, so the export
+         * module keeps doing the joining for covers and inline images alike.
+         */
+        cover_share_uri(): string;
+        /**
          * Brings a post into being and returns its link, or '' when the current
          * user may not write here. Three steps, one fiber:
          *
@@ -64033,6 +64405,28 @@ declare namespace $.$$ {
          * hang the UI.
          */
         create(): string;
+    }
+    /**
+     * Markdown export that also puts the post summary into the dev.to front
+     * matter.
+     *
+     * `$bog_wysiwyg_export_config` has no `description` field, so the shipped
+     * serializer cannot emit one, and that module is not ours to change. The line
+     * is inserted into the YAML block it already produced, guarded on both ends:
+     * nothing happens unless the output really opens with a front matter block,
+     * and nothing happens if a `description:` key is already there. So on the day
+     * the export module grows the field, this quietly steps aside instead of
+     * writing the key twice.
+     */
+    class $bog_journal_edit_export extends $.$bog_journal_edit_export {
+        /**
+         * Deliberately not @$mol_mem. The method it overrides is one, and $mol
+         * keys an atom by host plus property name — a memoised override calling
+         * `super` of the same name would find its own atom mid-computation and
+         * die with a circular subscription. The parent stays cached, this only
+         * adds a regex on top of it.
+         */
+        markdown(): string;
     }
 }
 
@@ -67218,6 +67612,27 @@ declare namespace $.$$ {
         screen(): Screen;
         app_content(): $mol_view[] | $.$bog_journal_edit_page[] | $.$bog_journal_post_page[] | $.$bog_journal_feed_page[] | $.$bog_journal_profile[];
         screen_title(): string;
+        /**
+         * Absolute url of this page. Under path routing the location already is
+         * the canonical url. Same helper as the post and profile pages.
+         */
+        canonical(): string;
+        /**
+         * Metadata for the two screens that carry none of their own: the feed and
+         * the empty start page. The post and the profile emit theirs from inside,
+         * and since those elements come after the app root in the html,
+         * `$bog_meta_collect` lets them win — so the root stays silent there
+         * instead of leaking a stale title into their card.
+         *
+         * A feed is an encrypted Land nobody else can read, and a crawler would
+         * only ever see it empty, so it gets a generic card rather than its real
+         * title. Marking it `noindex` outright would be better; `$bog_meta_data`
+         * has no field for that yet.
+         */
+        meta(): $bog_meta_data;
+        attr(): {
+            tabIndex: ReturnType<$mol_page["tabindex"]>;
+        };
         /**
          * Whether the current user may write into the Land holding `link`, which
          * may name either a journal or a post inside one. Same tier check as the

@@ -2660,6 +2660,59 @@ $bog_journal_feed_source $mol_view
 			sub /
 				<= Drop_icon $mol_icon_close
 
+$mol_icon_export $mol_icon path \M23,12L19,8V11H10V13H19V16M1,18V6C1,4.89 1.9,4 3,4H15A2,2 0 0,1 17,6V9H15V6H3V18H15V15H17V18A2,2 0 0,1 15,20H3A2,2 0 0,1 1,18Z
+
+$bog_wysiwyg_export $mol_pick
+	blocks /$bog_wysiwyg_export_block
+	page_title \
+	tags /string
+	cover \
+	base_uri \https://baza.87.120.36.150.ip.giper.dev/
+	dialect? \common
+	images_apart? false
+	part? \0
+	part_current? \0
+	markdown \
+	markdown_shown \
+	note \
+	label_image @ \Image
+	label_images @ \Images
+	note_length @ \Length
+	note_parts @ \Messages
+	hint @ \Export to Markdown
+	trigger_content /
+		<= Trigger_icon $mol_icon_export
+	bubble_content /
+		<= Head $mol_view
+			sub /
+				<= Dialect $mol_select
+					value? <=> dialect?
+					hint @ \Target
+					dictionary <= dialect_options *
+						common @ \Markdown (GFM)
+						habr @ \Habr
+						devto @ \dev.to
+						telegram @ \Telegram
+				<= Images_apart $mol_check_box
+					title @ \Images apart
+					hint @ \List every image at the end instead of inlining it
+					checked? <=> images_apart?
+				<= Copy $mol_button_copy
+					title @ \Copy
+					hint @ \Copy markdown to clipboard
+					text <= markdown_shown
+		<= Note $mol_paragraph
+			title <= note
+		<= Parts $mol_select
+			value? <=> part_current?
+			hint @ \Message
+			dictionary <= part_options *
+		<= Body $mol_scroll
+			sub /
+				<= Output $mol_text_code
+					text <= markdown_shown
+					sidebar_showed false
+
 - Post workshop: metadata that lives in the journal Land on top, the body
 - underneath. The body is $bog_wysiwyg as shipped — this page never reaches
 - inside it, it only hands over the link of the Land the article text lives in.
@@ -2727,6 +2780,13 @@ $bog_journal_edit_page $mol_view
 									checked? <=> published? false
 								<= Published_at $mol_paragraph
 									title <= published_label
+								<= Export $bog_journal_edit_export
+									blocks <= body_blocks /$bog_wysiwyg_export_block
+									page_title <= post_title
+									summary <= post_summary
+									tags <= tags /string
+									cover <= cover_share_uri \
+									base_uri <= file_base \
 						<= Publish_note $mol_paragraph
 							title @ \A draft is hidden from the lists, not from the network: the journal is a publicly readable Land, so anyone holding this link can already read it.
 		<= Body $bog_wysiwyg
@@ -2760,6 +2820,12 @@ $bog_journal_edit_chip $mol_view
 			click?event <=> drop?event null
 			sub /
 				<= Drop_icon $mol_icon_close
+
+- Markdown export with the post summary folded into the dev.to front matter.
+- The serializer itself is the one shipped with the editor; see edit.view.ts
+- for why the summary needs a subclass at all.
+$bog_journal_edit_export $bog_wysiwyg_export
+	summary \
 
 $bog_journal_app $mol_page
 	title <= screen_title \
