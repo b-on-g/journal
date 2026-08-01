@@ -518,6 +518,7 @@
     "$bog_builderui_tooltip",
     "$mol_pop_over",
     "$bog_journal_model_home",
+    "$bog_journal_model_registry",
     "$bog_journal_mine"
   ],
   "dependencies": {

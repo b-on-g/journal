@@ -19288,6 +19288,21 @@ var $;
 "use strict";
 var $;
 (function ($) {
+    /**
+     * Giper Baza node every journal syncs through.
+     *
+     * Lives in the model layer rather than in the app because the catalogue
+     * bootstrap page needs the very same node: a catalogue created against some
+     * other master would be invisible to every reader. One string, one place to
+     * change it when the node moves.
+     */
+    $.$bog_journal_model_master = 'https://baza.87.120.36.150.ip.giper.dev/';
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
     const { unicode_only, line_end, tab, repeat_greedy, optional, forbid_after, force_after, char_only, char_except } = $mol_regexp;
     $.$giper_baza_text_tokens = $mol_regexp.from({
         token: {
@@ -43594,6 +43609,17 @@ var $;
 			(obj.click) = (next) => ((this.post_create(next)));
 			return obj;
 		}
+		registry_add(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Registry_add(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.title) = () => ((this.$.$mol_locale.text("$bog_journal_app_Registry_add_title")));
+			(obj.hint) = () => ((this.$.$mol_locale.text("$bog_journal_app_Registry_add_hint")));
+			(obj.click) = (next) => ((this.registry_add(next)));
+			return obj;
+		}
 		Status(){
 			const obj = new this.$.$giper_baza_status();
 			return obj;
@@ -43610,6 +43636,7 @@ var $;
 				(this.Nav_read()), 
 				(this.Nav_edit()), 
 				(this.Post_new()), 
+				(this.Registry_add()), 
 				(this.Status()), 
 				(this.Lights())
 			];
@@ -43655,12 +43682,16 @@ var $;
 			(obj.click) = (next) => ((this.journal_create(next)));
 			return obj;
 		}
+		directory(){
+			return null;
+		}
 		Start(){
 			const obj = new this.$.$mol_view();
 			(obj.sub) = () => ([
 				(this.Start_title()), 
 				(this.Start_hint()), 
-				(this.Start_button())
+				(this.Start_button()), 
+				(this.directory())
 			]);
 			return obj;
 		}
@@ -43672,6 +43703,25 @@ var $;
 				(this.Edit()), 
 				(this.Start())
 			];
+		}
+		Directory_title(){
+			const obj = new this.$.$mol_paragraph();
+			(obj.title) = () => ((this.$.$mol_locale.text("$bog_journal_app_Directory_title_title")));
+			return obj;
+		}
+		journal_rows(){
+			return [];
+		}
+		Directory_list(){
+			const obj = new this.$.$mol_list();
+			(obj.rows) = () => ((this.journal_rows()));
+			return obj;
+		}
+		journal_arg(id){
+			return {};
+		}
+		journal_title(id){
+			return "";
 		}
 		title(){
 			return (this.screen_title());
@@ -43703,6 +43753,9 @@ var $;
 		title_edit(){
 			return (this.$.$mol_locale.text("$bog_journal_app_title_edit"));
 		}
+		journal_untitled(){
+			return (this.$.$mol_locale.text("$bog_journal_app_journal_untitled"));
+		}
 		plugins(){
 			return [(this.Theme())];
 		}
@@ -43711,6 +43764,17 @@ var $;
 		}
 		body(){
 			return (this.app_content());
+		}
+		Directory(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.Directory_title()), (this.Directory_list())]);
+			return obj;
+		}
+		Journal_row(id){
+			const obj = new this.$.$bog_journal_app_nav();
+			(obj.arg) = () => ((this.journal_arg(id)));
+			(obj.title) = () => ((this.journal_title(id)));
+			return obj;
 		}
 	};
 	($mol_mem(($.$bog_journal_app.prototype), "Theme"));
@@ -43722,6 +43786,8 @@ var $;
 	($mol_mem(($.$bog_journal_app.prototype), "Nav_edit"));
 	($mol_mem(($.$bog_journal_app.prototype), "post_create"));
 	($mol_mem(($.$bog_journal_app.prototype), "Post_new"));
+	($mol_mem(($.$bog_journal_app.prototype), "registry_add"));
+	($mol_mem(($.$bog_journal_app.prototype), "Registry_add"));
 	($mol_mem(($.$bog_journal_app.prototype), "Status"));
 	($mol_mem(($.$bog_journal_app.prototype), "Lights"));
 	($mol_mem(($.$bog_journal_app.prototype), "Profile"));
@@ -43733,6 +43799,10 @@ var $;
 	($mol_mem(($.$bog_journal_app.prototype), "journal_create"));
 	($mol_mem(($.$bog_journal_app.prototype), "Start_button"));
 	($mol_mem(($.$bog_journal_app.prototype), "Start"));
+	($mol_mem(($.$bog_journal_app.prototype), "Directory_title"));
+	($mol_mem(($.$bog_journal_app.prototype), "Directory_list"));
+	($mol_mem(($.$bog_journal_app.prototype), "Directory"));
+	($mol_mem_key(($.$bog_journal_app.prototype), "Journal_row"));
 	($.$bog_journal_app_nav) = class $bog_journal_app_nav extends ($.$mol_link) {
 		uri_off(){
 			return (this.uri());
@@ -45642,6 +45712,63 @@ var $;
 
 ;
 "use strict";
+var $;
+(function ($) {
+    /**
+     * Land holding the public catalogue of journals. One address for everybody:
+     * readers, authors and the CI crawl all read the same Land, so the address
+     * cannot be discovered at runtime — it is pinned here, in the bundle.
+     *
+     * Empty means "no catalogue yet". Registration becomes a no-op, the
+     * directory on the start screen stays hidden, and the crawl falls back to
+     * `deploy/routes/journals.txt`. Nothing breaks — the site simply goes back
+     * to learning about new authors from a text file.
+     *
+     * Filling it in is a one-off: open `model/registry/init`, press the button,
+     * paste the printed link here and drop the downloaded `registry.baza` next
+     * to this file. Details and the reasoning are in `model/registry/readme.md`.
+     */
+    $.$bog_journal_model_registry_link = '';
+    /**
+     * Rights the catalogue Land is created with, used by the bootstrap page.
+     *
+     * `post` for everybody, because registration has to work for an author the
+     * catalogue owner has never heard of — that is the whole point. The PoW rate
+     * is the only thing between the catalogue and a script; `long` (seconds)
+     * makes bulk writes tedious at the cost of a visible pause on journal
+     * creation. The readme lists what to do when a rate stops being enough.
+     */
+    $.$bog_journal_model_registry_preset = [
+        [null, $giper_baza_rank_post('slow')],
+    ];
+})($ || ($ = {}));
+(function ($) {
+    var $$;
+    (function ($$) {
+        /**
+         * Public catalogue of journals: the answer to "which journals exist at all".
+         *
+         * Without it the question has no answer. A journal link lives in its
+         * author's home Land, and a home Land is readable by its owner alone, so
+         * nobody — not another reader, not the crawler — can enumerate journals.
+         * A journal writes itself in here when it is created, and from then on it is
+         * discoverable without anybody editing a file in the repository.
+         *
+         * Entries are links to journal root pawns, exactly the strings the router
+         * puts into `author=`. Duplicates are impossible: `add` on a Baza list is
+         * idempotent by value.
+         */
+        class $bog_journal_model_registry extends $giper_baza_dict.with({
+            /** Every journal that has registered itself, in registration order. */
+            Journals: $giper_baza_list_link_to(() => $bog_journal_model_author),
+        }) {
+        }
+        $$.$bog_journal_model_registry = $bog_journal_model_registry;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
 
 
 ;
@@ -45650,8 +45777,6 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        /** Giper Baza node every journal syncs through. */
-        const prod_master = 'https://baza.87.120.36.150.ip.giper.dev/';
         /** Public read preset: anybody, signed in or not, can pull the Land. */
         const public_read = [[null, $giper_baza_rank_read]];
         /**
@@ -45691,7 +45816,7 @@ var $;
              */
             baza_master() {
                 const custom = this.$.$mol_state_arg.value('baza') ?? '';
-                const url = custom || prod_master;
+                const url = custom || $bog_journal_model_master;
                 const masters = this.$.$giper_baza_yard.masters_default;
                 if (!masters.includes(url))
                     masters.unshift(url);
@@ -45829,6 +45954,98 @@ var $;
                 const pass = this.$.$giper_baza_auth.current().pass();
                 return $giper_baza_rank_tier_of(land.pass_rank(pass)) >= $giper_baza_rank_tier.post;
             }
+            // === Directory ===========================================================
+            //
+            // The public catalogue of journals, see model/registry. It answers the one
+            // question the data model cannot: which journals exist. A journal link
+            // lives in its author's home Land, and a home Land is readable by its owner
+            // alone, so without the catalogue every other reader — the crawler
+            // included — has to be told about a new author by hand.
+            //
+            // Baza objects are never cached in an atom here, same rule the profile
+            // page follows: glob already caches them, and an atom would own them and
+            // destruct them on rebuild.
+            /** Catalogue Land, `null` while no catalogue is pinned in the bundle. */
+            registry_land() {
+                if (!$bog_journal_model_registry_link)
+                    return null;
+                return this.$.$giper_baza_glob.Land(new $giper_baza_link($bog_journal_model_registry_link).land());
+            }
+            /** Root record of the catalogue. */
+            registry() {
+                return this.registry_land()?.Data($bog_journal_model_registry) ?? null;
+            }
+            /**
+             * Journals in the catalogue, newest first — a Baza list adds at the head.
+             * Plain strings, exactly what the router puts into `author=`.
+             */
+            registry_journals() {
+                const links = this.registry()?.Journals()?.items() ?? [];
+                return links.map(link => link.str).filter(str => !!str);
+            }
+            /**
+             * Whether a journal is already listed. Compares Lands rather than whole
+             * links: the same journal can be named by its root pawn or by its Land,
+             * and both mean one journal.
+             */
+            registry_has(link) {
+                if (!link)
+                    return false;
+                const land = new $giper_baza_link(link).land().str;
+                return this.registry_journals().some(str => new $giper_baza_link(str).land().str === land);
+            }
+            /**
+             * Whether this user may write into the catalogue. Reading the journal list
+             * above is what makes the Land sync at all — asking for the rank alone
+             * answers "no" on a cold load and never corrects itself.
+             */
+            registry_writable() {
+                const land = this.registry_land();
+                if (!land)
+                    return false;
+                this.registry_journals();
+                const pass = this.$.$giper_baza_auth.current().pass();
+                return $giper_baza_rank_tier_of(land.pass_rank(pass)) >= $giper_baza_rank_tier.post;
+            }
+            /** Journals created before the catalogue existed can still be listed. */
+            registry_addable() {
+                const link = this.author_link();
+                if (!link || !this.registry_land())
+                    return false;
+                if (this.registry_has(link))
+                    return false;
+                return this.registry_writable();
+            }
+            /**
+             * Directory of journals under the start screen. Hidden when the catalogue
+             * is empty or absent, so an unbootstrapped build shows no stray heading.
+             *
+             * The start screen is where a reader with no journal of their own lands,
+             * and where the CI crawl starts, so this doubles as the hub page: every
+             * journal is one real link away from the root.
+             */
+            directory() {
+                return this.journal_rows().length ? this.Directory() : null;
+            }
+            journal_rows() {
+                return this.registry_journals().map((_, index) => this.Journal_row(index));
+            }
+            journal_link(index) {
+                return this.registry_journals()[index] ?? '';
+            }
+            /** Root pawn of a listed journal, for its name. */
+            journal_record(index) {
+                const link = this.journal_link(index);
+                if (!link)
+                    return null;
+                return this.$.$giper_baza_glob.Pawn(new $giper_baza_link(link), $bog_journal_model_author);
+            }
+            journal_title(index) {
+                return this.journal_record(index)?.Name()?.val() || this.journal_untitled();
+            }
+            journal_arg(index) {
+                return { author: this.journal_link(index) || null, post: null, edit: null, feed: null };
+            }
             // === Navigation ==========================================================
             //
             // Every move between screens is a real <a href> with a path, never a click
@@ -45864,8 +46081,13 @@ var $;
                     parts.push(this.Nav_read());
                 if (screen === 'post' && this.can_edit(this.post_link()))
                     parts.push(this.Nav_edit());
-                if (screen === 'profile' && this.can_edit(this.author_link()))
+                if (screen === 'profile' && this.can_edit(this.author_link())) {
                     parts.push(this.Post_new());
+                    // Only the owner asks the catalogue anything: for a plain reader
+                    // this would be one more Land pulled for nothing.
+                    if (this.registry_addable())
+                        parts.push(this.Registry_add());
+                }
                 parts.push(this.Status(), this.Lights());
                 return parts;
             }
@@ -45875,13 +46097,42 @@ var $;
              * with public read and writes its root pawn link into the home record in
              * one step. Proof-of-Work runs inside this fiber — never from a @$mol_mem,
              * where a suspended retry loops forever.
+             *
+             * Listing comes before routing, and inside the same fiber: this is the one
+             * moment when the app is certain a new journal exists, and a catalogue
+             * entry written later would be a separate decision somebody has to make.
              */
             journal_create(event) {
                 if (!event)
                     return null;
                 const author = this.home().Journal('auto')?.ensure(public_read);
-                if (author)
+                if (author) {
+                    this.registry_register(author.link().str);
                     this.author_link(author.link().str);
+                }
+                return event;
+            }
+            /**
+             * Writes a journal into the public catalogue.
+             *
+             * Silent when there is no catalogue in this build, and silent when the
+             * catalogue refuses the write — `'auto'` hands back `null` instead of
+             * throwing if the Land grants this user read only. Neither case is worth
+             * interrupting journal creation for: the journal itself is fine, it is
+             * only harder to find.
+             */
+            registry_register(link) {
+                if (!link)
+                    return;
+                if (this.registry_has(link))
+                    return;
+                this.registry()?.Journals('auto')?.add(new $giper_baza_link(link));
+            }
+            /** Same, for a journal that predates the catalogue. */
+            registry_add(event) {
+                if (!event)
+                    return null;
+                this.registry_register(this.author_link());
                 return event;
             }
             /**
@@ -45948,10 +46199,28 @@ var $;
         ], $bog_journal_app.prototype, "can_edit", null);
         __decorate([
             $mol_mem
+        ], $bog_journal_app.prototype, "registry_journals", null);
+        __decorate([
+            $mol_mem
+        ], $bog_journal_app.prototype, "registry_writable", null);
+        __decorate([
+            $mol_mem
+        ], $bog_journal_app.prototype, "registry_addable", null);
+        __decorate([
+            $mol_mem
+        ], $bog_journal_app.prototype, "journal_rows", null);
+        __decorate([
+            $mol_mem
         ], $bog_journal_app.prototype, "tool_bar", null);
         __decorate([
             $mol_action
         ], $bog_journal_app.prototype, "journal_create", null);
+        __decorate([
+            $mol_action
+        ], $bog_journal_app.prototype, "registry_register", null);
+        __decorate([
+            $mol_action
+        ], $bog_journal_app.prototype, "registry_add", null);
         __decorate([
             $mol_action
         ], $bog_journal_app.prototype, "feed_create", null);
