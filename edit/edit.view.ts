@@ -248,6 +248,48 @@ namespace $.$$ {
 			return !this.can_edit()
 		}
 
+		// === Export ==============================================================
+
+		/**
+		 * Article body flattened into plain records for the markdown serializer.
+		 * It is a pure function and stays that way: no Giper Baza object crosses
+		 * into it, the Land is unwrapped here.
+		 */
+		@ $mol_mem
+		body_blocks(): readonly $bog_wysiwyg_export_block[] {
+
+			const page = this.post()?.Page()?.remote()
+			if( !page ) return []
+
+			return ( page.Blocks()?.remote_list() ?? [] ).map( block => ({
+				type: block.Type()?.text() || 'paragraph',
+				level: block.Level()?.val() ?? undefined,
+				content: block.Content()?.val() ?? '',
+			}) )
+
+		}
+
+		/**
+		 * Origin of a node that serves Giper Baza files over plain http — the
+		 * master this app already syncs through. Exported markdown is pasted onto
+		 * Habr or dev.to, where an object url or a bare `?BAZA:file=…` (which needs
+		 * a service worker nobody there runs) would be a dead image.
+		 */
+		override file_base() {
+			return this.$.$giper_baza_yard.masters_default[ 0 ] ?? ''
+		}
+
+		/**
+		 * Cover in the form the serializer resolves against `base_uri`. The raw
+		 * `?BAZA:file=…` is handed over rather than an absolute url, so the export
+		 * module keeps doing the joining for covers and inline images alike.
+		 */
+		override cover_share_uri() {
+			const file = this.post()?.Cover()?.remote()
+			if( !file || !file.filled() ) return ''
+			return file.uri()
+		}
+
 		// === Creation ============================================================
 
 		/**
@@ -282,6 +324,53 @@ namespace $.$$ {
 			post.Page( 'auto' )?.val( page.link() )
 
 			return post.link().str
+
+		}
+
+	}
+
+	/**
+	 * Markdown export that also puts the post summary into the dev.to front
+	 * matter.
+	 *
+	 * `$bog_wysiwyg_export_config` has no `description` field, so the shipped
+	 * serializer cannot emit one, and that module is not ours to change. The line
+	 * is inserted into the YAML block it already produced, guarded on both ends:
+	 * nothing happens unless the output really opens with a front matter block,
+	 * and nothing happens if a `description:` key is already there. So on the day
+	 * the export module grows the field, this quietly steps aside instead of
+	 * writing the key twice.
+	 */
+	export class $bog_journal_edit_export extends $.$bog_journal_edit_export {
+
+		/**
+		 * Deliberately not @$mol_mem. The method it overrides is one, and $mol
+		 * keys an atom by host plus property name — a memoised override calling
+		 * `super` of the same name would find its own atom mid-computation and
+		 * die with a circular subscription. The parent stays cached, this only
+		 * adds a regex on top of it.
+		 */
+		override markdown() {
+
+			const markdown = super.markdown()
+			// Compared against the raw value rather than dialect_current(): that
+			// one lives in the $$ class of a foreign component and is invisible to
+			// the generated typing of this subclass.
+			if( this.dialect() !== 'devto' ) return markdown
+
+			const summary = this.summary().trim()
+			if( !summary ) return markdown
+
+			const found = /^---\n[\s\S]*?\n---\n/.exec( markdown )
+			if( !found ) return markdown
+
+			const head = found[ 0 ]
+			if( /^description:/m.test( head.slice( 4, -4 ) ) ) return markdown
+
+			// JSON quoting is a valid YAML double-quoted scalar and escapes the
+			// same characters, so a summary with quotes or backslashes survives.
+			const line = 'description: ' + JSON.stringify( summary )
+			return head.replace( /\n---\n$/, '\n' + line + '\n---\n' ) + markdown.slice( head.length )
 
 		}
 

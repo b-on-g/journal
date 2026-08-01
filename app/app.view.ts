@@ -8,6 +8,22 @@ namespace $.$$ {
 
 	type Screen = 'edit' | 'post' | 'feed' | 'profile' | 'start'
 
+	/**
+	 * Metadata strings, plain and unlocalized on purpose. They are read from
+	 * attr(), and reaching for $mol_locale there would let a locale that fails to
+	 * load take the whole page down instead of one social card. Same rule the
+	 * post and profile pages follow.
+	 */
+	const meta_feed = {
+		title: 'Reading feed — Journal',
+		description: 'Posts from every journal this feed follows, newest first.',
+	}
+
+	const meta_start = {
+		title: 'Journal',
+		description: 'A journal of your own: posts live in a Land you control and reach readers by sync.',
+	}
+
 	export class $bog_journal_app extends $.$bog_journal_app {
 
 		/**
@@ -126,6 +142,51 @@ namespace $.$$ {
 				case 'feed': return this.title_feed()
 				default: return this.title_journal()
 			}
+		}
+
+		// === SEO =================================================================
+
+		/**
+		 * Absolute url of this page. Under path routing the location already is
+		 * the canonical url. Same helper as the post and profile pages.
+		 */
+		canonical() {
+			const loc = this.$.$mol_dom_context.location
+			return loc.origin + loc.pathname + loc.search
+		}
+
+		/**
+		 * Metadata for the two screens that carry none of their own: the feed and
+		 * the empty start page. The post and the profile emit theirs from inside,
+		 * and since those elements come after the app root in the html,
+		 * `$bog_meta_collect` lets them win — so the root stays silent there
+		 * instead of leaking a stale title into their card.
+		 *
+		 * A feed is an encrypted Land nobody else can read, and a crawler would
+		 * only ever see it empty, so it gets a generic card rather than its real
+		 * title. Marking it `noindex` outright would be better; `$bog_meta_data`
+		 * has no field for that yet.
+		 */
+		meta(): $bog_meta_data {
+
+			const screen = this.screen()
+			if( screen !== 'feed' && screen !== 'start' ) return {}
+
+			const text = screen === 'feed' ? meta_feed : meta_start
+
+			return {
+				title: text.title,
+				description: text.description,
+				canonical: this.canonical(),
+				og_title: text.title,
+				og_description: text.description,
+				og_type: 'website',
+			}
+
+		}
+
+		override attr() {
+			return { ... super.attr(), ... $bog_meta_attr( this ) }
 		}
 
 		// === Rights ==============================================================

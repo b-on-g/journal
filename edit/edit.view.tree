@@ -65,6 +65,13 @@ $bog_journal_edit_page $mol_view
 									checked? <=> published? false
 								<= Published_at $mol_paragraph
 									title <= published_label
+								<= Export $bog_journal_edit_export
+									blocks <= body_blocks /$bog_wysiwyg_export_block
+									page_title <= post_title
+									summary <= post_summary
+									tags <= tags /string
+									cover <= cover_share_uri \
+									base_uri <= file_base \
 						<= Publish_note $mol_paragraph
 							title @ \A draft is hidden from the lists, not from the network: the journal is a publicly readable Land, so anyone holding this link can already read it.
 		<= Body $bog_wysiwyg
@@ -98,3 +105,9 @@ $bog_journal_edit_chip $mol_view
 			click?event <=> drop?event null
 			sub /
 				<= Drop_icon $mol_icon_close
+
+- Markdown export with the post summary folded into the dev.to front matter.
+- The serializer itself is the one shipped with the editor; see edit.view.ts
+- for why the summary needs a subclass at all.
+$bog_journal_edit_export $bog_wysiwyg_export
+	summary \

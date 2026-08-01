@@ -1,5 +1,12 @@
 namespace $.$$ {
 
+	/**
+	 * Plain, unlocalized site name for metadata. Nothing inside meta() may reach
+	 * for $mol_locale: the result is read from attr(), and a locale that fails to
+	 * load would take the whole page down instead of one line of a social card.
+	 */
+	const site_name = 'Journal'
+
 	export class $bog_journal_profile extends $.$bog_journal_profile {
 
 		// === Land access =========================================================
@@ -270,6 +277,68 @@ namespace $.$$ {
 		override posts_empty_text() {
 			if( this.posts_filtered().length ) return ''
 			return this.posts().length ? this.posts_empty_query() : this.posts_empty_none()
+		}
+
+		// === SEO =================================================================
+
+		/**
+		 * Absolute url of this page. Under path routing the location already is
+		 * the canonical url; a host that mounts the page elsewhere overrides this.
+		 * Same helper as the post page, so both agree on what canonical means.
+		 */
+		canonical() {
+			const loc = this.$.$mol_dom_context.location
+			return loc.origin + loc.pathname + loc.search
+		}
+
+		/**
+		 * Origin of a node that serves Giper Baza files over plain http — the
+		 * master this app already syncs through. Needed for `og:image`: a social
+		 * crawler fetches that url itself, so neither an object url nor a bare
+		 * `?BAZA:file=…` (which wants a service worker the crawler never runs) can
+		 * work there. Empty means no `og:image` at all, which beats a dead one.
+		 */
+		file_base() {
+			return this.$.$giper_baza_yard.masters_default[ 0 ] ?? ''
+		}
+
+		/** Avatar as an absolute url a crawler can fetch, or empty. */
+		avatar_share_uri() {
+			const base = this.file_base()
+			if( !base ) return ''
+			const file = this.author()?.Avatar()?.remote()
+			if( !file || !file.filled() ) return ''
+			return new URL( file.uri(), base ).toString()
+		}
+
+		/**
+		 * Read by `$bog_meta_attr` into `data-bog-meta` on this element, which the
+		 * prerenderer turns into <title>/<meta>/<link> in <head>. While the Land is
+		 * still syncing these reads throw a promise, the view retries, and the
+		 * attribute lands only once the real values are known — so a snapshot never
+		 * captures a half-filled card.
+		 */
+		meta(): $bog_meta_data {
+
+			// Raw name and bio, never the localized fallbacks: see site_name above.
+			const name = this.author_name()
+			const title = name || site_name
+			const description = this.author_bio()
+
+			return {
+				title,
+				description,
+				canonical: this.canonical(),
+				og_title: title,
+				og_description: description,
+				og_type: 'profile',
+				og_image: this.avatar_share_uri(),
+			}
+
+		}
+
+		override attr() {
+			return { ... super.attr(), ... $bog_meta_attr( this ) }
 		}
 
 	}
