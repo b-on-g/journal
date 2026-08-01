@@ -2363,6 +2363,7 @@ $bog_wysiwyg_prompt $mol_view
 $bog_wysiwyg $mol_view
 	page_land_link \
 	notice_too_long @ \That is more text than one block can hold, so it was not saved. Split it up.
+	notice_image_failed @ \The picture could not be saved. Try again, or pick a smaller one.
 	readonly false
 	block_ids? /
 	Block* $bog_wysiwyg_block
@@ -2473,6 +2474,7 @@ $bog_wysiwyg_block $mol_view
 	readonly false
 	menu_open false
 	placeholder \
+	placeholder_image @ \🖼 Pick a picture or paste its address
 	on_enter?event null
 	on_remove?event null
 	on_split?parts null

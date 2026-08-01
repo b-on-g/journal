@@ -56400,6 +56400,7 @@ declare namespace $ {
 		Notice( ): $mol_button_minor
 		page_land_link( ): string
 		notice_too_long( ): string
+		notice_image_failed( ): string
 		readonly( ): boolean
 		block_ids( next?: readonly(any)[] ): readonly(any)[]
 		Block( id: any): $bog_wysiwyg_block
@@ -56806,6 +56807,7 @@ declare namespace $ {
 		readonly( ): boolean
 		menu_open( ): boolean
 		placeholder( ): string
+		placeholder_image( ): string
 		on_enter( next?: any ): any
 		on_remove( next?: any ): any
 		on_split( next?: any ): any
@@ -56872,6 +56874,7 @@ declare namespace $.$$ {
     class $bog_wysiwyg_block extends $.$bog_wysiwyg_block {
         minimal_height(): number;
         content_editable(): "false" | "true";
+        placeholder(): string;
         is_empty(): boolean;
         sub(): any;
         is_image(): boolean;

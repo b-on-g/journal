@@ -34845,6 +34845,9 @@ var $;
 		notice_too_long(){
 			return (this.$.$mol_locale.text("$bog_wysiwyg_notice_too_long"));
 		}
+		notice_image_failed(){
+			return (this.$.$mol_locale.text("$bog_wysiwyg_notice_image_failed"));
+		}
 		readonly(){
 			return false;
 		}
@@ -35578,13 +35581,36 @@ var $;
                 const land = this.page_land();
                 if (!land)
                     return null;
-                const pawn = land.Pawn($giper_baza_file).Head(land.self_make());
-                if ($giper_baza_file.meta)
-                    pawn.meta($giper_baza_file.meta);
-                pawn.blob(file);
+                let uri = '';
+                try {
+                    // Bytes first: reading the blob is the step that suspends the fiber, and nothing
+                    // has been put into the Land by the time it does.
+                    const buffer = new Uint8Array($mol_wire_sync(file).arrayBuffer());
+                    const pawn = land.Pawn($giper_baza_file).Head(land.self_make());
+                    if ($giper_baza_file.meta)
+                        pawn.meta($giper_baza_file.meta);
+                    pawn.buffer(buffer);
+                    pawn.type(file.type || 'image/png');
+                    // `blob()` takes a name only off a DOM `File`, and not every caller hands one over
+                    if (file.name)
+                        pawn.name(file.name);
+                    uri = pawn.uri();
+                }
+                catch (error) {
+                    // A suspended fiber is not a failure: let it through so the action can resume
+                    if ($mol_promise_like(error))
+                        $mol_fail_hidden(error);
+                    // Losing a picture in silence is the whole bug this came from, so say it happened
+                    this.notice(this.notice_image_failed());
+                    $mol_fail_log(error);
+                    // Handled: the caller must not go on to inline it as a data uri
+                    return file;
+                }
+                // The block changes only once the bytes are safely in the Land, so a failed write
+                // leaves a paragraph rather than a picture block with nothing in it.
                 this.history_record();
                 this.block_type(id, 'image');
-                this.block_html(id, $.$bog_wysiwyg_image_html(pawn.uri(), file.name));
+                this.block_html(id, $.$bog_wysiwyg_image_html(uri, file.name));
                 this.history_record();
                 return file;
             }
@@ -36569,6 +36595,9 @@ var $;
 		placeholder(){
 			return "";
 		}
+		placeholder_image(){
+			return (this.$.$mol_locale.text("$bog_wysiwyg_block_placeholder_image"));
+		}
 		on_enter(next){
 			if(next !== undefined) return next;
 			return null;
@@ -37501,6 +37530,9 @@ var $;
                     return 'false';
                 return 'true';
             }
+            placeholder() {
+                return this.type() === 'image' ? this.placeholder_image() : '';
+            }
             is_empty() {
                 const html = this.html();
                 if (this.type() === 'image' && html?.includes('<img'))
@@ -38133,7 +38165,14 @@ var $;
         }
         __decorate([
             $mol_mem
-        ], $bog_wysiwyg_block.prototype, "is_empty", null);
+            /**
+             * Hint drawn inside an empty block.
+             *
+             * The css for it has always been there, but nothing ever filled the attribute, so a
+             * picture block with no picture in it was a blank box that said nothing about what it
+             * was waiting for. Only that block has a hint: an empty paragraph is self-explanatory.
+             */
+        ], $bog_wysiwyg_block.prototype, "placeholder", null);
         __decorate([
             $mol_mem_key
         ], $bog_wysiwyg_block.prototype, "file_uri", null);
@@ -38280,6 +38319,20 @@ var $;
                 },
                 margin: { top: '0.5rem', bottom: '0.5rem' },
                 textAlign: 'center',
+            },
+            /**
+             * One block is one item, and the reader draws a bullet for each. Without this the
+             * editor drew none, so a list looked exactly like a run of paragraphs.
+             */
+            list: {
+                padding: { left: '2rem' },
+                '::before': {
+                    content: '"\\2022"',
+                    position: 'absolute',
+                    left: '0.75rem',
+                    color: $mol_theme.shade,
+                    pointerEvents: 'none',
+                },
             },
         },
         '@media': {

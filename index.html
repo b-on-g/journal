@@ -3806,6 +3806,16 @@ h6[mol_text_header] {
 	margin-bottom: 0.5rem;
 	text-align: center;
 }
+[bog_wysiwyg_block]:where([bog_wysiwyg_block_type="list"]) {
+	padding-left: 2rem;
+}
+[bog_wysiwyg_block]:where([bog_wysiwyg_block_type="list"])::before {
+	content: "\2022";
+	position: absolute;
+	left: 0.75rem;
+	color: var(--mol_theme_shade);
+	pointer-events: none;
+}
 @media (max-width: 640px) {
 [bog_wysiwyg_block] {
 	padding-top: 0.25rem;

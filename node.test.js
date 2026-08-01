@@ -35604,6 +35604,9 @@ var $;
 		notice_too_long(){
 			return (this.$.$mol_locale.text("$bog_wysiwyg_notice_too_long"));
 		}
+		notice_image_failed(){
+			return (this.$.$mol_locale.text("$bog_wysiwyg_notice_image_failed"));
+		}
 		readonly(){
 			return false;
 		}
@@ -36337,13 +36340,36 @@ var $;
                 const land = this.page_land();
                 if (!land)
                     return null;
-                const pawn = land.Pawn($giper_baza_file).Head(land.self_make());
-                if ($giper_baza_file.meta)
-                    pawn.meta($giper_baza_file.meta);
-                pawn.blob(file);
+                let uri = '';
+                try {
+                    // Bytes first: reading the blob is the step that suspends the fiber, and nothing
+                    // has been put into the Land by the time it does.
+                    const buffer = new Uint8Array($mol_wire_sync(file).arrayBuffer());
+                    const pawn = land.Pawn($giper_baza_file).Head(land.self_make());
+                    if ($giper_baza_file.meta)
+                        pawn.meta($giper_baza_file.meta);
+                    pawn.buffer(buffer);
+                    pawn.type(file.type || 'image/png');
+                    // `blob()` takes a name only off a DOM `File`, and not every caller hands one over
+                    if (file.name)
+                        pawn.name(file.name);
+                    uri = pawn.uri();
+                }
+                catch (error) {
+                    // A suspended fiber is not a failure: let it through so the action can resume
+                    if ($mol_promise_like(error))
+                        $mol_fail_hidden(error);
+                    // Losing a picture in silence is the whole bug this came from, so say it happened
+                    this.notice(this.notice_image_failed());
+                    $mol_fail_log(error);
+                    // Handled: the caller must not go on to inline it as a data uri
+                    return file;
+                }
+                // The block changes only once the bytes are safely in the Land, so a failed write
+                // leaves a paragraph rather than a picture block with nothing in it.
                 this.history_record();
                 this.block_type(id, 'image');
-                this.block_html(id, $.$bog_wysiwyg_image_html(pawn.uri(), file.name));
+                this.block_html(id, $.$bog_wysiwyg_image_html(uri, file.name));
                 this.history_record();
                 return file;
             }
@@ -37328,6 +37354,9 @@ var $;
 		placeholder(){
 			return "";
 		}
+		placeholder_image(){
+			return (this.$.$mol_locale.text("$bog_wysiwyg_block_placeholder_image"));
+		}
 		on_enter(next){
 			if(next !== undefined) return next;
 			return null;
@@ -38260,6 +38289,9 @@ var $;
                     return 'false';
                 return 'true';
             }
+            placeholder() {
+                return this.type() === 'image' ? this.placeholder_image() : '';
+            }
             is_empty() {
                 const html = this.html();
                 if (this.type() === 'image' && html?.includes('<img'))
@@ -38892,7 +38924,14 @@ var $;
         }
         __decorate([
             $mol_mem
-        ], $bog_wysiwyg_block.prototype, "is_empty", null);
+            /**
+             * Hint drawn inside an empty block.
+             *
+             * The css for it has always been there, but nothing ever filled the attribute, so a
+             * picture block with no picture in it was a blank box that said nothing about what it
+             * was waiting for. Only that block has a hint: an empty paragraph is self-explanatory.
+             */
+        ], $bog_wysiwyg_block.prototype, "placeholder", null);
         __decorate([
             $mol_mem_key
         ], $bog_wysiwyg_block.prototype, "file_uri", null);
@@ -39039,6 +39078,20 @@ var $;
                 },
                 margin: { top: '0.5rem', bottom: '0.5rem' },
                 textAlign: 'center',
+            },
+            /**
+             * One block is one item, and the reader draws a bullet for each. Without this the
+             * editor drew none, so a list looked exactly like a run of paragraphs.
+             */
+            list: {
+                padding: { left: '2rem' },
+                '::before': {
+                    content: '"\\2022"',
+                    position: 'absolute',
+                    left: '0.75rem',
+                    color: $mol_theme.shade,
+                    pointerEvents: 'none',
+                },
             },
         },
         '@media': {
@@ -55140,6 +55193,27 @@ var $;
                 // FileReader answers on a later tick, so all this pins is that the fallback was armed
                 $mol_assert_equal(reached, false);
             },
+            'html_shown keeps an old inline data uri working'() {
+                const block = new $bog_wysiwyg_block();
+                // How every picture was stored before they moved into file pawns
+                block.html = () => '<img src="data:image/png;base64,AAAA">';
+                $mol_assert_equal(block.html_shown(), '<img src="data:image/png;base64,AAAA">');
+            },
+            'only a picture block explains itself when empty'() {
+                // A block apiece: `placeholder` is memoized, so one instance answers once
+                const make = (type) => {
+                    const block = new $bog_wysiwyg_block();
+                    block.type = () => type;
+                    // $mol_locale reads its dictionary relative to the cwd, which a bare run has not got
+                    block.placeholder_image = () => '\u{1F5BC} Pick a picture or paste its address';
+                    return block;
+                };
+                const hint = make('image').placeholder();
+                $mol_assert_ok(hint.includes('picture'));
+                // Words, not a run-together string
+                $mol_assert_ok(hint.includes(' '));
+                $mol_assert_equal(make('paragraph').placeholder(), '');
+            },
             'html_shown leaves ordinary markup alone'() {
                 const block = new $bog_wysiwyg_block();
                 block.html = () => '<img src="https://x.dev/a.png" alt="A">';
@@ -57422,6 +57496,36 @@ var $;
                 editor.image_submit();
                 $mol_assert_equal(editor.block_type('b1'), 'paragraph');
                 $mol_assert_equal(editor.image_prompt_showed(), false);
+            },
+            /*
+             * A picture that cannot be written used to leave the block typed `image` with nothing in
+             * it — a blank frame, no message, no console entry. Now the block is left alone and the
+             * failure is said out loud.
+             */
+            async 'a picture that fails to store says so and leaves the block alone'() {
+                const editor = new $bog_wysiwyg();
+                editor.block_ids(['b1']);
+                editor.focus_block = () => { };
+                editor.notice_image_failed = () => 'no luck';
+                editor.page_land = () => ({
+                    Pawn: () => { throw new Error('no room in the Land'); },
+                    self_make: () => null,
+                });
+                const file = new File([new Uint8Array(4)], 'shot.png', { type: 'image/png' });
+                // Reading the bytes suspends the action, so drive it the way an event handler does
+                $mol_assert_equal(await $mol_wire_async(editor).block_image_file('b1', file), file);
+                $mol_assert_equal(editor.notice(), 'no luck');
+                $mol_assert_equal(editor.notice_showed(), true);
+                $mol_assert_equal(editor.block_type('b1'), 'paragraph');
+            },
+            'with no Land the picture falls back to the caller'() {
+                const editor = new $bog_wysiwyg();
+                editor.block_ids(['b1']);
+                editor.focus_block = () => { };
+                const file = new File([new Uint8Array(4)], 'shot.png', { type: 'image/png' });
+                // null tells the block view to inline it as a data uri instead
+                $mol_assert_equal(editor.block_image_file('b1', file), null);
+                $mol_assert_equal(editor.notice(), '');
             },
             'the link panel wraps the selection through the block'() {
                 const editor = new $bog_wysiwyg();

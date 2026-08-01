@@ -8061,6 +8061,27 @@ var $;
                 // FileReader answers on a later tick, so all this pins is that the fallback was armed
                 $mol_assert_equal(reached, false);
             },
+            'html_shown keeps an old inline data uri working'() {
+                const block = new $bog_wysiwyg_block();
+                // How every picture was stored before they moved into file pawns
+                block.html = () => '<img src="data:image/png;base64,AAAA">';
+                $mol_assert_equal(block.html_shown(), '<img src="data:image/png;base64,AAAA">');
+            },
+            'only a picture block explains itself when empty'() {
+                // A block apiece: `placeholder` is memoized, so one instance answers once
+                const make = (type) => {
+                    const block = new $bog_wysiwyg_block();
+                    block.type = () => type;
+                    // $mol_locale reads its dictionary relative to the cwd, which a bare run has not got
+                    block.placeholder_image = () => '\u{1F5BC} Pick a picture or paste its address';
+                    return block;
+                };
+                const hint = make('image').placeholder();
+                $mol_assert_ok(hint.includes('picture'));
+                // Words, not a run-together string
+                $mol_assert_ok(hint.includes(' '));
+                $mol_assert_equal(make('paragraph').placeholder(), '');
+            },
             'html_shown leaves ordinary markup alone'() {
                 const block = new $bog_wysiwyg_block();
                 block.html = () => '<img src="https://x.dev/a.png" alt="A">';
@@ -10329,6 +10350,36 @@ var $;
                 editor.image_submit();
                 $mol_assert_equal(editor.block_type('b1'), 'paragraph');
                 $mol_assert_equal(editor.image_prompt_showed(), false);
+            },
+            /*
+             * A picture that cannot be written used to leave the block typed `image` with nothing in
+             * it — a blank frame, no message, no console entry. Now the block is left alone and the
+             * failure is said out loud.
+             */
+            async 'a picture that fails to store says so and leaves the block alone'() {
+                const editor = new $bog_wysiwyg();
+                editor.block_ids(['b1']);
+                editor.focus_block = () => { };
+                editor.notice_image_failed = () => 'no luck';
+                editor.page_land = () => ({
+                    Pawn: () => { throw new Error('no room in the Land'); },
+                    self_make: () => null,
+                });
+                const file = new File([new Uint8Array(4)], 'shot.png', { type: 'image/png' });
+                // Reading the bytes suspends the action, so drive it the way an event handler does
+                $mol_assert_equal(await $mol_wire_async(editor).block_image_file('b1', file), file);
+                $mol_assert_equal(editor.notice(), 'no luck');
+                $mol_assert_equal(editor.notice_showed(), true);
+                $mol_assert_equal(editor.block_type('b1'), 'paragraph');
+            },
+            'with no Land the picture falls back to the caller'() {
+                const editor = new $bog_wysiwyg();
+                editor.block_ids(['b1']);
+                editor.focus_block = () => { };
+                const file = new File([new Uint8Array(4)], 'shot.png', { type: 'image/png' });
+                // null tells the block view to inline it as a data uri instead
+                $mol_assert_equal(editor.block_image_file('b1', file), null);
+                $mol_assert_equal(editor.notice(), '');
             },
             'the link panel wraps the selection through the block'() {
                 const editor = new $bog_wysiwyg();
