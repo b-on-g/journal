@@ -94,7 +94,7 @@ namespace $.$$ {
 		 * the app already syncs through. Needed for `og:image`: a social crawler
 		 * fetches that url itself, so neither an object url nor a bare
 		 * `?BAZA:file=…` (which wants a service worker the crawler never runs) can
-		 * work there. Empty means no `og:image` at all, which beats a dead one.
+		 * work there. Empty falls back to the generated card.
 		 */
 		file_base() {
 			return this.$.$giper_baza_yard.masters_default[ 0 ] ?? ''
@@ -107,6 +107,26 @@ namespace $.$$ {
 			const file = this.post()?.Cover()?.remote()
 			if( !file || !file.filled() ) return ''
 			return new URL( file.uri(), base ).toString()
+		}
+
+		/**
+		 * Generated preview card, drawn by `assets/og_cards.mjs` right next to the
+		 * static snapshot of this very page — hence the url is the page url plus
+		 * `/og.png`, with no id scheme to keep in sync on either side.
+		 *
+		 * Only a route-shaped path has a snapshot directory to hold a card, so on
+		 * the dev server (hash routing, a `.html` path) this stays empty and
+		 * `$bog_meta_compact` drops `og:image` instead of pointing at nothing.
+		 *
+		 * The origin is whatever the page is rendered from, which during prerender
+		 * is localhost — `deploy/routes/verify.mjs` rewrites the whole head to the
+		 * production origin afterwards, the same way it already fixes canonical.
+		 */
+		card_uri() {
+			const loc = this.$.$mol_dom_context.location
+			const path = loc.pathname.replace( /\/+$/, '' )
+			if( !/\/post=[^/]+$/.test( path ) ) return ''
+			return loc.origin + path + '/og.png'
 		}
 
 		/** Milliseconds since epoch. Zero means the post is still a draft. */
@@ -288,7 +308,8 @@ namespace $.$$ {
 				og_title: full,
 				og_description: description,
 				og_type: 'article',
-				og_image: this.cover_share_uri(),
+				// A cover the author picked always beats a drawn card.
+				og_image: this.cover_share_uri() || this.card_uri(),
 			}
 		}
 
