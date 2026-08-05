@@ -153,7 +153,7 @@ namespace $.$$ {
 		 * different router overrides just this.
 		 */
 		author_arg(): Record< string, string | null > {
-			return { author: this.author_id(), post: null }
+			return { section: 'journal', id: this.author_id() || null }
 		}
 
 		// --- body ---

@@ -184,18 +184,13 @@ namespace $.$$ {
 		}
 
 		post_arg( post: string ) {
-			const item = this.item( post )
-			return {
-				author: item?.author ?? null,
-				post: item?.post ?? null,
-			}
+			const link = this.item( post )?.post ?? ''
+			return { section: link ? 'post' : null, id: link || null }
 		}
 
 		author_arg( post: string ) {
-			return {
-				author: this.item( post )?.author ?? null,
-				post: null,
-			}
+			const link = this.item( post )?.author ?? ''
+			return { section: link ? 'journal' : null, id: link || null }
 		}
 
 		// === Subscriptions =======================================================
@@ -222,10 +217,7 @@ namespace $.$$ {
 		}
 
 		source_arg( author: string ) {
-			return {
-				author: author || null,
-				post: null,
-			}
+			return { section: author ? 'journal' : null, id: author || null }
 		}
 
 		/**

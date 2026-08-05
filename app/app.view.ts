@@ -5,6 +5,9 @@ namespace $.$$ {
 
 	type Screen = 'edit' | 'post' | 'feed' | 'profile' | 'start'
 
+	/** Значения ключа `section` в адресе. Профиль зовётся `journal`. */
+	type Section = 'journal' | 'post' | 'edit' | 'feed' | 'start'
+
 	/**
 	 * Metadata strings, plain and unlocalized on purpose. They are read from
 	 * attr(), and reaching for $mol_locale there would let a locale that fails to
@@ -36,82 +39,39 @@ namespace $.$$ {
 		 * hash router keeps working against the non-SPA file server.
 		 */
 		static {
-			$bog_journal_app.nav_intercept( '/journal/' )
 			$bog_builderui_router.activate( '/journal/' )
+			$bog_journal_app.route_migrate()
 		}
 
 		/**
-		 * Переход ведёт ровно туда, что написано в ссылке.
+		 * Перевод старых адресов на схему `section` + `id`.
 		 *
-		 * Роутер при клике склеивает ключи из href с ключами текущего адреса и
-		 * сохраняет всё, чего в href нет. Для приложения с двумя ключами это
-		 * незаметно, а здесь их четыре, и переходы как раз убирают лишние:
-		 * «Журнал» со страницы поста должен снять `post=`, «Смотреть» из
-		 * редактора — снять `edit=`. Просить это через `arg * key null`
-		 * бесполезно: ключ со значением `null` в href не попадает вовсе, а
-		 * склейка читает его отсутствие как «оставить как было».
-		 *
-		 * Поэтому клик перехватывается здесь и переводится в честный `go()` с
-		 * полным набором ключей, где отсутствующие явно погашены. Слушатель
-		 * ставится в capture ДО `activate()`, так что роутер видит уже
-		 * `defaultPrevented` и в навигацию не вмешивается.
-		 *
-		 * Чинить это в самом роутере значило бы менять поведение общего модуля
-		 * ради одного приложения — там от склейки зависят другие.
+		 * До неё ключей было четыре — `author`, `post`, `feed`, `edit`, — и уже
+		 * разошлись ссылки такого вида. Читаем их один раз при загрузке и
+		 * подменяем адрес, не создавая записи в истории: для читателя переход
+		 * незаметен, а закладка и внешняя ссылка продолжают работать.
 		 */
-		static nav_intercept( mount: string ) {
+		static route_migrate() {
 
 			if( typeof window === 'undefined' ) return
 			if( typeof document === 'undefined' ) return
 
-			// Тот же guard, что и у роутера: на дев-сервере путь вида
-			// `/bog/journal/app/-/test.html` обслуживает обычная файловая
-			// раздача без SPA-фолбэка, там остаётся хеш-роутер и перехватывать
-			// нечего.
-			const here = decodeURIComponent( $mol_dom.location.pathname )
-			if( /\/-\/|\.html$/.test( here ) ) return
+			const arg = ( $ as any ).$mol_state_arg
+			if( arg.value( 'section' ) ) return
 
-			const keys = [ 'author', 'post', 'feed', 'edit' ]
+			const author = arg.value( 'author' ) ?? ''
+			const post = arg.value( 'post' ) ?? ''
+			const feed = arg.value( 'feed' ) ?? ''
+			const edit = arg.value( 'edit' ) ?? ''
+			if( !author && !post && !feed && !edit ) return
 
-			self.addEventListener( 'click', ( event: MouseEvent )=> {
+			const next =
+				edit ? this.route( 'edit', edit )
+				: post ? this.route( 'post', post )
+				: feed ? this.route( 'feed', feed )
+				: this.route( 'journal', author )
 
-				if( event.defaultPrevented ) return
-				if( event.button !== 0 ) return
-				if( event.metaKey || event.ctrlKey || event.shiftKey || event.altKey ) return
-
-				let node = event.target as HTMLElement | null
-				while( node && node.tagName !== 'A' ) node = node.parentElement
-				if( !node ) return
-
-				const link = node as HTMLAnchorElement
-				if( link.hasAttribute( 'download' ) ) return
-				if( link.target && link.target !== '' && link.target !== '_self' ) return
-				if( link.origin !== $mol_dom.location.origin ) return
-
-				const path = decodeURIComponent( link.pathname )
-				if( !path.startsWith( mount ) ) return
-
-				const next = {} as Record< string, string | null >
-				for( const key of keys ) next[ key ] = null
-
-				for( const chunk of path.slice( mount.length ).split( '/' ) ) {
-					if( !chunk ) continue
-					const parts = chunk.split( '=' )
-					const key = parts.shift()!
-					next[ key ] = parts.join( '=' )
-				}
-
-				event.preventDefault()
-
-				// Переход уходит из обработчика отдельной задачей. Вызванный
-				// прямо здесь, `go()` успевает сделать pushState — адрес в
-				// строке меняется, — но записать новое состояние уже не
-				// успевает, и приложение остаётся на прежнем экране. На
-				// локальном стенде это не воспроизводится, на проде видно
-				// стабильно.
-				new $mol_after_tick( ()=> this.$.$mol_state_arg.go( next ) )
-
-			}, true )
+			arg.dict({ ...next, author: null, post: null, feed: null, edit: null })
 
 		}
 
@@ -150,50 +110,88 @@ namespace $.$$ {
 		}
 
 		/**
-		 * Journal being shown. An explicit `author=` wins, so a visitor following
-		 * somebody's link is served straight from the route.
+		 * Адрес состоит ровно из двух ключей: `section` — какой экран, `id` —
+		 * что на нём показать. Так же устроен bog/smalljs (`section` + `page`),
+		 * и это не косметика, а условие работоспособности.
+		 *
+		 * Роутер при клике склеивает ключи ссылки с ключами текущего адреса и
+		 * сохраняет всё, чего в ссылке нет. Пока ключей было четыре
+		 * (`author`, `post`, `feed`, `edit`), переходы обязаны были их
+		 * УБИРАТЬ: уходя из поста в журнал — снять `post`, из редактора в
+		 * чтение — снять `edit`. Убрать ключ ссылкой нельзя: `null` в адрес не
+		 * попадает вовсе, а склейка читает его отсутствие как «оставить». Отсюда
+		 * и брались переходы, меняющие адрес, но не экран.
+		 *
+		 * С двумя ключами убирать нечего: любой переход задаёт оба явными
+		 * значениями, склейка перезаписывает оба, и склеивать ей нечего. Тот же
+		 * приём, что делает навигацию smalljs беспроблемной.
+		 */
+		@ $mol_mem
+		section(): Section {
+			const raw = this.$.$mol_state_arg.value( 'section' ) ?? ''
+			switch( raw ) {
+				case 'journal': case 'post': case 'edit': case 'feed': return raw
+				default: return 'start'
+			}
+		}
+
+		/** Ссылка, которую показывает текущая секция. Смысл зависит от секции. */
+		@ $mol_mem
+		route_id() {
+			return this.$.$mol_state_arg.value( 'id' ) ?? ''
+		}
+
+		/**
+		 * Журнал, который сейчас смотрят.
+		 *
+		 * Для поста и редактора он не хранится отдельным ключом, а выводится из
+		 * ссылки самого поста: пешка поста живёт в ленде своего журнала, то есть
+		 * `<ленд>__<пешка>`, и владелец берётся из неё. Один ключ вместо двух,
+		 * и рассинхронизоваться им негде.
 		 */
 		@ $mol_mem
 		override author_link( next?: string ) {
+
 			if( next !== undefined ) {
-				this.$.$mol_state_arg.value( 'author', next || null )
+				this.$.$mol_state_arg.go({ section: next ? 'journal' : null, id: next || null })
 				return next
 			}
-			const arg = this.$.$mol_state_arg.value( 'author' )
-			if( arg ) return arg
-			return this.own_journal_link()
+
+			const id = this.route_id()
+
+			switch( this.section() ) {
+				case 'journal': return id
+				case 'post': case 'edit':
+					return id ? new $giper_baza_link( id ).land().str : ''
+				default: return this.own_journal_link()
+			}
 		}
 
 		@ $mol_mem
 		override post_link() {
-			return this.$.$mol_state_arg.value( 'post' ) ?? ''
+			const section = this.section()
+			return section === 'post' || section === 'edit' ? this.route_id() : ''
 		}
 
 		@ $mol_mem
 		override feed_link() {
-			return this.$.$mol_state_arg.value( 'feed' ) ?? ''
+			return this.section() === 'feed' ? this.route_id() : ''
 		}
 
 		@ $mol_mem
 		override edit_link() {
-			return this.$.$mol_state_arg.value( 'edit' ) ?? ''
+			return this.section() === 'edit' ? this.route_id() : ''
 		}
 
 		/**
-		 * Which screen the current route means. `edit` outranks `post` so the
-		 * editor can keep `post=` around and "View" stays one link away.
-		 *
-		 * `author_link()` is consulted last on purpose: it falls back to the home
-		 * Land, and a visitor reading a post or a feed has no reason to wait for a
-		 * Land of their own to sync.
+		 * Экран задан секцией напрямую — гадать по набору ключей больше не надо.
+		 * Пустая секция при живой ссылке на свой журнал — это профиль владельца.
 		 */
 		@ $mol_mem
 		screen(): Screen {
-			if( this.edit_link() ) return 'edit'
-			if( this.post_link() ) return 'post'
-			if( this.feed_link() ) return 'feed'
-			if( this.author_link() ) return 'profile'
-			return 'start'
+			const section = this.section()
+			if( section !== 'start' ) return section === 'journal' ? 'profile' : section
+			return this.own_journal_link() ? 'profile' : 'start'
 		}
 
 		@ $mol_mem
@@ -415,37 +413,43 @@ namespace $.$$ {
 		}
 
 		journal_arg( index: number ): Record< string, string | null > {
-			return { author: this.journal_link( index ) || null, post: null, edit: null, feed: null }
+			return $bog_journal_app.route( 'journal', this.journal_link( index ) )
 		}
 
 		// === Navigation ==========================================================
 		//
-		// Every move between screens is a real <a href> with a path, never a click
-		// handler: these are the edges the SEO crawler walks. Each link spells out
-		// all four keys, because the router keeps any key it is not told about — a
-		// stale `edit=` left behind would drop a reader back into the editor.
+		// Каждый переход — настоящий <a href> с путём, а не обработчик клика:
+		// именно по этим рёбрам ходит поисковый краулер.
+		//
+		// Все ссылки строятся одним помощником, и это важно: каждая обязана
+		// задавать ОБА ключа. Ключ, который ссылка не упомянула, роутер при
+		// клике сохранит от прежнего адреса — так пост и утаскивался следом за
+		// переходом в журнал.
+
+		/** Единственная форма адреса: секция плюс ссылка. */
+		static route( section: Section, id: string ): Record< string, string | null > {
+			return {
+				section: section === 'start' ? null : section,
+				id: id || null,
+			}
+		}
 
 		feed_arg(): Record< string, string | null > {
-			return { feed: this.own_feed_link(), author: null, post: null, edit: null }
+			return $bog_journal_app.route( 'feed', this.own_feed_link() )
 		}
 
 		profile_arg(): Record< string, string | null > {
-			return { author: this.author_link() || null, post: null, edit: null, feed: null }
+			return $bog_journal_app.route( 'journal', this.author_link() )
 		}
 
-		/** Leave the editor for the reader's view of the same post. */
+		/** Из редактора — к читательскому виду той же статьи. */
 		read_arg(): Record< string, string | null > {
-			return { author: this.author_link() || null, post: this.edit_link(), edit: null, feed: null }
+			return $bog_journal_app.route( 'post', this.edit_link() )
 		}
 
-		/** Open the post being read in the editor. */
+		/** Открыть читаемую статью в редакторе. */
 		edit_arg(): Record< string, string | null > {
-			return {
-				author: this.author_link() || null,
-				post: this.post_link(),
-				edit: this.post_link(),
-				feed: null,
-			}
+			return $bog_journal_app.route( 'edit', this.post_link() )
 		}
 
 		@ $mol_mem

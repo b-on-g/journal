@@ -268,10 +268,8 @@ namespace $.$$ {
 
 		post_arg( index: number ) {
 			const post = this.post_record( index )
-			return {
-				author: this.author_link(),
-				post: post ? post.link().str : null,
-			}
+			const link = post ? post.link().str : ''
+			return { section: link ? 'post' : null, id: link || null }
 		}
 
 		override posts_empty_text() {
