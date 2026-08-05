@@ -100,7 +100,7 @@ jobs:
             # Non-blocking on purpose: a prerender hiccup leaves the plain SPA plus the
             # 404.html fallback, which is exactly how the site worked before.
             - name: Prerender routes to static HTML
-              if: github.ref == 'refs/heads/main'
+              if: false  # ВРЕМЕННО: проверяем, не снимок ли ломает навигацию
               continue-on-error: true
               uses: b-on-g/mol-prerender-action@main
               with:
