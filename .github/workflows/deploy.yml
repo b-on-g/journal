@@ -43,7 +43,7 @@ on:
 # гасить друг об друга нельзя.
 concurrency:
     group: deploy-${{ github.ref }}-${{ github.event_name }}
-    cancel-in-progress: ${{ github.event_name != 'schedule' }}
+    cancel-in-progress: true
 
 jobs:
     build:
