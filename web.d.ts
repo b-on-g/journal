@@ -62233,8 +62233,8 @@ declare namespace $.$$ {
         post_state(index: number): string;
         post_details(index: number): string;
         post_arg(index: number): {
-            author: string;
-            post: string | null;
+            section: string | null;
+            id: string | null;
         };
         posts_empty_text(): string;
         /**
@@ -63981,20 +63981,20 @@ declare namespace $.$$ {
         cover_uri(cover: string): string;
         post_cover_uri(post: string): string;
         post_arg(post: string): {
-            author: string;
-            post: string;
+            section: string | null;
+            id: string | null;
         };
         author_arg(post: string): {
-            author: string;
-            post: null;
+            section: string | null;
+            id: string | null;
         };
         /** Keyed by journal link, so unfollowing cannot hit a shifted neighbour. */
         source_rows(): $bog_journal_feed_source[];
         source_name(author: string): string;
         source_status(author: string): string;
         source_arg(author: string): {
-            author: string | null;
-            post: null;
+            section: string | null;
+            id: string | null;
         };
         /**
          * Writing into a Land only ever happens inside @$mol_action. An event
@@ -72262,27 +72262,18 @@ declare namespace $ {
 //# sourceMappingURL=app.view.tree.d.ts.map
 declare namespace $.$$ {
     type Screen = 'edit' | 'post' | 'feed' | 'profile' | 'start';
+    /** Значения ключа `section` в адресе. Профиль зовётся `journal`. */
+    type Section = 'journal' | 'post' | 'edit' | 'feed' | 'start';
     export class $bog_journal_app extends $.$bog_journal_app {
         /**
-         * Переход ведёт ровно туда, что написано в ссылке.
+         * Перевод старых адресов на схему `section` + `id`.
          *
-         * Роутер при клике склеивает ключи из href с ключами текущего адреса и
-         * сохраняет всё, чего в href нет. Для приложения с двумя ключами это
-         * незаметно, а здесь их четыре, и переходы как раз убирают лишние:
-         * «Журнал» со страницы поста должен снять `post=`, «Смотреть» из
-         * редактора — снять `edit=`. Просить это через `arg * key null`
-         * бесполезно: ключ со значением `null` в href не попадает вовсе, а
-         * склейка читает его отсутствие как «оставить как было».
-         *
-         * Поэтому клик перехватывается здесь и переводится в честный `go()` с
-         * полным набором ключей, где отсутствующие явно погашены. Слушатель
-         * ставится в capture ДО `activate()`, так что роутер видит уже
-         * `defaultPrevented` и в навигацию не вмешивается.
-         *
-         * Чинить это в самом роутере значило бы менять поведение общего модуля
-         * ради одного приложения — там от склейки зависят другие.
+         * До неё ключей было четыре — `author`, `post`, `feed`, `edit`, — и уже
+         * разошлись ссылки такого вида. Читаем их один раз при загрузке и
+         * подменяем адрес, не создавая записи в истории: для читателя переход
+         * незаметен, а закладка и внешняя ссылка продолжают работать.
          */
-        static nav_intercept(mount: string): void;
+        static route_migrate(): void;
         /**
          * Master node this app syncs through. `baza=<url>` in the URL points it at
          * a local node instead. Registering here rather than at module load keeps
@@ -72296,20 +72287,40 @@ declare namespace $.$$ {
         /** This reader's own feed, empty until they start one. */
         own_feed_link(): string;
         /**
-         * Journal being shown. An explicit `author=` wins, so a visitor following
-         * somebody's link is served straight from the route.
+         * Адрес состоит ровно из двух ключей: `section` — какой экран, `id` —
+         * что на нём показать. Так же устроен bog/smalljs (`section` + `page`),
+         * и это не косметика, а условие работоспособности.
+         *
+         * Роутер при клике склеивает ключи ссылки с ключами текущего адреса и
+         * сохраняет всё, чего в ссылке нет. Пока ключей было четыре
+         * (`author`, `post`, `feed`, `edit`), переходы обязаны были их
+         * УБИРАТЬ: уходя из поста в журнал — снять `post`, из редактора в
+         * чтение — снять `edit`. Убрать ключ ссылкой нельзя: `null` в адрес не
+         * попадает вовсе, а склейка читает его отсутствие как «оставить». Отсюда
+         * и брались переходы, меняющие адрес, но не экран.
+         *
+         * С двумя ключами убирать нечего: любой переход задаёт оба явными
+         * значениями, склейка перезаписывает оба, и склеивать ей нечего. Тот же
+         * приём, что делает навигацию smalljs беспроблемной.
+         */
+        section(): Section;
+        /** Ссылка, которую показывает текущая секция. Смысл зависит от секции. */
+        route_id(): string;
+        /**
+         * Журнал, который сейчас смотрят.
+         *
+         * Для поста и редактора он не хранится отдельным ключом, а выводится из
+         * ссылки самого поста: пешка поста живёт в ленде своего журнала, то есть
+         * `<ленд>__<пешка>`, и владелец берётся из неё. Один ключ вместо двух,
+         * и рассинхронизоваться им негде.
          */
         author_link(next?: string): string;
         post_link(): string;
         feed_link(): string;
         edit_link(): string;
         /**
-         * Which screen the current route means. `edit` outranks `post` so the
-         * editor can keep `post=` around and "View" stays one link away.
-         *
-         * `author_link()` is consulted last on purpose: it falls back to the home
-         * Land, and a visitor reading a post or a feed has no reason to wait for a
-         * Land of their own to sync.
+         * Экран задан секцией напрямую — гадать по набору ключей больше не надо.
+         * Пустая секция при живой ссылке на свой журнал — это профиль владельца.
          */
         screen(): Screen;
         app_content(): $mol_view[] | $.$bog_journal_edit_page[] | $.$bog_journal_post_page[] | $.$bog_journal_feed_page[] | $.$bog_journal_profile[];
@@ -72398,11 +72409,13 @@ declare namespace $.$$ {
         journal_record(index: number): $bog_journal_model_author | null;
         journal_title(index: number): string;
         journal_arg(index: number): Record<string, string | null>;
+        /** Единственная форма адреса: секция плюс ссылка. */
+        static route(section: Section, id: string): Record<string, string | null>;
         feed_arg(): Record<string, string | null>;
         profile_arg(): Record<string, string | null>;
-        /** Leave the editor for the reader's view of the same post. */
+        /** Из редактора — к читательскому виду той же статьи. */
         read_arg(): Record<string, string | null>;
-        /** Open the post being read in the editor. */
+        /** Открыть читаемую статью в редакторе. */
         edit_arg(): Record<string, string | null>;
         tool_bar(): any[];
         /**

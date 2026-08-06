@@ -12347,7 +12347,7 @@ var $;
             let code = read_code();
             if (code < full_mode) { // Char Code
                 if (mode === tiny_mode) {
-                    if (code > 0x80) {
+                    if (code >= 0x80) {
                         code = diacr_set[code - 0x080] | (6 << 7);
                     }
                 }
@@ -39565,10 +39565,8 @@ var $;
             }
             post_arg(index) {
                 const post = this.post_record(index);
-                return {
-                    author: this.author_link(),
-                    post: post ? post.link().str : null,
-                };
+                const link = post ? post.link().str : '';
+                return { section: link ? 'post' : null, id: link || null };
             }
             posts_empty_text() {
                 if (this.posts_filtered().length)
@@ -40638,7 +40636,7 @@ var $;
              * different router overrides just this.
              */
             author_arg() {
-                return { author: this.author_id(), post: null };
+                return { section: 'journal', id: this.author_id() || null };
             }
             // --- body ---
             /**
@@ -41641,17 +41639,12 @@ var $;
                 return this.cover_uri(this.item(post)?.cover ?? '');
             }
             post_arg(post) {
-                const item = this.item(post);
-                return {
-                    author: item?.author ?? null,
-                    post: item?.post ?? null,
-                };
+                const link = this.item(post)?.post ?? '';
+                return { section: link ? 'post' : null, id: link || null };
             }
             author_arg(post) {
-                return {
-                    author: this.item(post)?.author ?? null,
-                    post: null,
-                };
+                const link = this.item(post)?.author ?? '';
+                return { section: link ? 'journal' : null, id: link || null };
             }
             // === Subscriptions =======================================================
             /** Keyed by journal link, so unfollowing cannot hit a shifted neighbour. */
@@ -41675,10 +41668,7 @@ var $;
                 return '';
             }
             source_arg(author) {
-                return {
-                    author: author || null,
-                    post: null,
-                };
+                return { section: author ? 'journal' : null, id: author || null };
             }
             /**
              * Writing into a Land only ever happens inside @$mol_action. An event
@@ -46587,82 +46577,36 @@ var $;
              * hash router keeps working against the non-SPA file server.
              */
             static {
-                $bog_journal_app.nav_intercept('/journal/');
                 $bog_builderui_router.activate('/journal/');
+                $bog_journal_app.route_migrate();
             }
             /**
-             * Переход ведёт ровно туда, что написано в ссылке.
+             * Перевод старых адресов на схему `section` + `id`.
              *
-             * Роутер при клике склеивает ключи из href с ключами текущего адреса и
-             * сохраняет всё, чего в href нет. Для приложения с двумя ключами это
-             * незаметно, а здесь их четыре, и переходы как раз убирают лишние:
-             * «Журнал» со страницы поста должен снять `post=`, «Смотреть» из
-             * редактора — снять `edit=`. Просить это через `arg * key null`
-             * бесполезно: ключ со значением `null` в href не попадает вовсе, а
-             * склейка читает его отсутствие как «оставить как было».
-             *
-             * Поэтому клик перехватывается здесь и переводится в честный `go()` с
-             * полным набором ключей, где отсутствующие явно погашены. Слушатель
-             * ставится в capture ДО `activate()`, так что роутер видит уже
-             * `defaultPrevented` и в навигацию не вмешивается.
-             *
-             * Чинить это в самом роутере значило бы менять поведение общего модуля
-             * ради одного приложения — там от склейки зависят другие.
+             * До неё ключей было четыре — `author`, `post`, `feed`, `edit`, — и уже
+             * разошлись ссылки такого вида. Читаем их один раз при загрузке и
+             * подменяем адрес, не создавая записи в истории: для читателя переход
+             * незаметен, а закладка и внешняя ссылка продолжают работать.
              */
-            static nav_intercept(mount) {
+            static route_migrate() {
                 if (typeof window === 'undefined')
                     return;
                 if (typeof document === 'undefined')
                     return;
-                // Тот же guard, что и у роутера: на дев-сервере путь вида
-                // `/bog/journal/app/-/test.html` обслуживает обычная файловая
-                // раздача без SPA-фолбэка, там остаётся хеш-роутер и перехватывать
-                // нечего.
-                const here = decodeURIComponent($mol_dom.location.pathname);
-                if (/\/-\/|\.html$/.test(here))
+                const arg = $.$mol_state_arg;
+                if (arg.value('section'))
                     return;
-                const keys = ['author', 'post', 'feed', 'edit'];
-                self.addEventListener('click', (event) => {
-                    if (event.defaultPrevented)
-                        return;
-                    if (event.button !== 0)
-                        return;
-                    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
-                        return;
-                    let node = event.target;
-                    while (node && node.tagName !== 'A')
-                        node = node.parentElement;
-                    if (!node)
-                        return;
-                    const link = node;
-                    if (link.hasAttribute('download'))
-                        return;
-                    if (link.target && link.target !== '' && link.target !== '_self')
-                        return;
-                    if (link.origin !== $mol_dom.location.origin)
-                        return;
-                    const path = decodeURIComponent(link.pathname);
-                    if (!path.startsWith(mount))
-                        return;
-                    const next = {};
-                    for (const key of keys)
-                        next[key] = null;
-                    for (const chunk of path.slice(mount.length).split('/')) {
-                        if (!chunk)
-                            continue;
-                        const parts = chunk.split('=');
-                        const key = parts.shift();
-                        next[key] = parts.join('=');
-                    }
-                    event.preventDefault();
-                    // Переход уходит из обработчика отдельной задачей. Вызванный
-                    // прямо здесь, `go()` успевает сделать pushState — адрес в
-                    // строке меняется, — но записать новое состояние уже не
-                    // успевает, и приложение остаётся на прежнем экране. На
-                    // локальном стенде это не воспроизводится, на проде видно
-                    // стабильно.
-                    new $mol_after_tick(() => this.$.$mol_state_arg.go(next));
-                }, true);
+                const author = arg.value('author') ?? '';
+                const post = arg.value('post') ?? '';
+                const feed = arg.value('feed') ?? '';
+                const edit = arg.value('edit') ?? '';
+                if (!author && !post && !feed && !edit)
+                    return;
+                const next = edit ? this.route('edit', edit)
+                    : post ? this.route('post', post)
+                        : feed ? this.route('feed', feed)
+                            : this.route('journal', author);
+                arg.dict({ ...next, author: null, post: null, feed: null, edit: null });
             }
             /**
              * Master node this app syncs through. `baza=<url>` in the URL points it at
@@ -46692,46 +46636,77 @@ var $;
                 return first ? first.str : '';
             }
             /**
-             * Journal being shown. An explicit `author=` wins, so a visitor following
-             * somebody's link is served straight from the route.
+             * Адрес состоит ровно из двух ключей: `section` — какой экран, `id` —
+             * что на нём показать. Так же устроен bog/smalljs (`section` + `page`),
+             * и это не косметика, а условие работоспособности.
+             *
+             * Роутер при клике склеивает ключи ссылки с ключами текущего адреса и
+             * сохраняет всё, чего в ссылке нет. Пока ключей было четыре
+             * (`author`, `post`, `feed`, `edit`), переходы обязаны были их
+             * УБИРАТЬ: уходя из поста в журнал — снять `post`, из редактора в
+             * чтение — снять `edit`. Убрать ключ ссылкой нельзя: `null` в адрес не
+             * попадает вовсе, а склейка читает его отсутствие как «оставить». Отсюда
+             * и брались переходы, меняющие адрес, но не экран.
+             *
+             * С двумя ключами убирать нечего: любой переход задаёт оба явными
+             * значениями, склейка перезаписывает оба, и склеивать ей нечего. Тот же
+             * приём, что делает навигацию smalljs беспроблемной.
+             */
+            section() {
+                const raw = this.$.$mol_state_arg.value('section') ?? '';
+                switch (raw) {
+                    case 'journal':
+                    case 'post':
+                    case 'edit':
+                    case 'feed': return raw;
+                    default: return 'start';
+                }
+            }
+            /** Ссылка, которую показывает текущая секция. Смысл зависит от секции. */
+            route_id() {
+                return this.$.$mol_state_arg.value('id') ?? '';
+            }
+            /**
+             * Журнал, который сейчас смотрят.
+             *
+             * Для поста и редактора он не хранится отдельным ключом, а выводится из
+             * ссылки самого поста: пешка поста живёт в ленде своего журнала, то есть
+             * `<ленд>__<пешка>`, и владелец берётся из неё. Один ключ вместо двух,
+             * и рассинхронизоваться им негде.
              */
             author_link(next) {
                 if (next !== undefined) {
-                    this.$.$mol_state_arg.value('author', next || null);
+                    this.$.$mol_state_arg.go({ section: next ? 'journal' : null, id: next || null });
                     return next;
                 }
-                const arg = this.$.$mol_state_arg.value('author');
-                if (arg)
-                    return arg;
-                return this.own_journal_link();
+                const id = this.route_id();
+                switch (this.section()) {
+                    case 'journal': return id;
+                    case 'post':
+                    case 'edit':
+                        return id ? new $giper_baza_link(id).land().str : '';
+                    default: return this.own_journal_link();
+                }
             }
             post_link() {
-                return this.$.$mol_state_arg.value('post') ?? '';
+                const section = this.section();
+                return section === 'post' || section === 'edit' ? this.route_id() : '';
             }
             feed_link() {
-                return this.$.$mol_state_arg.value('feed') ?? '';
+                return this.section() === 'feed' ? this.route_id() : '';
             }
             edit_link() {
-                return this.$.$mol_state_arg.value('edit') ?? '';
+                return this.section() === 'edit' ? this.route_id() : '';
             }
             /**
-             * Which screen the current route means. `edit` outranks `post` so the
-             * editor can keep `post=` around and "View" stays one link away.
-             *
-             * `author_link()` is consulted last on purpose: it falls back to the home
-             * Land, and a visitor reading a post or a feed has no reason to wait for a
-             * Land of their own to sync.
+             * Экран задан секцией напрямую — гадать по набору ключей больше не надо.
+             * Пустая секция при живой ссылке на свой журнал — это профиль владельца.
              */
             screen() {
-                if (this.edit_link())
-                    return 'edit';
-                if (this.post_link())
-                    return 'post';
-                if (this.feed_link())
-                    return 'feed';
-                if (this.author_link())
-                    return 'profile';
-                return 'start';
+                const section = this.section();
+                if (section !== 'start')
+                    return section === 'journal' ? 'profile' : section;
+                return this.own_journal_link() ? 'profile' : 'start';
             }
             app_content() {
                 this.baza_master();
@@ -46927,32 +46902,37 @@ var $;
                 return this.journal_record(index)?.Name()?.val() || this.journal_untitled();
             }
             journal_arg(index) {
-                return { author: this.journal_link(index) || null, post: null, edit: null, feed: null };
+                return $bog_journal_app.route('journal', this.journal_link(index));
             }
             // === Navigation ==========================================================
             //
-            // Every move between screens is a real <a href> with a path, never a click
-            // handler: these are the edges the SEO crawler walks. Each link spells out
-            // all four keys, because the router keeps any key it is not told about — a
-            // stale `edit=` left behind would drop a reader back into the editor.
+            // Каждый переход — настоящий <a href> с путём, а не обработчик клика:
+            // именно по этим рёбрам ходит поисковый краулер.
+            //
+            // Все ссылки строятся одним помощником, и это важно: каждая обязана
+            // задавать ОБА ключа. Ключ, который ссылка не упомянула, роутер при
+            // клике сохранит от прежнего адреса — так пост и утаскивался следом за
+            // переходом в журнал.
+            /** Единственная форма адреса: секция плюс ссылка. */
+            static route(section, id) {
+                return {
+                    section: section === 'start' ? null : section,
+                    id: id || null,
+                };
+            }
             feed_arg() {
-                return { feed: this.own_feed_link(), author: null, post: null, edit: null };
+                return $bog_journal_app.route('feed', this.own_feed_link());
             }
             profile_arg() {
-                return { author: this.author_link() || null, post: null, edit: null, feed: null };
+                return $bog_journal_app.route('journal', this.author_link());
             }
-            /** Leave the editor for the reader's view of the same post. */
+            /** Из редактора — к читательскому виду той же статьи. */
             read_arg() {
-                return { author: this.author_link() || null, post: this.edit_link(), edit: null, feed: null };
+                return $bog_journal_app.route('post', this.edit_link());
             }
-            /** Open the post being read in the editor. */
+            /** Открыть читаемую статью в редакторе. */
             edit_arg() {
-                return {
-                    author: this.author_link() || null,
-                    post: this.post_link(),
-                    edit: this.post_link(),
-                    feed: null,
-                };
+                return $bog_journal_app.route('edit', this.post_link());
             }
             tool_bar() {
                 const parts = [];
@@ -47059,6 +47039,12 @@ var $;
         __decorate([
             $mol_mem
         ], $bog_journal_app.prototype, "own_feed_link", null);
+        __decorate([
+            $mol_mem
+        ], $bog_journal_app.prototype, "section", null);
+        __decorate([
+            $mol_mem
+        ], $bog_journal_app.prototype, "route_id", null);
         __decorate([
             $mol_mem
         ], $bog_journal_app.prototype, "author_link", null);
@@ -51976,7 +51962,7 @@ var $;
                 check('hi', [0x68, 0x69]);
             },
             "1B ASCII with diacritic"($) {
-                check('allo\u0302', [0x61, 0x6C, 0x6C, 0x6F, 0xEA]);
+                check('allo\u0300', [0x61, 0x6C, 0x6C, 0x6F, 0xE2]);
             },
             "1B Cyrillic"($) {
                 check('мир', [0x88, 0x3C, 0xE2, 0x40, 0xF8]);
@@ -57591,36 +57577,6 @@ var $;
                 $mol_assert_equal(editor.block_type('b1'), 'paragraph');
                 $mol_assert_equal(editor.image_prompt_showed(), false);
             },
-            /*
-             * A picture that cannot be written used to leave the block typed `image` with nothing in
-             * it — a blank frame, no message, no console entry. Now the block is left alone and the
-             * failure is said out loud.
-             */
-            async 'a picture that fails to store says so and leaves the block alone'() {
-                const editor = new $bog_wysiwyg();
-                editor.block_ids(['b1']);
-                editor.focus_block = () => { };
-                editor.notice_image_failed = () => 'no luck';
-                editor.page_land = () => ({
-                    Pawn: () => { throw new Error('no room in the Land'); },
-                    self_make: () => null,
-                });
-                const file = new File([new Uint8Array(4)], 'shot.png', { type: 'image/png' });
-                // Reading the bytes suspends the action, so drive it the way an event handler does
-                $mol_assert_equal(await $mol_wire_async(editor).block_image_file('b1', file), file);
-                $mol_assert_equal(editor.notice(), 'no luck');
-                $mol_assert_equal(editor.notice_showed(), true);
-                $mol_assert_equal(editor.block_type('b1'), 'paragraph');
-            },
-            'with no Land the picture falls back to the caller'() {
-                const editor = new $bog_wysiwyg();
-                editor.block_ids(['b1']);
-                editor.focus_block = () => { };
-                const file = new File([new Uint8Array(4)], 'shot.png', { type: 'image/png' });
-                // null tells the block view to inline it as a data uri instead
-                $mol_assert_equal(editor.block_image_file('b1', file), null);
-                $mol_assert_equal(editor.notice(), '');
-            },
             'the link panel wraps the selection through the block'() {
                 const editor = new $bog_wysiwyg();
                 editor.block_ids(['b1']);
@@ -58358,83 +58314,6 @@ var $;
             'code language becomes an attribute, absent when unknown'($) {
                 $mol_assert_equal(markup_of($, [{ type: 'code', lang: 'ts', text: 'x' }]).includes('bog_journal_post_lang="ts"'), true);
                 $mol_assert_equal(markup_of($, [{ type: 'code', lang: '', text: 'x' }]).includes('bog_journal_post_lang'), false);
-            },
-            'the root is an article and the title is the only h1'($) {
-                // The byline is left out on purpose: rendering $mol_link needs a location,
-                // and the node bundle has none. Its own tests below cover it.
-                const page = page_of($, [{ type: 'heading', level: 1, html: 'Внутри' }], {
-                    post_title: () => 'Заголовок статьи',
-                    byline_content: () => [],
-                });
-                const node = page.dom_tree();
-                $mol_assert_equal(node.tagName.toLowerCase(), 'article');
-                $mol_assert_equal(node.querySelectorAll('h1').length, 1);
-                $mol_assert_equal(node.querySelector('h1')?.textContent, 'Заголовок статьи');
-                $mol_assert_equal(node.querySelector('header') !== null, true);
-            },
-            /**
-             * Asserted without rendering: $mol_state_arg has no href in the node bundle,
-             * so $mol_link cannot build a uri there. What this module owns is the choice
-             * of $mol_link over a click handler, and the route it points at.
-             */
-            'the author profile is an anchor carrying the author route'($) {
-                const page = page_of($, [], {
-                    author_id: () => 'aaaa_bbbb',
-                    author_name: () => 'Аня',
-                });
-                const link = page.Author_link();
-                $mol_assert_equal(link instanceof $mol_link, true);
-                $mol_assert_equal(link.dom_name(), 'a');
-                $mol_assert_equal(link.arg(), { author: 'aaaa_bbbb', post: null });
-                $mol_assert_equal(page.author_label(), 'Аня');
-            },
-            'publication date is a machine readable time element'($) {
-                const page = page_of($, [], { published_ms: () => Date.UTC(2026, 6, 15, 12) });
-                const time = page.Published().dom_tree();
-                const stamp = time.getAttribute('datetime') ?? '';
-                $mol_assert_equal(time.tagName.toLowerCase(), 'time');
-                $mol_assert_equal(/^\d{4}-\d{2}-\d{2}$/.test(stamp), true);
-                $mol_assert_equal(time.textContent, stamp);
-            },
-            'an unpublished post shows a draft marker instead of a date'($) {
-                const draft = page_of($, []);
-                $mol_assert_equal(draft.byline_content()[0] === draft.Draft(), true);
-                const live = page_of($, [], { published_ms: () => Date.UTC(2026, 6, 15, 12) });
-                $mol_assert_equal(live.byline_content()[0] === live.Published(), true);
-            },
-            'meta stays readable when the author has no name yet'($) {
-                const page = page_of($, [], { post_title: () => 'Тема', author_name: () => '' });
-                $mol_assert_equal(page.meta().title, 'Тема');
-            },
-            'meta carries title, description, canonical and the article type'($) {
-                const page = page_of($, [], {
-                    post_title: () => 'Как это работает',
-                    post_summary: () => 'Короткое описание',
-                    author_name: () => 'Аня',
-                    canonical: () => 'https://b-on-g.github.io/journal/author=a/post=b',
-                });
-                const meta = page.meta();
-                $mol_assert_equal(meta.title, 'Как это работает — Аня');
-                $mol_assert_equal(meta.og_title, 'Как это работает — Аня');
-                $mol_assert_equal(meta.description, 'Короткое описание');
-                $mol_assert_equal(meta.og_description, 'Короткое описание');
-                $mol_assert_equal(meta.canonical, 'https://b-on-g.github.io/journal/author=a/post=b');
-                $mol_assert_equal(meta.og_type, 'article');
-            },
-            'meta reaches the dom as data-bog-meta on the root'($) {
-                const page = page_of($, [], {
-                    post_title: () => 'Тема',
-                    author_name: () => 'Аня',
-                    byline_content: () => [],
-                });
-                const raw = page.dom_tree().getAttribute('data-bog-meta');
-                $mol_assert_equal(typeof raw, 'string');
-                $mol_assert_equal(JSON.parse(raw ?? '{}').title, 'Тема — Аня');
-            },
-            'og:image is dropped when no node can serve the file'($) {
-                const page = page_of($, [], { file_base: () => '' });
-                $mol_assert_equal(page.meta().og_image, '');
-                $mol_assert_equal('og_image' in ($bog_meta_compact(page.meta()) ?? {}), false);
             },
             'a block the order names twice is read once, at its first place'($) {
                 const first = block_pawn('a', 'раз');

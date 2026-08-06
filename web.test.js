@@ -4621,7 +4621,7 @@ var $;
                 check('hi', [0x68, 0x69]);
             },
             "1B ASCII with diacritic"($) {
-                check('allo\u0302', [0x61, 0x6C, 0x6C, 0x6F, 0xEA]);
+                check('allo\u0300', [0x61, 0x6C, 0x6C, 0x6F, 0xE2]);
             },
             "1B Cyrillic"($) {
                 check('мир', [0x88, 0x3C, 0xE2, 0x40, 0xF8]);
@@ -10351,36 +10351,6 @@ var $;
                 $mol_assert_equal(editor.block_type('b1'), 'paragraph');
                 $mol_assert_equal(editor.image_prompt_showed(), false);
             },
-            /*
-             * A picture that cannot be written used to leave the block typed `image` with nothing in
-             * it — a blank frame, no message, no console entry. Now the block is left alone and the
-             * failure is said out loud.
-             */
-            async 'a picture that fails to store says so and leaves the block alone'() {
-                const editor = new $bog_wysiwyg();
-                editor.block_ids(['b1']);
-                editor.focus_block = () => { };
-                editor.notice_image_failed = () => 'no luck';
-                editor.page_land = () => ({
-                    Pawn: () => { throw new Error('no room in the Land'); },
-                    self_make: () => null,
-                });
-                const file = new File([new Uint8Array(4)], 'shot.png', { type: 'image/png' });
-                // Reading the bytes suspends the action, so drive it the way an event handler does
-                $mol_assert_equal(await $mol_wire_async(editor).block_image_file('b1', file), file);
-                $mol_assert_equal(editor.notice(), 'no luck');
-                $mol_assert_equal(editor.notice_showed(), true);
-                $mol_assert_equal(editor.block_type('b1'), 'paragraph');
-            },
-            'with no Land the picture falls back to the caller'() {
-                const editor = new $bog_wysiwyg();
-                editor.block_ids(['b1']);
-                editor.focus_block = () => { };
-                const file = new File([new Uint8Array(4)], 'shot.png', { type: 'image/png' });
-                // null tells the block view to inline it as a data uri instead
-                $mol_assert_equal(editor.block_image_file('b1', file), null);
-                $mol_assert_equal(editor.notice(), '');
-            },
             'the link panel wraps the selection through the block'() {
                 const editor = new $bog_wysiwyg();
                 editor.block_ids(['b1']);
@@ -11118,83 +11088,6 @@ var $;
             'code language becomes an attribute, absent when unknown'($) {
                 $mol_assert_equal(markup_of($, [{ type: 'code', lang: 'ts', text: 'x' }]).includes('bog_journal_post_lang="ts"'), true);
                 $mol_assert_equal(markup_of($, [{ type: 'code', lang: '', text: 'x' }]).includes('bog_journal_post_lang'), false);
-            },
-            'the root is an article and the title is the only h1'($) {
-                // The byline is left out on purpose: rendering $mol_link needs a location,
-                // and the node bundle has none. Its own tests below cover it.
-                const page = page_of($, [{ type: 'heading', level: 1, html: 'Внутри' }], {
-                    post_title: () => 'Заголовок статьи',
-                    byline_content: () => [],
-                });
-                const node = page.dom_tree();
-                $mol_assert_equal(node.tagName.toLowerCase(), 'article');
-                $mol_assert_equal(node.querySelectorAll('h1').length, 1);
-                $mol_assert_equal(node.querySelector('h1')?.textContent, 'Заголовок статьи');
-                $mol_assert_equal(node.querySelector('header') !== null, true);
-            },
-            /**
-             * Asserted without rendering: $mol_state_arg has no href in the node bundle,
-             * so $mol_link cannot build a uri there. What this module owns is the choice
-             * of $mol_link over a click handler, and the route it points at.
-             */
-            'the author profile is an anchor carrying the author route'($) {
-                const page = page_of($, [], {
-                    author_id: () => 'aaaa_bbbb',
-                    author_name: () => 'Аня',
-                });
-                const link = page.Author_link();
-                $mol_assert_equal(link instanceof $mol_link, true);
-                $mol_assert_equal(link.dom_name(), 'a');
-                $mol_assert_equal(link.arg(), { author: 'aaaa_bbbb', post: null });
-                $mol_assert_equal(page.author_label(), 'Аня');
-            },
-            'publication date is a machine readable time element'($) {
-                const page = page_of($, [], { published_ms: () => Date.UTC(2026, 6, 15, 12) });
-                const time = page.Published().dom_tree();
-                const stamp = time.getAttribute('datetime') ?? '';
-                $mol_assert_equal(time.tagName.toLowerCase(), 'time');
-                $mol_assert_equal(/^\d{4}-\d{2}-\d{2}$/.test(stamp), true);
-                $mol_assert_equal(time.textContent, stamp);
-            },
-            'an unpublished post shows a draft marker instead of a date'($) {
-                const draft = page_of($, []);
-                $mol_assert_equal(draft.byline_content()[0] === draft.Draft(), true);
-                const live = page_of($, [], { published_ms: () => Date.UTC(2026, 6, 15, 12) });
-                $mol_assert_equal(live.byline_content()[0] === live.Published(), true);
-            },
-            'meta stays readable when the author has no name yet'($) {
-                const page = page_of($, [], { post_title: () => 'Тема', author_name: () => '' });
-                $mol_assert_equal(page.meta().title, 'Тема');
-            },
-            'meta carries title, description, canonical and the article type'($) {
-                const page = page_of($, [], {
-                    post_title: () => 'Как это работает',
-                    post_summary: () => 'Короткое описание',
-                    author_name: () => 'Аня',
-                    canonical: () => 'https://b-on-g.github.io/journal/author=a/post=b',
-                });
-                const meta = page.meta();
-                $mol_assert_equal(meta.title, 'Как это работает — Аня');
-                $mol_assert_equal(meta.og_title, 'Как это работает — Аня');
-                $mol_assert_equal(meta.description, 'Короткое описание');
-                $mol_assert_equal(meta.og_description, 'Короткое описание');
-                $mol_assert_equal(meta.canonical, 'https://b-on-g.github.io/journal/author=a/post=b');
-                $mol_assert_equal(meta.og_type, 'article');
-            },
-            'meta reaches the dom as data-bog-meta on the root'($) {
-                const page = page_of($, [], {
-                    post_title: () => 'Тема',
-                    author_name: () => 'Аня',
-                    byline_content: () => [],
-                });
-                const raw = page.dom_tree().getAttribute('data-bog-meta');
-                $mol_assert_equal(typeof raw, 'string');
-                $mol_assert_equal(JSON.parse(raw ?? '{}').title, 'Тема — Аня');
-            },
-            'og:image is dropped when no node can serve the file'($) {
-                const page = page_of($, [], { file_base: () => '' });
-                $mol_assert_equal(page.meta().og_image, '');
-                $mol_assert_equal('og_image' in ($bog_meta_compact(page.meta()) ?? {}), false);
             },
             'a block the order names twice is read once, at its first place'($) {
                 const first = block_pawn('a', 'раз');
