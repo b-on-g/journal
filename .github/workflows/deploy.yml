@@ -163,7 +163,28 @@ jobs:
                     --build-dir="$BUILD_DIR" \
                     --base-url="$BASE_URL"
 
-            - uses: hyoo-ru/gh-deploy@v4.4.1
+            # Публикация идёт через Actions, а не через ветку gh-pages.
+            #
+            # Ветка отдавалась встроенному сборщику Pages, и он залип: сборка
+            # висела в building больше суток без единой ошибки, принудительный
+            # перезапуск не помог. Свежий код при этом в ветке лежал — то есть
+            # ломалась именно публикация, на стороне GitHub и мимо нас.
+            # Путь через артефакт не зависит от legacy-сборщика.
+            - uses: actions/configure-pages@v5
+              if: github.ref == 'refs/heads/main'
+
+            - uses: actions/upload-pages-artifact@v3
               if: github.ref == 'refs/heads/main'
               with:
-                  folder: "bog/journal/app/-"
+                  path: "bog/journal/app/-"
+
+    deploy:
+        needs: build
+        if: github.ref == 'refs/heads/main'
+        runs-on: ubuntu-latest
+        environment:
+            name: github-pages
+            url: ${{ steps.deployment.outputs.page_url }}
+        steps:
+            - id: deployment
+              uses: actions/deploy-pages@v4
