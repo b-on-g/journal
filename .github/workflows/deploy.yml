@@ -107,11 +107,8 @@ jobs:
             #
             # Non-blocking on purpose: a prerender hiccup leaves the plain SPA plus the
             # 404.html fallback, which is exactly how the site worked before.
-            # Выключен вместе с переходом на хеш-роутинг: краулер не ходит по
-            # `#`-ссылкам, снимать по маршрутам стало нечего. Шаг оставлен, а не
-            # удалён — он понадобится, если появится настоящий серверный рендер.
             - name: Prerender routes to static HTML
-              if: false
+              if: github.ref == 'refs/heads/main'
               continue-on-error: true
               uses: b-on-g/mol-prerender-action@main
               with:
