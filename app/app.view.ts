@@ -27,19 +27,23 @@ namespace $.$$ {
 	export class $bog_journal_app extends $.$bog_journal_app {
 
 		/**
-		 * Path-based routing: `/journal/author=<land>/post=<pawn>` instead of
-		 * `#!author=…`. The bog/seo prerenderer crawls BFS over `<a href>` and
-		 * drops anything starting with `#`, so a hash router would make every
-		 * page invisible to it. $bog_builderui_router is a drop-in $mol_state_arg.
+		 * Адрес живёт в хеше — штатный `$mol_state_arg`, как везде в $mol.
 		 *
-		 * The mount is passed explicitly. activate() installs only when the
-		 * current pathname already starts with it, and additionally bails out on
-		 * $mol dev artifacts (`/-/`, `.html`) — so on the mam dev server
-		 * (`/bog/journal/app/-/test.html`) this is a clean no-op and the standard
-		 * hash router keeps working against the non-SPA file server.
+		 * Путевой роутинг (`$bog_builderui_router`) отсюда убран. Он честно
+		 * работал на локальном стенде, но на GitHub Pages переход по ссылке
+		 * менял адрес и не менял экран: `location` уже новый, а состояние
+		 * роутера прежнее. Стрелки браузера при этом работали — popstate идёт
+		 * другим путём. Перебраны и исключены: склейка ключей в обработчике,
+		 * схема адресов, класс-получатель записи, service worker, пререндер.
+		 * Причина осталась неизвестной, поэтому взят вариант, который работает.
+		 *
+		 * Чем платим: краулеры не ходят по `#`-ссылкам, значит пререндер по
+		 * маршрутам смысла больше не имеет. Пока в поиск и так попадала одна
+		 * главная (список журналов пуст), так что терять нечего. Если SEO
+		 * понадобится всерьёз — возвращаться надо не к этому роутеру, а к
+		 * настоящему серверному рендеру.
 		 */
 		static {
-			$bog_builderui_router.activate( '/journal/' )
 			$bog_journal_app.route_migrate()
 		}
 
@@ -56,22 +60,45 @@ namespace $.$$ {
 			if( typeof window === 'undefined' ) return
 			if( typeof document === 'undefined' ) return
 
-			const arg = ( $ as any ).$mol_state_arg
-			if( arg.value( 'section' ) ) return
+			// Ссылки вида `/journal/section=post/id=…` уже разошлись, и GitHub
+			// Pages отдаёт на них `404.html`, который сворачивает путь в
+			// `?/section=post/id=…`. Разворачиваем обе формы в хеш, заодно понимая
+			// совсем старую схему с ключами `author`/`post`/`feed`/`edit`.
+			const loc = $mol_dom.location
+			if( loc.hash.startsWith( '#!' ) ) return
 
-			const author = arg.value( 'author' ) ?? ''
-			const post = arg.value( 'post' ) ?? ''
-			const feed = arg.value( 'feed' ) ?? ''
-			const edit = arg.value( 'edit' ) ?? ''
-			if( !author && !post && !feed && !edit ) return
+			const mount = '/journal/'
+			const search = loc.search
+			const path = decodeURIComponent( loc.pathname )
+
+			const segment =
+				search.length > 1 && search.charAt( 1 ) === '/' ? search.slice( 2 ).replace( /~and~/g, '&' )
+				: path.startsWith( mount ) ? path.slice( mount.length )
+				: ''
+			if( !segment ) return
+
+			const keys = {} as Record< string, string >
+			for( const chunk of segment.split( '/' ) ) {
+				if( !chunk ) continue
+				const parts = chunk.split( '=' ).map( decodeURIComponent )
+				keys[ parts.shift()! ] = parts.join( '=' )
+			}
 
 			const next =
-				edit ? this.route( 'edit', edit )
-				: post ? this.route( 'post', post )
-				: feed ? this.route( 'feed', feed )
-				: this.route( 'journal', author )
+				keys.section ? this.route( keys.section as Section, keys.id ?? '' )
+				: keys.edit ? this.route( 'edit', keys.edit )
+				: keys.post ? this.route( 'post', keys.post )
+				: keys.feed ? this.route( 'feed', keys.feed )
+				: keys.author ? this.route( 'journal', keys.author )
+				: null
+			if( !next ) return
 
-			arg.dict({ ...next, author: null, post: null, feed: null, edit: null })
+			const hash = '#!' + Object.entries( next )
+				.filter( ( [ , val ] )=> val )
+				.map( ( [ key, val ] )=> `${ key }=${ encodeURIComponent( val! ) }` )
+				.join( '/' )
+
+			$mol_dom.history.replaceState( null, '', mount + hash )
 
 		}
 
